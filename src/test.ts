@@ -108,8 +108,78 @@ const tableAPIUtilityFiles = [
             })
             .join(',\n'),
           ['/* AIRTABLE_ENTITY_FIELDS */']: fields
-            .map(({ name }) => {
-              return `["${name}"]: z.string().nullish()`;
+            .map(({ name, type }) => {
+              const typeValidationString = (() => {
+                switch (type) {
+                  case 'multilineText':
+                    break;
+                  case 'multipleSelects':
+                    break;
+                  case 'singleCollaborator':
+                    break;
+                  case 'multipleCollaborators':
+                    break;
+                  case 'multipleRecordLinks':
+                    break;
+                  case 'multipleAttachments':
+                    break;
+                  case 'formula':
+                    break;
+                  case 'rollup':
+                    break;
+                  case 'barcode':
+                    break;
+                  case 'duration':
+                    break;
+                  case 'button':
+                    break;
+                  case 'createdBy':
+                    break;
+                  case 'lastModifiedBy':
+                    break;
+                  case 'externalSyncSource':
+                    break;
+
+                  // Dates
+                  case 'date':
+                  case 'dateTime':
+                  case 'lastModifiedTime':
+                  case 'createdTime':
+                    return `z.string().datetime()`;
+
+                  // Lists
+                  case 'lookup':
+                  case 'multipleLookupValues':
+                    return `z.array(z.string())`;
+
+                  // Numbers
+                  case 'number':
+                  case 'percent':
+                  case 'currency':
+                  case 'count':
+                  case 'autoNumber':
+                  case 'rating':
+                    return `z.number()`;
+
+                  // Booleans
+                  case 'checkbox':
+                    return `z.boolean()`;
+
+                  // Special text
+                  case 'email':
+                    return `z.string().email()`;
+                  case 'url':
+                    return `z.string().url()`;
+
+                  // Regular text
+                  case 'phoneNumber':
+                  case 'singleSelect':
+                  default:
+                    return `z.string()`;
+                }
+                return `z.any()`;
+              })();
+              return `["${name}"]: ${typeValidationString}.nullish()`;
             })
             .join(',\n'),
         };
