@@ -114,7 +114,6 @@ const tableAPIUtilityFiles = [
                   case 'multipleSelects':
                   case 'singleCollaborator':
                   case 'multipleCollaborators':
-                  case 'multipleRecordLinks':
                   case 'multipleAttachments':
                   case 'formula':
                   case 'rollup':
@@ -136,6 +135,7 @@ const tableAPIUtilityFiles = [
                   // Lists
                   case 'lookup':
                   case 'multipleLookupValues':
+                  case 'multipleRecordLinks':
                     return `z.array(z.string())`;
 
                   // Numbers

@@ -72,7 +72,7 @@ export const PascalCaseEntityAirtableValidationSchema = z
           switch (type) {
             case 'lookup':
               if (fields[key] && Array.isArray(fields[key])) {
-                return fields[key]![0];
+                return (fields[key] as string[])[0];
               }
               break;
           }
