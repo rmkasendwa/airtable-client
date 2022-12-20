@@ -111,32 +111,18 @@ const tableAPIUtilityFiles = [
             .map(({ name, type }) => {
               const typeValidationString = (() => {
                 switch (type) {
-                  case 'multilineText':
-                    break;
                   case 'multipleSelects':
-                    break;
                   case 'singleCollaborator':
-                    break;
                   case 'multipleCollaborators':
-                    break;
                   case 'multipleRecordLinks':
-                    break;
                   case 'multipleAttachments':
-                    break;
                   case 'formula':
-                    break;
                   case 'rollup':
-                    break;
                   case 'barcode':
-                    break;
                   case 'duration':
-                    break;
                   case 'button':
-                    break;
                   case 'createdBy':
-                    break;
                   case 'lastModifiedBy':
-                    break;
                   case 'externalSyncSource':
                     break;
 
@@ -172,6 +158,9 @@ const tableAPIUtilityFiles = [
                     return `z.string().url()`;
 
                   // Regular text
+                  case 'singleLineText':
+                  case 'multilineText':
+                  case 'richText':
                   case 'phoneNumber':
                   case 'singleSelect':
                   default:
