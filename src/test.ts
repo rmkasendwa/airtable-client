@@ -6,8 +6,8 @@ import { dirname, normalize } from 'path';
 import {
   ensureDirSync,
   existsSync,
-  mkdirSync,
   readFileSync,
+  readdirSync,
   removeSync,
   writeFileSync,
 } from 'fs-extra';
@@ -43,15 +43,28 @@ const getCamelCasePropertyName = (name: string) => {
 
     if (tables.length > 0) {
       if (existsSync(outputFolderPath)) {
-        removeSync(outputFolderPath);
+        readdirSync(outputFolderPath).forEach((path) => {
+          if (!path.match(/test/gi)) {
+            removeSync(`${outputFolderPath}/path`);
+          }
+        });
       }
-      mkdirSync(outputFolderPath);
+
+      ensureDirSync(outputFolderPath);
 
       const moduleFiles: string[] = [];
 
-      tables.forEach(({ name, fields, views }) => {
-        const sanitisedTableName = name.trim().replace(/[^a-zA-Z0-9\s]/g, '');
-        const labelPlural = sanitisedTableName;
+      tables.forEach(({ name: tableName, fields, views }) => {
+        console.log(`Processing ${tableName} table...`);
+        const sanitisedTableName = tableName
+          .trim()
+          .replace(/[^a-zA-Z0-9\s]/g, '');
+        const labelPlural = (() => {
+          if (!sanitisedTableName.match(/s$/g)) {
+            return sanitisedTableName + 's';
+          }
+          return sanitisedTableName;
+        })();
         const labelSingular = (() => {
           if (labelPlural.match(/ies$/)) {
             return labelPlural.replace(/ies$/, 'y');
@@ -245,6 +258,7 @@ const getCamelCasePropertyName = (name: string) => {
             .flat()
             .join(';\n'),
 
+          ['Entities Table']: tableName,
           ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,
           ['Entity Label']: TITLE_CASE_ENTITY_LABEL_WITH_SPACES,
 
@@ -303,6 +317,7 @@ const getCamelCasePropertyName = (name: string) => {
           );
         });
       });
+
       writeFileSync(
         `${outputFolderPath}/index.ts`,
         moduleFiles
@@ -311,6 +326,8 @@ const getCamelCasePropertyName = (name: string) => {
           })
           .join('\n')
       );
+
+      console.log(`Airtable API has been generated here: ${outputFolderPath}`);
     }
   }
 })();
