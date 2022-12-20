@@ -10,28 +10,34 @@ import { FindAllRecordsQueryParams } from './__interfaces';
 import { convertToAirtableFindAllRecordsQueryParams } from './__utils';
 
 // Endpoint Paths
-export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities`;
+export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
 export const FIND_ENTITY_BY_ID_ENPOINT_PATH: TemplatePath<{
-  entityId: string;
-}> = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/:entityId`;
-export const ENTITY_CREATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities`;
-export const ENTITY_UPDATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities`;
-export const ENTITY_DELETE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities`;
+  camelCaseEntityId: string;
+}> = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/:camelCaseEntityId`;
+export const ENTITY_CREATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
+export const ENTITY_UPDATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
+export const ENTITY_DELETE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
 
-export type Entity = {
+export type PascalCaseEntity = {
   id: string;
 };
 
-export type EntityCreationDetails = Partial<Omit<Entity, 'id'>>;
+export type PascalCaseEntityCreationDetails = Partial<
+  Omit<PascalCaseEntity, 'id'>
+>;
 
-export type EntityUpdates = EntityCreationDetails & Pick<Entity, 'id'>;
+export type PascalCaseEntityUpdates = PascalCaseEntityCreationDetails &
+  Pick<PascalCaseEntity, 'id'>;
 
-export const entityViews = [''] as const;
+export const camelCaseEntityViews = [''] as const;
 
-export type EntityView = typeof entityViews[number];
+export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
 
-export const findAllEntities = async (
-  queryParams: FindAllRecordsQueryParams<Entity, EntityView> = {}
+export const findAllPascalCaseEntities = async (
+  queryParams: FindAllRecordsQueryParams<
+    PascalCaseEntity,
+    PascalCaseEntityView
+  > = {}
 ) => {
   const { data } = await Adapter.get(
     addSearchParams(FIND_ALL_ENTITIES_ENDPOINT_PATH, {
@@ -42,35 +48,39 @@ export const findAllEntities = async (
 };
 
 /**
- * Finds entity by id.
+ * Finds entity label by id.
  *
- * @param entityId The entity id.
- * @returns The entity.
+ * @param camelCaseEntityId The entity label id.
+ * @returns The entity label.
  */
-export const findEntityById = async (entityId: string) => {
+export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
   const { data } = await Adapter.get(
-    getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, { entityId })
+    getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, { camelCaseEntityId })
   );
   return data;
 };
 
 /**
- * Creates a new entity.
+ * Creates a new entity label.
  *
- * @param entityDetails The entity details.
- * @returns The created entity.
+ * @param camelCaseEntityDetails The entity label details.
+ * @returns The created entity label.
  */
-export const createEntity = async (entityDetails: EntityCreationDetails) => {
-  return (await createEntities([entityDetails]))[0];
+export const createPascalCaseEntity = async (
+  camelCaseEntityDetails: PascalCaseEntityCreationDetails
+) => {
+  return (await createPascalCaseEntities([camelCaseEntityDetails]))[0];
 };
 
 /**
- * Creates new entities.
+ * Creates new entities label.
  *
- * @param records The entities to be created.
- * @returns The created entities.
+ * @param records The entities label to be created.
+ * @returns The created entities label.
  */
-export const createEntities = async (records: EntityCreationDetails[]) => {
+export const createPascalCaseEntities = async (
+  records: PascalCaseEntityCreationDetails[]
+) => {
   const { data } = await Adapter.post(ENTITY_CREATE_ENDPOINT_PATH, {
     data: JSON.stringify({ records }),
   });
@@ -78,22 +88,26 @@ export const createEntities = async (records: EntityCreationDetails[]) => {
 };
 
 /**
- * Updates entity.
+ * Updates entity label.
  *
- * @param entityUpdates The entity updates.
- * @returns The updated entity.
+ * @param camelCaseEntityUpdates The entity label updates.
+ * @returns The updated entity label.
  */
-export const updateEntity = async (entityUpdates: EntityUpdates) => {
-  return (await updateEntities([entityUpdates]))[0];
+export const updatePascalCaseEntity = async (
+  camelCaseEntityUpdates: PascalCaseEntityUpdates
+) => {
+  return (await updatePascalCaseEntities([camelCaseEntityUpdates]))[0];
 };
 
 /**
- * Updates entities.
+ * Updates entities label.
  *
- * @param records The entities to be updated.
- * @returns The updated entities.
+ * @param records The entities label to be updated.
+ * @returns The updated entities label.
  */
-export const updateEntities = async (records: EntityUpdates[]) => {
+export const updatePascalCaseEntities = async (
+  records: PascalCaseEntityUpdates[]
+) => {
   const { data } = await Adapter.post(ENTITY_UPDATE_ENDPOINT_PATH, {
     data: JSON.stringify({ records }),
   });
@@ -101,22 +115,26 @@ export const updateEntities = async (records: EntityUpdates[]) => {
 };
 
 /**
- * Patches entity.
+ * Patches entity label.
  *
- * @param entityUpdates The entity updates.
- * @returns The patched entity.
+ * @param camelCaseEntityUpdates The entity label updates.
+ * @returns The patched entity label.
  */
-export const patchEntity = async (entityUpdates: EntityUpdates) => {
-  return (await patchEntities([entityUpdates]))[0];
+export const patchPascalCaseEntity = async (
+  camelCaseEntityUpdates: PascalCaseEntityUpdates
+) => {
+  return (await patchPascalCaseEntities([camelCaseEntityUpdates]))[0];
 };
 
 /**
- * Patches entities.
+ * Patches entities label.
  *
- * @param records The entities to be patched.
- * @returns The patched entities.
+ * @param records The entities label to be patched.
+ * @returns The patched entities label.
  */
-export const patchEntities = async (records: EntityUpdates[]) => {
+export const patchPascalCaseEntities = async (
+  records: PascalCaseEntityUpdates[]
+) => {
   const { data } = await Adapter.patch(ENTITY_UPDATE_ENDPOINT_PATH, {
     data: JSON.stringify({ records }),
   });
@@ -124,22 +142,22 @@ export const patchEntities = async (records: EntityUpdates[]) => {
 };
 
 /**
- * Deletes entity.
+ * Deletes entity label.
  *
- * @param entityId The entity id.
+ * @param camelCaseEntityId The entity label id.
  * @returns Deleted record response.
  */
-export const deleteEntity = async (entityId: string) => {
-  return (await deleteEntities([entityId]))[0];
+export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
+  return (await deletePascalCaseEntities([camelCaseEntityId]))[0];
 };
 
 /**
- * Deletes entities.
+ * Deletes entities label.
  *
- * @param records The ids of the entities to be deleted.
+ * @param records The ids of the entities label to be deleted.
  * @returns Deleted records response.
  */
-export const deleteEntities = async (records: string[]) => {
+export const deletePascalCaseEntities = async (records: string[]) => {
   const { data } = await Adapter.delete(
     addSearchParams(ENTITY_DELETE_ENDPOINT_PATH, {
       records,
