@@ -38,10 +38,12 @@ export const airtableFieldTypes = [
 
 export type AirtableFieldType = typeof airtableFieldTypes[number];
 
-export type AirtableColumnMapping = {
-  propertyName: string;
-  prefersSingleRecordLink?: boolean;
-};
+export type AirtableColumnMapping =
+  | {
+      propertyName: string;
+      prefersSingleRecordLink?: boolean;
+    }
+  | string;
 
 export const DeleteAirtableRecordResponseValidationSchema = z
   .object({

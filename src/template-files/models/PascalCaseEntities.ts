@@ -41,15 +41,20 @@ export const PascalCaseEntityAirtableValidationSchema = z
       created: createdTime,
       ...Object.keys(fields).reduce((accumulator, a) => {
         const key = a as PascalCaseEntitiesAirtableColumn;
-        const { propertyName, prefersSingleRecordLink } = (
-          PascalCaseEntityAirtableColumnMapper as any
-        )[key] as AirtableColumnMapping;
-        (accumulator as any)[propertyName] = (() => {
-          if (prefersSingleRecordLink && Array.isArray(fields[key])) {
-            return (fields[key] as string[])[0];
-          }
-          return fields[key];
-        })();
+        const mapping = (PascalCaseEntityAirtableColumnMapper as any)[
+          key
+        ] as AirtableColumnMapping;
+        if (typeof mapping === 'string') {
+          (accumulator as any)[mapping] = fields[key];
+        } else {
+          const { propertyName, prefersSingleRecordLink } = mapping;
+          (accumulator as any)[propertyName] = (() => {
+            if (prefersSingleRecordLink && Array.isArray(fields[key])) {
+              return (fields[key] as string[])[0];
+            }
+            return fields[key];
+          })();
+        }
         return accumulator;
       }, {} as Omit<PascalCaseEntity, 'id'>),
     };

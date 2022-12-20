@@ -267,23 +267,25 @@ export const getAirtableResponseTypeValidationString = (
               const rootField = getRootAirtableField(field, tables, table);
               const camelCasePropertyName = getCamelCasePropertyName(name);
               return `["${name}"]: ${(() => {
-                return JSON.stringify(
-                  {
-                    propertyName: camelCasePropertyName,
-                    ...(() => {
-                      if (
-                        rootField &&
-                        rootField.options?.prefersSingleRecordLink
-                      ) {
-                        return {
-                          prefersSingleRecordLink: true,
-                        };
-                      }
-                    })(),
-                  },
-                  null,
-                  2
-                );
+                const obj = {
+                  propertyName: camelCasePropertyName,
+                  ...(() => {
+                    if (
+                      rootField &&
+                      rootField.options?.prefersSingleRecordLink
+                    ) {
+                      return {
+                        prefersSingleRecordLink: true,
+                      };
+                    }
+                  })(),
+                };
+
+                if (Object.keys(obj).length > 1) {
+                  return JSON.stringify(obj);
+                }
+
+                return `"${obj.propertyName}"`;
               })()}`;
             })
             .join(',\n'),
