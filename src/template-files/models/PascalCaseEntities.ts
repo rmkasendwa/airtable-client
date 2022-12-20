@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
-import { AirtableColumnMapping } from './__Utils';
+import {
+  AirtableColumnMapping,
+  getAirtableRecordValidationSchema,
+} from './__Utils';
 
 /* MODEL_IMPORTS */
 
@@ -29,36 +32,11 @@ export const PascalCaseEntityAirtableColumnMapper: Record<
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 } as const;
 
-export const PascalCaseEntityAirtableValidationSchema = z
-  .object({
-    id: z.string(),
-    createdTime: z.string().datetime(),
-    fields: z.object(camelCaseEntitiesAirtableFieldsValidationSchema),
-  })
-  .transform(({ createdTime, fields, id }) => {
-    return {
-      id,
-      created: createdTime,
-      ...Object.keys(fields).reduce((accumulator, a) => {
-        const key = a as PascalCaseEntitiesAirtableColumn;
-        const mapping = (PascalCaseEntityAirtableColumnMapper as any)[
-          key
-        ] as AirtableColumnMapping;
-        if (typeof mapping === 'string') {
-          (accumulator as any)[mapping] = fields[key];
-        } else {
-          const { propertyName, prefersSingleRecordLink } = mapping;
-          (accumulator as any)[propertyName] = (() => {
-            if (prefersSingleRecordLink && Array.isArray(fields[key])) {
-              return (fields[key] as string[])[0];
-            }
-            return fields[key];
-          })();
-        }
-        return accumulator;
-      }, {} as Omit<PascalCaseEntity, 'id'>),
-    };
-  });
+export const PascalCaseEntityAirtableValidationSchema =
+  getAirtableRecordValidationSchema<PascalCaseEntity>(
+    camelCaseEntitiesAirtableFieldsValidationSchema,
+    PascalCaseEntityAirtableColumnMapper
+  );
 
 export type AirtablePascalCaseEntity = z.infer<
   typeof PascalCaseEntityAirtableValidationSchema

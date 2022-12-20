@@ -45,6 +45,39 @@ export type AirtableColumnMapping =
     }
   | string;
 
+export const getAirtableRecordValidationSchema = <T>(
+  fieldsValidationSchema: any,
+  columnToPropertyMapper: any
+) => {
+  return z
+    .object({
+      id: z.string(),
+      createdTime: z.string().datetime(),
+      fields: z.object(fieldsValidationSchema),
+    })
+    .transform(({ createdTime, fields, id }) => {
+      return {
+        id,
+        created: createdTime,
+        ...Object.keys(fields).reduce((accumulator, key) => {
+          const mapping = columnToPropertyMapper[key] as AirtableColumnMapping;
+          if (typeof mapping === 'string') {
+            (accumulator as any)[mapping] = fields[key];
+          } else {
+            const { propertyName, prefersSingleRecordLink } = mapping;
+            (accumulator as any)[propertyName] = (() => {
+              if (prefersSingleRecordLink && Array.isArray(fields[key])) {
+                return (fields[key] as string[])[0];
+              }
+              return fields[key];
+            })();
+          }
+          return accumulator;
+        }, {} as Omit<T, 'id'>),
+      };
+    });
+};
+
 export const DeleteAirtableRecordResponseValidationSchema = z
   .object({
     records: z.array(
