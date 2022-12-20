@@ -28,12 +28,60 @@ const templateFilePaths = globby
   })
   .map((filePath) => normalize(filePath));
 
-const getCamelCasePropertyName = (name: string) => {
-  return name
+const getCamelCaseFieldPropertyName = (
+  field: AirtableField,
+  tables: Table[],
+  currentTable: Table
+) => {
+  const { name } = field;
+  const camelCasePropertyName = name
     .replace(/[^a-zA-Z0-9\s]/g, '')
     .replace(/\s/g, '_')
     .toUpperCase()
     .toCamelCase('UPPER_CASE');
+
+  const rootField = getRootAirtableField(field, tables, currentTable);
+
+  if (
+    rootField.type === 'multipleRecordLinks' &&
+    !camelCasePropertyName.match(/Ids?$/gi)
+  ) {
+    const linkedTableId = rootField.options?.linkedTableId;
+    const inverseLinkFieldId = rootField.options?.inverseLinkFieldId;
+    if (linkedTableId && inverseLinkFieldId) {
+      const linkedTable = tables.find(({ id }) => id === linkedTableId);
+      if (linkedTable) {
+        const linkedField = linkedTable.fields.find(
+          ({ id }) => id === inverseLinkFieldId
+        );
+        if (linkedField) {
+          return (
+            camelCasePropertyName +
+            linkedTable.name
+              .replace(/[^a-zA-Z0-9\s]/g, '')
+              .replace(/\s/g, '_')
+              .toUpperCase()
+              .toCamelCase('UPPER_CASE')
+              .replace(/^\w/g, (character) => {
+                return character.toUpperCase();
+              }) +
+            linkedField.name
+              .replace(/[^a-zA-Z0-9\s]/g, '')
+              .replace(/\s/g, '_')
+              .toUpperCase()
+              .toCamelCase('UPPER_CASE')
+              .replace(/^\w/g, (character) => {
+                return character.toUpperCase();
+              }) +
+            'Id' +
+            (linkedField.options?.prefersSingleRecordLink ? '' : 's')
+          );
+        }
+      }
+    }
+  }
+
+  return camelCasePropertyName;
 };
 
 export const getRootAirtableField = (
@@ -260,13 +308,14 @@ export const getAirtableResponseTypeValidationString = (
         const KEBAB_CASE_ENTITY_LABEL =
           LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
 
-        const columnToPropertyMapper = fields.reduce(
-          (accumulator, { name }) => {
-            accumulator[name] = getCamelCasePropertyName(name);
-            return accumulator;
-          },
-          {} as Record<string, string>
-        );
+        const columnToPropertyMapper = fields.reduce((accumulator, field) => {
+          accumulator[field.name] = getCamelCaseFieldPropertyName(
+            field,
+            tables,
+            table
+          );
+          return accumulator;
+        }, {} as Record<string, string>);
 
         const interpolationBlocks: Record<string, string> = {
           ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: fields
@@ -358,7 +407,7 @@ export const getAirtableResponseTypeValidationString = (
           ['/* ENTITY_INTERFACE_FIELDS */']: fields
             .map(({ name, type }) => {
               const camelCasePropertyName = (() => {
-                const propertyName = getCamelCasePropertyName(name);
+                const propertyName = columnToPropertyMapper[name];
                 if (propertyName.match(/^\d/)) {
                   return `_${propertyName}`;
                 }
