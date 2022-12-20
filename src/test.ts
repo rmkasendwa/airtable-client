@@ -16,7 +16,7 @@ import prettier from 'prettier';
 
 import { findAllTablesByBaseId } from './api';
 import { findAllAirtableBases } from './api/Metadata/Bases';
-import { AirtableField } from './models';
+import { AirtableField, Table } from './models';
 
 const prettierConfig = require('../.prettierrc.js');
 
@@ -36,11 +36,57 @@ const getCamelCasePropertyName = (name: string) => {
     .toCamelCase('UPPER_CASE');
 };
 
-const getAirtableResponseTypeValidationString = (
+export const getRootAirtableField = (
   field: AirtableField,
-  isResursion = false
-): string => {
+  tables: Table[],
+  currentTable: Table
+): AirtableField => {
   const { type } = field;
+  switch (type) {
+    case 'multipleLookupValues':
+      {
+        const recordLinkFieldId = field.options?.recordLinkFieldId;
+        const fieldIdInLinkedTable = field.options?.fieldIdInLinkedTable;
+        if (recordLinkFieldId) {
+          const recordLinkField = currentTable.fields.find(
+            ({ id }) => id === recordLinkFieldId
+          );
+          if (recordLinkField) {
+            const linkedTableId = recordLinkField.options?.linkedTableId;
+            if (linkedTableId) {
+              const linkedTable = tables.find(({ id }) => id === linkedTableId);
+              if (linkedTable) {
+                const linkedField = linkedTable.fields.find(
+                  ({ id }) => id === fieldIdInLinkedTable
+                );
+                if (linkedField) {
+                  return getRootAirtableField(linkedField, tables, linkedTable);
+                }
+              }
+            }
+          }
+        }
+      }
+      break;
+  }
+  return field;
+};
+
+export type GetAirtableResponseTypeValidationStringOptions = {
+  isResursion?: boolean;
+  currentTable: Table;
+  tables: Table[];
+};
+
+export const getAirtableResponseTypeValidationString = (
+  field: AirtableField,
+  options: GetAirtableResponseTypeValidationStringOptions
+): string => {
+  const { isResursion = false, tables, currentTable } = options;
+  const rootField = getRootAirtableField(field, tables, currentTable);
+
+  const { type } = field;
+
   switch (type) {
     case 'multipleSelects':
     case 'singleCollaborator':
@@ -62,7 +108,10 @@ const getAirtableResponseTypeValidationString = (
             ...field,
             type: field.options?.result?.type,
           },
-          true
+          {
+            ...options,
+            isResursion: true,
+          }
         )}, z.object({specialValue: z.enum(["NaN"] as const)})])`;
       }
       break;
@@ -76,17 +125,33 @@ const getAirtableResponseTypeValidationString = (
       return `z.string()`;
 
     // Lists
+    case 'multipleRecordLinks':
+      return `z.array(z.string())`;
     case 'lookup':
     case 'multipleLookupValues':
-    case 'multipleRecordLinks':
       if (!isResursion) {
-        return `z.array(${getAirtableResponseTypeValidationString(
-          {
-            ...field,
-            type: field.options?.result?.type,
-          },
-          true
-        )})`;
+        const validationString = (() => {
+          if (rootField !== field) {
+            if (rootField.type === 'multipleRecordLinks') {
+              return `z.string()`;
+            }
+            return getAirtableResponseTypeValidationString(rootField, {
+              ...options,
+              isResursion: true,
+            });
+          }
+          return getAirtableResponseTypeValidationString(
+            {
+              ...field,
+              type: field.options?.result?.type,
+            },
+            {
+              ...options,
+              isResursion: true,
+            }
+          );
+        })();
+        return `z.array(${validationString})`;
       }
       break;
 
@@ -140,8 +205,11 @@ const getAirtableResponseTypeValidationString = (
 
       const moduleFiles: string[] = [];
 
-      tables.forEach(({ name: tableName, fields, views }) => {
+      tables.forEach((table) => {
+        const { name: tableName, fields, views } = table;
+
         console.log(`Processing ${tableName} table...`);
+
         const sanitisedTableName = tableName
           .trim()
           .replace(/[^a-zA-Z0-9\s]/g, '');
@@ -205,7 +273,8 @@ const getAirtableResponseTypeValidationString = (
             .map((field) => {
               const { name } = field;
               return `["${name}"]: ${getAirtableResponseTypeValidationString(
-                field
+                field,
+                { currentTable: table, tables }
               )}.nullish()`;
             })
             .join(',\n'),

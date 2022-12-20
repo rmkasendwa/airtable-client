@@ -113,7 +113,7 @@ export const AirtableViewSchema = z.object({
   visibleFieldIds: z.array(z.string()).optional(),
 });
 
-export const TableSchema = z.object({
+export const TableValidationSchema = z.object({
   id: z.string(),
   name: z.string(),
   primaryFieldId: z.string(),
@@ -121,6 +121,8 @@ export const TableSchema = z.object({
   views: z.array(AirtableViewSchema),
 });
 
+export type Table = z.infer<typeof TableValidationSchema>;
+
 export const TablesResponseValidationSchema = z.object({
-  tables: z.array(TableSchema),
+  tables: z.array(TableValidationSchema),
 });
