@@ -51,7 +51,9 @@ export type PascalCaseEntityCreationDetails = Partial<
 export type PascalCaseEntityUpdates = PascalCaseEntityCreationDetails &
   Pick<PascalCaseEntity, 'id'>;
 
-export const camelCaseEntityViews = [''] as const;
+export const camelCaseEntityViews = [
+  /* AIRTABLE_VIEWS */
+] as const;
 
 export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
 

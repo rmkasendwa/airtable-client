@@ -1,4 +1,5 @@
 import '@infinite-debugger/rmk-js-extensions/String';
+import '@infinite-debugger/rmk-js-extensions/RegExp';
 
 import { basename } from 'path';
 
@@ -48,7 +49,7 @@ const tableAPIUtilityFiles = [
 
       const moduleFiles: string[] = [];
 
-      tables.forEach(({ name, fields }) => {
+      tables.forEach(({ name, fields, views }) => {
         const sanitisedTableName = name.trim().replace(/[^a-zA-Z0-9\s]/g, '');
         const labelPlural = sanitisedTableName;
         const labelSingular = (() => {
@@ -105,7 +106,12 @@ const tableAPIUtilityFiles = [
           })
           .join(',\n');
 
-        const interpolationLabels = {
+        const interpolationLabels: Record<string, string> = {
+          ['/* AIRTABLE_VIEWS */']: views
+            .map(({ name }) => {
+              return `"${RegExp.escape(name)}"`;
+            })
+            .join(', '),
           ['/* AIRTABLE_ENTITY_FIELDS */']: schemaText,
 
           ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,
