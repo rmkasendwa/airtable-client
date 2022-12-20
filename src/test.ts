@@ -16,6 +16,7 @@ import prettier from 'prettier';
 
 import { findAllTablesByBaseId } from './api';
 import { findAllAirtableBases } from './api/Metadata/Bases';
+import { AirtableField } from './models';
 
 const prettierConfig = require('../.prettierrc.js');
 
@@ -35,6 +36,80 @@ const getCamelCasePropertyName = (name: string) => {
     .toCamelCase('UPPER_CASE');
 };
 
+const getAirtableResponseTypeValidationString = (
+  field: AirtableField,
+  isResursion = false
+): string => {
+  const { type } = field;
+  switch (type) {
+    case 'multipleSelects':
+    case 'singleCollaborator':
+    case 'multipleCollaborators':
+    case 'multipleAttachments':
+    case 'formula':
+    case 'rollup':
+    case 'barcode':
+    case 'duration':
+    case 'button':
+    case 'createdBy':
+    case 'lastModifiedBy':
+    case 'externalSyncSource':
+      break;
+
+    // Dates
+    case 'date':
+    case 'dateTime':
+    case 'lastModifiedTime':
+    case 'createdTime':
+      // return `z.string().datetime()`;
+      return `z.string()`;
+
+    // Lists
+    case 'lookup':
+    case 'multipleLookupValues':
+    case 'multipleRecordLinks':
+      if (!isResursion) {
+        return `z.array(${getAirtableResponseTypeValidationString(
+          {
+            ...field,
+            type: field.options?.result?.type,
+          },
+          true
+        )})`;
+      }
+      return `z.string()`;
+
+    // Numbers
+    case 'number':
+    case 'percent':
+    case 'currency':
+    case 'count':
+    case 'autoNumber':
+    case 'rating':
+      return `z.number()`;
+
+    // Booleans
+    case 'checkbox':
+      return `z.boolean()`;
+
+    // Special text
+    case 'email':
+      return `z.string().email()`;
+    case 'url':
+      return `z.string().url()`;
+
+    // Regular text
+    case 'singleLineText':
+    case 'multilineText':
+    case 'richText':
+    case 'phoneNumber':
+    case 'singleSelect':
+    default:
+      return `z.string()`;
+  }
+  return `z.any()`;
+};
+
 (async () => {
   const { bases } = await findAllAirtableBases();
   const talentBase = bases.find(({ name }) => name.trim().match(/^Talent$/g));
@@ -45,7 +120,7 @@ const getCamelCasePropertyName = (name: string) => {
       if (existsSync(outputFolderPath)) {
         readdirSync(outputFolderPath).forEach((path) => {
           if (!path.match(/test/gi)) {
-            removeSync(`${outputFolderPath}/path`);
+            removeSync(`${outputFolderPath}/${path}`);
           }
         });
       }
@@ -116,67 +191,11 @@ const getCamelCasePropertyName = (name: string) => {
             })
             .join(',\n'),
           ['/* AIRTABLE_ENTITY_FIELDS */']: fields
-            .map(({ name, type }) => {
-              const typeValidationString = (() => {
-                switch (type) {
-                  case 'multipleSelects':
-                  case 'singleCollaborator':
-                  case 'multipleCollaborators':
-                  case 'multipleAttachments':
-                  case 'formula':
-                  case 'rollup':
-                  case 'barcode':
-                  case 'duration':
-                  case 'button':
-                  case 'createdBy':
-                  case 'lastModifiedBy':
-                  case 'externalSyncSource':
-                    break;
-
-                  // Dates
-                  case 'date':
-                  case 'dateTime':
-                  case 'lastModifiedTime':
-                  case 'createdTime':
-                    return `z.string().datetime()`;
-
-                  // Lists
-                  case 'lookup':
-                  case 'multipleLookupValues':
-                  case 'multipleRecordLinks':
-                    return `z.array(z.string())`;
-
-                  // Numbers
-                  case 'number':
-                  case 'percent':
-                  case 'currency':
-                  case 'count':
-                  case 'autoNumber':
-                  case 'rating':
-                    return `z.number()`;
-
-                  // Booleans
-                  case 'checkbox':
-                    return `z.boolean()`;
-
-                  // Special text
-                  case 'email':
-                    return `z.string().email()`;
-                  case 'url':
-                    return `z.string().url()`;
-
-                  // Regular text
-                  case 'singleLineText':
-                  case 'multilineText':
-                  case 'richText':
-                  case 'phoneNumber':
-                  case 'singleSelect':
-                  default:
-                    return `z.string()`;
-                }
-                return `z.any()`;
-              })();
-              return `["${name}"]: ${typeValidationString}.nullish()`;
+            .map((field) => {
+              const { name } = field;
+              return `["${name}"]: ${getAirtableResponseTypeValidationString(
+                field
+              )}.nullish()`;
             })
             .join(',\n'),
         };

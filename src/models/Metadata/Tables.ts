@@ -1,7 +1,45 @@
 import { z } from 'zod';
 
+export const airtableFieldTypes = [
+  'singleLineText',
+  'email',
+  'url',
+  'multilineText',
+  'number',
+  'percent',
+  'currency',
+  'singleSelect',
+  'multipleSelects',
+  'singleCollaborator',
+  'multipleCollaborators',
+  'multipleRecordLinks',
+  'date',
+  'dateTime',
+  'phoneNumber',
+  'multipleAttachments',
+  'checkbox',
+  'formula',
+  'createdTime',
+  'rollup',
+  'count',
+  'lookup',
+  'multipleLookupValues',
+  'autoNumber',
+  'barcode',
+  'rating',
+  'richText',
+  'duration',
+  'lastModifiedTime',
+  'button',
+  'createdBy',
+  'lastModifiedBy',
+  'externalSyncSource',
+] as const;
+
+export type AirtableFieldType = typeof airtableFieldTypes[number];
+
 export const AirtableFieldResultSchema = z.object({
-  type: z.string(),
+  type: z.enum(airtableFieldTypes),
   // options: options2Schema, // Should circular reference options schema
 });
 
@@ -46,44 +84,6 @@ export const AirtableFieldOptionsSchema = z.object({
   durationFormat: z.string().optional(),
 });
 
-export const airtableFieldTypes = [
-  'singleLineText',
-  'email',
-  'url',
-  'multilineText',
-  'number',
-  'percent',
-  'currency',
-  'singleSelect',
-  'multipleSelects',
-  'singleCollaborator',
-  'multipleCollaborators',
-  'multipleRecordLinks',
-  'date',
-  'dateTime',
-  'phoneNumber',
-  'multipleAttachments',
-  'checkbox',
-  'formula',
-  'createdTime',
-  'rollup',
-  'count',
-  'lookup',
-  'multipleLookupValues',
-  'autoNumber',
-  'barcode',
-  'rating',
-  'richText',
-  'duration',
-  'lastModifiedTime',
-  'button',
-  'createdBy',
-  'lastModifiedBy',
-  'externalSyncSource',
-] as const;
-
-export type AirtableFieldType = typeof airtableFieldTypes[number];
-
 export const AirtableFieldSchema = z.object({
   id: z.string(),
   type: z.enum(airtableFieldTypes).optional(),
@@ -91,6 +91,8 @@ export const AirtableFieldSchema = z.object({
   description: z.string().optional(),
   options: AirtableFieldOptionsSchema.optional(),
 });
+
+export type AirtableField = z.infer<typeof AirtableFieldSchema>;
 
 export const airtableViewTypes = [
   'grid',
