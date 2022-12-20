@@ -11,6 +11,7 @@ import {
   FIND_ENTITY_BY_ID_ENPOINT_PATH,
 } from '../endpoint-paths/PascalCaseEntities';
 import { FindAllRecordsQueryParams } from '../interfaces';
+import { DeleteAirtableRecordResponseValidationSchema } from '../models/__Utils';
 import {
   FindAllPascalCaseEntitiesReponseValidationSchema,
   PascalCaseEntity,
@@ -19,7 +20,6 @@ import {
   PascalCaseEntityUpdates,
   PascalCaseEntityView,
 } from '../models/PascalCaseEntities';
-import { DeleteAirtableRecordResponseValidationSchema } from '../models/Utils';
 import { convertToAirtableFindAllRecordsQueryParams } from '../utils';
 import Adapter from './Adapter';
 

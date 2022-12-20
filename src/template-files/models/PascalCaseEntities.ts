@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AirtableFieldType } from './Utils';
+import { AirtableFieldType } from './__Utils';
 
 /* MODEL_IMPORTS */
 

@@ -116,7 +116,7 @@ export const getAirtableResponseTypeValidationString = (
         {
           ...options,
         }
-      )}, z.object({specialValue: z.enum(["NaN"] as const)})])`;
+      )}, AirtableFormulaColumnErrorValidationSchema])`;
 
     // Dates
     case 'date':
@@ -274,7 +274,12 @@ export const getAirtableResponseTypeValidationString = (
               switch (rootField.type) {
                 case 'multipleAttachments':
                   moduleImports.push(
-                    `import {AirtableAttachmentValidationSchema} from './Utils';`
+                    `import {AirtableAttachmentValidationSchema} from './__Utils';`
+                  );
+                  break;
+                case 'formula':
+                  moduleImports.push(
+                    `import {AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
                   );
               }
               return `["${name}"]: ${getAirtableResponseTypeValidationString(
