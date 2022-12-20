@@ -46,7 +46,6 @@ const getAirtableResponseTypeValidationString = (
     case 'singleCollaborator':
     case 'multipleCollaborators':
     case 'multipleAttachments':
-    case 'formula':
     case 'rollup':
     case 'barcode':
     case 'duration':
@@ -54,6 +53,18 @@ const getAirtableResponseTypeValidationString = (
     case 'createdBy':
     case 'lastModifiedBy':
     case 'externalSyncSource':
+      break;
+
+    case 'formula':
+      if (!isResursion) {
+        return `z.union([${getAirtableResponseTypeValidationString(
+          {
+            ...field,
+            type: field.options?.result?.type,
+          },
+          true
+        )}, z.object({specialValue: z.enum(["NaN"] as const)})])`;
+      }
       break;
 
     // Dates
@@ -77,7 +88,7 @@ const getAirtableResponseTypeValidationString = (
           true
         )})`;
       }
-      return `z.string()`;
+      break;
 
     // Numbers
     case 'number':
