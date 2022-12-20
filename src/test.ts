@@ -96,19 +96,15 @@ const tableAPIUtilityFiles = [
         const KEBAB_CASE_ENTITY_LABEL =
           LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
 
-        const interpolationLabels: Record<string, string> = {
-          ['/* AIRTABLE_VIEWS */']: views
-            .map(({ name }) => {
-              return `"${RegExp.escape(name)}"`;
-            })
-            .join(', '),
+        const interpolationBlocks: Record<string, string> = {
           ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: fields
-            .map(({ name }) => {
+            .map(({ name, type }) => {
               const camelCasePropertyName = name
+                .replace(/[^a-zA-Z0-9\s]/g, '')
                 .replace(/\s/g, '_')
                 .toUpperCase()
                 .toCamelCase('UPPER_CASE');
-              return `["${name}"]: "${camelCasePropertyName}"`;
+              return `["${name}"]: {type: "${type}", propertyName: "${camelCasePropertyName}"}`;
             })
             .join(',\n'),
           ['/* AIRTABLE_ENTITY_FIELDS */']: fields
@@ -116,6 +112,14 @@ const tableAPIUtilityFiles = [
               return `["${name}"]: z.string().nullish()`;
             })
             .join(',\n'),
+        };
+
+        const interpolationLabels: Record<string, string> = {
+          ['/* AIRTABLE_VIEWS */']: views
+            .map(({ name }) => {
+              return `"${RegExp.escape(name)}"`;
+            })
+            .join(', '),
 
           ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,
           ['Entity Label']: TITLE_CASE_ENTITY_LABEL_WITH_SPACES,
@@ -142,12 +146,21 @@ const tableAPIUtilityFiles = [
         writeFileSync(
           fileName,
           prettier.format(
-            Object.keys(interpolationLabels).reduce((fileContents, key) => {
-              return fileContents.replaceAll(
-                key,
-                (interpolationLabels as any)[key]
-              );
-            }, tableAPITemplate),
+            Object.keys(interpolationLabels).reduce(
+              (fileContents, key) => {
+                return fileContents.replaceAll(
+                  key,
+                  (interpolationLabels as any)[key]
+                );
+              },
+              Object.keys(interpolationBlocks).reduce((fileContents, key) => {
+                const escapedKey = RegExp.escape(key);
+                return fileContents.replace(
+                  new RegExp(`${escapedKey}[\\s\\S]*${escapedKey}`, 'g'),
+                  (interpolationBlocks as any)[key]
+                );
+              }, tableAPITemplate)
+            ),
             {
               filepath: fileName,
               ...prettierConfig,

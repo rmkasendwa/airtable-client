@@ -8,7 +8,10 @@ import { z } from 'zod';
 import Adapter from './__Adapter';
 import { AIRTABLE_BASE_ID } from './__config';
 import { FindAllRecordsQueryParams } from './__interfaces';
-import { DeleteAirtableRecordResponseValidationSchema } from './__models';
+import {
+  AirtableFieldType,
+  DeleteAirtableRecordResponseValidationSchema,
+} from './__models';
 import { convertToAirtableFindAllRecordsQueryParams } from './__utils';
 
 // Endpoint Paths
@@ -26,15 +29,27 @@ export const ENTITY_DELETE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
 
 export const camelCaseEntitiesAirtableFieldsValidationSchema = {
   /* AIRTABLE_ENTITY_FIELDS */
+  a: z.string().nullish(),
+  /* AIRTABLE_ENTITY_FIELDS */
 } as const;
 
 export type PascalCaseEntitiesAirtableColumn =
   keyof typeof camelCaseEntitiesAirtableFieldsValidationSchema;
 
-export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
+export type PascalCaseEntityAirtableColumnMapping = {
+  type: AirtableFieldType;
+  propertyName: string;
+};
+
+export const PascalCaseEntityAirtableColumnMapper: Record<
   PascalCaseEntitiesAirtableColumn,
-  string
+  PascalCaseEntityAirtableColumnMapping
 > = {
+  /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
+  a: {
+    propertyName: 'a',
+    type: 'singleLineText',
+  },
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 } as const;
 
@@ -48,7 +63,23 @@ export const PascalCaseEntityAirtableValidationSchema = z
     return {
       id,
       created: createdTime,
-      ...fields,
+      ...Object.keys(fields).reduce((accumulator, a) => {
+        const key = a as PascalCaseEntitiesAirtableColumn;
+        const { propertyName, type } = (
+          PascalCaseEntityAirtableColumnMapper as any
+        )[key] as PascalCaseEntityAirtableColumnMapping;
+        accumulator[propertyName] = (() => {
+          switch (type) {
+            case 'lookup':
+              if (fields[key] && Array.isArray(fields[key])) {
+                return fields[key]![0];
+              }
+              break;
+          }
+          return fields[key];
+        })();
+        return accumulator;
+      }, {} as any),
     };
   });
 
