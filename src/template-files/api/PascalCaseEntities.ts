@@ -69,7 +69,7 @@ export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
 export const createPascalCaseEntity = async (
   camelCaseEntityDetails: PascalCaseEntityCreationDetails
 ) => {
-  return (await createPascalCaseEntities([camelCaseEntityDetails]))[0];
+  return (await createPascalCaseEntities([camelCaseEntityDetails])).records[0];
 };
 
 /**
@@ -96,7 +96,7 @@ export const createPascalCaseEntities = async (
 export const updatePascalCaseEntity = async (
   camelCaseEntityUpdates: PascalCaseEntityUpdates
 ) => {
-  return (await updatePascalCaseEntities([camelCaseEntityUpdates]))[0];
+  return (await updatePascalCaseEntities([camelCaseEntityUpdates])).records[0];
 };
 
 /**
@@ -123,7 +123,7 @@ export const updatePascalCaseEntities = async (
 export const patchPascalCaseEntity = async (
   camelCaseEntityUpdates: PascalCaseEntityUpdates
 ) => {
-  return (await patchPascalCaseEntities([camelCaseEntityUpdates]))[0];
+  return (await patchPascalCaseEntities([camelCaseEntityUpdates])).records[0];
 };
 
 /**

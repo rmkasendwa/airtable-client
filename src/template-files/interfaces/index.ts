@@ -16,4 +16,5 @@ export type FindAllRecordsQueryParams<
   cellFormat?: 'string' | 'json';
   timeZone?: string;
   userLocale?: string;
+  offset?: string;
 };

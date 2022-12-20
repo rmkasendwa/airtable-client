@@ -82,10 +82,7 @@ export const camelCaseEntityViews = [
 
 export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
 
-export const FindAllPascalCaseEntitiesReponseValidationSchema = z
-  .object({
-    records: z.array(PascalCaseEntityAirtableValidationSchema),
-  })
-  .transform(({ records }) => {
-    return records;
-  });
+export const FindAllPascalCaseEntitiesReponseValidationSchema = z.object({
+  records: z.array(PascalCaseEntityAirtableValidationSchema),
+  offset: z.string().optional(),
+});
