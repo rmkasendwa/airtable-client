@@ -99,20 +99,22 @@ const tableAPIUtilityFiles = [
         const KEBAB_CASE_ENTITY_LABEL =
           LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
 
-        // Generating schema
-        const schemaText = fields
-          .map(({ name }) => {
-            return `["${name}"]: z.string().nullish()`;
-          })
-          .join(',\n');
-
         const interpolationLabels: Record<string, string> = {
           ['/* AIRTABLE_VIEWS */']: views
             .map(({ name }) => {
               return `"${RegExp.escape(name)}"`;
             })
             .join(', '),
-          ['/* AIRTABLE_ENTITY_FIELDS */']: schemaText,
+          ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: fields
+            .map(({ name }) => {
+              return `["${name}"]: "${name}"`;
+            })
+            .join(',\n'),
+          ['/* AIRTABLE_ENTITY_FIELDS */']: fields
+            .map(({ name }) => {
+              return `["${name}"]: z.string().nullish()`;
+            })
+            .join(',\n'),
 
           ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,
           ['Entity Label']: TITLE_CASE_ENTITY_LABEL_WITH_SPACES,

@@ -12,20 +12,36 @@ import { convertToAirtableFindAllRecordsQueryParams } from './__utils';
 
 // Endpoint Paths
 export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
+
 export const FIND_ENTITY_BY_ID_ENPOINT_PATH: TemplatePath<{
   camelCaseEntityId: string;
 }> = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/:camelCaseEntityId`;
+
 export const ENTITY_CREATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
+
 export const ENTITY_UPDATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
+
 export const ENTITY_DELETE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
 
-export const PascalCaseEntityAirtableSchema = z.object({
+export const camelCaseEntitiesAirtableFieldsValidationSchema = {
+  /* AIRTABLE_ENTITY_FIELDS */
+} as const;
+
+export type PascalCaseEntitiesAirtableColumn =
+  keyof typeof camelCaseEntitiesAirtableFieldsValidationSchema;
+
+export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
+  PascalCaseEntitiesAirtableColumn,
+  string
+> = {
+  /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
+} as const;
+
+export const PascalCaseEntityAirtableValidationSchema = z.object({
   id: z.string(),
   createdTime: z.string().datetime(),
   fields: z
-    .object({
-      /* AIRTABLE_ENTITY_FIELDS */
-    })
+    .object(camelCaseEntitiesAirtableFieldsValidationSchema)
     .transform((camelCaseEntity: any) => {
       const { id, createdTime, fields } = camelCaseEntity;
       return {
@@ -37,7 +53,7 @@ export const PascalCaseEntityAirtableSchema = z.object({
 });
 
 export type AirtablePascalCaseEntity = z.infer<
-  typeof PascalCaseEntityAirtableSchema
+  typeof PascalCaseEntityAirtableValidationSchema
 >;
 
 export type PascalCaseEntity = {
