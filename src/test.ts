@@ -1,7 +1,7 @@
 import '@infinite-debugger/rmk-js-extensions/RegExp';
 import '@infinite-debugger/rmk-js-extensions/String';
 
-import { dirname } from 'path';
+import { dirname, normalize } from 'path';
 
 import {
   ensureDirSync,
@@ -11,6 +11,7 @@ import {
   removeSync,
   writeFileSync,
 } from 'fs-extra';
+import globby from 'globby';
 import prettier from 'prettier';
 
 import { findAllTablesByBaseId } from './api';
@@ -18,16 +19,15 @@ import { findAllAirtableBases } from './api/Metadata/Bases';
 
 const prettierConfig = require('../.prettierrc.js');
 
-const outputFolderPath = `${__dirname}/__sandbox`;
-const templatesFolderPath = `${__dirname}/templates`;
-const templateFilePaths = [
-  'api/Adapter.ts',
-  'api/PascalCaseEntities.ts',
-  'config.ts',
-  'interfaces/index.ts',
-  'models/index.ts',
-  'utils/index.ts',
-].map((filePath) => `${templatesFolderPath}/${filePath}`);
+const outputFolderPath = normalize(`${__dirname}/__sandbox`);
+const templatesFolderPath = normalize(`${__dirname}/template-files`);
+const templateFilePaths = globby
+  .sync(`src/template-files`, {
+    absolute: true,
+  })
+  .map((filePath) => normalize(filePath));
+
+console.log({ templateFilePaths });
 
 const getCamelCasePropertyName = (name: string) => {
   return name
@@ -266,41 +266,44 @@ const getCamelCasePropertyName = (name: string) => {
           ['kebab-case-entity']: KEBAB_CASE_ENTITY_LABEL,
         };
 
+        const getInterpolatedString = (templateFileContents: string) => {
+          return Object.keys(interpolationLabels).reduce(
+            (fileContents, key) => {
+              return fileContents.replaceAll(
+                key,
+                (interpolationLabels as any)[key]
+              );
+            },
+            Object.keys(interpolationBlocks).reduce((fileContents, key) => {
+              const escapedKey = RegExp.escape(key);
+              return fileContents.replace(
+                new RegExp(`${escapedKey}[\\s\\S]*${escapedKey}`, 'g'),
+                (interpolationBlocks as any)[key]
+              );
+            }, templateFileContents)
+          );
+        };
+
         moduleFiles.push(`./api/${PASCAL_CASE_ENTITIES_LABEL}`);
 
         templateFilePaths.forEach((templateFilePath) => {
           const templateFileContents = readFileSync(templateFilePath, 'utf-8');
-          const fileName = `${outputFolderPath}${templateFilePath.replace(
-            templatesFolderPath,
-            ''
-          )}`;
-
-          ensureDirSync(dirname(fileName));
-          writeFileSync(
-            fileName,
-            prettier.format(
-              Object.keys(interpolationLabels).reduce(
-                (fileContents, key) => {
-                  return fileContents.replaceAll(
-                    key,
-                    (interpolationLabels as any)[key]
-                  );
-                },
-                Object.keys(interpolationBlocks).reduce((fileContents, key) => {
-                  const escapedKey = RegExp.escape(key);
-                  return fileContents.replace(
-                    new RegExp(`${escapedKey}[\\s\\S]*${escapedKey}`, 'g'),
-                    (interpolationBlocks as any)[key]
-                  );
-                }, templateFileContents)
-              ),
-              {
-                filepath: fileName,
-                ...prettierConfig,
-              }
-            )
+          const filePath = getInterpolatedString(
+            `${outputFolderPath}${templateFilePath.replace(
+              templatesFolderPath,
+              ''
+            )}`
           );
-          console.log(`Writing ${fileName}`);
+
+          ensureDirSync(dirname(filePath));
+          writeFileSync(
+            filePath,
+            prettier.format(getInterpolatedString(templateFileContents), {
+              filepath: filePath,
+              ...prettierConfig,
+            })
+          );
+          console.log(`Writing ${filePath}`);
         });
       });
       writeFileSync(
