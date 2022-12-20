@@ -72,14 +72,10 @@ const tableAPIUtilityFiles = [
           .replace(/\s/g, '_')
           .toUpperCase();
 
-        const CAMEL_CASE_ENTITIES_LABEL = UPPER_CASE_ENTITIES_LABEL.replace(
-          /\s/g,
-          '_'
-        ).toCamelCase('UPPER_CASE');
-        const CAMEL_CASE_ENTITY_LABEL = UPPER_CASE_ENTITY_LABEL.replace(
-          /\s/g,
-          '_'
-        ).toCamelCase('UPPER_CASE');
+        const CAMEL_CASE_ENTITIES_LABEL =
+          UPPER_CASE_ENTITIES_LABEL.toCamelCase('UPPER_CASE');
+        const CAMEL_CASE_ENTITY_LABEL =
+          UPPER_CASE_ENTITY_LABEL.toCamelCase('UPPER_CASE');
 
         const PASCAL_CASE_ENTITIES_LABEL = CAMEL_CASE_ENTITIES_LABEL.replace(
           /^\w/g,
@@ -107,7 +103,11 @@ const tableAPIUtilityFiles = [
             .join(', '),
           ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: fields
             .map(({ name }) => {
-              return `["${name}"]: "${name}"`;
+              const camelCasePropertyName = name
+                .replace(/\s/g, '_')
+                .toUpperCase()
+                .toCamelCase('UPPER_CASE');
+              return `["${name}"]: "${camelCasePropertyName}"`;
             })
             .join(',\n'),
           ['/* AIRTABLE_ENTITY_FIELDS */']: fields
