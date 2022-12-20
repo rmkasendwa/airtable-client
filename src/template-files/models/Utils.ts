@@ -50,3 +50,26 @@ export const DeleteAirtableRecordResponseValidationSchema = z
   .transform(({ records }) => {
     return records;
   });
+
+export const AirtableThumbnailSizeValidationSchema = z.object({
+  url: z.string(),
+  width: z.number(),
+  height: z.number(),
+});
+
+export const AirtableAttachmentThumbnailValidationSchema = z.object({
+  small: AirtableThumbnailSizeValidationSchema,
+  large: AirtableThumbnailSizeValidationSchema,
+  full: AirtableThumbnailSizeValidationSchema,
+});
+
+export const AirtableAttachmentValidationSchema = z.object({
+  id: z.string(),
+  width: z.number(),
+  height: z.number(),
+  url: z.string(),
+  filename: z.string(),
+  size: z.number(),
+  type: z.string(),
+  thumbnails: AirtableAttachmentThumbnailValidationSchema,
+});

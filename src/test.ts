@@ -73,7 +73,6 @@ export const getRootAirtableField = (
 };
 
 export type GetAirtableResponseTypeValidationStringOptions = {
-  isResursion?: boolean;
   currentTable: Table;
   tables: Table[];
 };
@@ -82,7 +81,7 @@ export const getAirtableResponseTypeValidationString = (
   field: AirtableField,
   options: GetAirtableResponseTypeValidationStringOptions
 ): string => {
-  const { isResursion = false, tables, currentTable } = options;
+  const { tables, currentTable } = options;
   const rootField = getRootAirtableField(field, tables, currentTable);
 
   const { type } = field;
@@ -91,30 +90,33 @@ export const getAirtableResponseTypeValidationString = (
     case 'multipleSelects':
     case 'singleCollaborator':
     case 'multipleCollaborators':
-    case 'multipleAttachments':
     case 'rollup':
     case 'barcode':
     case 'duration':
-    case 'button':
     case 'createdBy':
     case 'lastModifiedBy':
     case 'externalSyncSource':
       break;
 
+    case 'multipleAttachments':
+      return `AirtableAttachmentValidationSchema`;
+
+    case 'button':
+      return `z.object({
+        label: z.string(),
+        url: z.string().url()
+      })`;
+
     case 'formula':
-      if (!isResursion) {
-        return `z.union([${getAirtableResponseTypeValidationString(
-          {
-            ...field,
-            type: field.options?.result?.type,
-          },
-          {
-            ...options,
-            isResursion: true,
-          }
-        )}, z.object({specialValue: z.enum(["NaN"] as const)})])`;
-      }
-      break;
+      return `z.union([${getAirtableResponseTypeValidationString(
+        {
+          ...field,
+          type: field.options?.result?.type,
+        },
+        {
+          ...options,
+        }
+      )}, z.object({specialValue: z.enum(["NaN"] as const)})])`;
 
     // Dates
     case 'date':
@@ -129,31 +131,26 @@ export const getAirtableResponseTypeValidationString = (
       return `z.array(z.string())`;
     case 'lookup':
     case 'multipleLookupValues':
-      if (!isResursion) {
-        const validationString = (() => {
-          if (rootField !== field) {
-            if (rootField.type === 'multipleRecordLinks') {
-              return `z.string()`;
-            }
-            return getAirtableResponseTypeValidationString(rootField, {
-              ...options,
-              isResursion: true,
-            });
+      const validationString = (() => {
+        if (rootField !== field) {
+          if (rootField.type === 'multipleRecordLinks') {
+            return `z.string()`;
           }
-          return getAirtableResponseTypeValidationString(
-            {
-              ...field,
-              type: field.options?.result?.type,
-            },
-            {
-              ...options,
-              isResursion: true,
-            }
-          );
-        })();
-        return `z.array(${validationString})`;
-      }
-      break;
+          return getAirtableResponseTypeValidationString(rootField, {
+            ...options,
+          });
+        }
+        return getAirtableResponseTypeValidationString(
+          {
+            ...field,
+            type: field.options?.result?.type,
+          },
+          {
+            ...options,
+          }
+        );
+      })();
+      return `z.array(${validationString})`;
 
     // Numbers
     case 'number':
@@ -207,6 +204,7 @@ export const getAirtableResponseTypeValidationString = (
 
       tables.forEach((table) => {
         const { name: tableName, fields, views } = table;
+        const moduleImports: string[] = [];
 
         console.log(`Processing ${tableName} table...`);
 
@@ -272,6 +270,13 @@ export const getAirtableResponseTypeValidationString = (
           ['/* AIRTABLE_ENTITY_FIELDS */']: fields
             .map((field) => {
               const { name } = field;
+              const rootField = getRootAirtableField(field, tables, table);
+              switch (rootField.type) {
+                case 'multipleAttachments':
+                  moduleImports.push(
+                    `import {AirtableAttachmentValidationSchema} from './Utils';`
+                  );
+              }
               return `["${name}"]: ${getAirtableResponseTypeValidationString(
                 field,
                 { currentTable: table, tables }
@@ -356,6 +361,7 @@ export const getAirtableResponseTypeValidationString = (
             })
             .flat()
             .join(';\n'),
+          ['/* MODEL_IMPORTS */']: [...new Set(moduleImports)].join('\n'),
 
           ['Entities Table']: tableName,
           ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,

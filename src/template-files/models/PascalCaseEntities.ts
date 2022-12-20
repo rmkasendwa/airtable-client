@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-import { AirtableFieldType } from '../models';
+import { AirtableFieldType } from './Utils';
+
+/* MODEL_IMPORTS */
 
 export type PascalCaseEntity = {
   id: string;
