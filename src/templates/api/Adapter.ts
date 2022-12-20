@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { AIRTABLE_API_KEY } from './__config';
+import { AIRTABLE_API_KEY } from '../config';
 
 const instance = axios.create({
   baseURL: 'https://api.airtable.com/v0',

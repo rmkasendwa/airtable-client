@@ -1,6 +1,6 @@
 import { omit } from 'lodash';
 
-import { FindAllRecordsQueryParams } from './__interfaces';
+import { FindAllRecordsQueryParams } from '../interfaces';
 
 export const convertToAirtableFindAllRecordsQueryParams = <
   T extends FindAllRecordsQueryParams

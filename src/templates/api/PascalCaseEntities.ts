@@ -1,31 +1,23 @@
 import {
-  TemplatePath,
   addSearchParams,
   getInterpolatedPath,
 } from '@infinite-debugger/rmk-utils/paths';
 import { z } from 'zod';
 
-import Adapter from './__Adapter';
-import { AIRTABLE_BASE_ID } from './__config';
-import { FindAllRecordsQueryParams } from './__interfaces';
+import {
+  ENTITY_CREATE_ENDPOINT_PATH,
+  ENTITY_DELETE_ENDPOINT_PATH,
+  ENTITY_UPDATE_ENDPOINT_PATH,
+  FIND_ALL_ENTITIES_ENDPOINT_PATH,
+  FIND_ENTITY_BY_ID_ENPOINT_PATH,
+} from '../endpoint-paths/PascalCaseEntities';
+import { FindAllRecordsQueryParams } from '../interfaces';
 import {
   AirtableFieldType,
   DeleteAirtableRecordResponseValidationSchema,
-} from './__models';
-import { convertToAirtableFindAllRecordsQueryParams } from './__utils';
-
-// Endpoint Paths
-export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
-
-export const FIND_ENTITY_BY_ID_ENPOINT_PATH: TemplatePath<{
-  camelCaseEntityId: string;
-}> = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/:camelCaseEntityId`;
-
-export const ENTITY_CREATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
-
-export const ENTITY_UPDATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
-
-export const ENTITY_DELETE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
+} from '../models';
+import { convertToAirtableFindAllRecordsQueryParams } from '../utils';
+import Adapter from './Adapter';
 
 export type PascalCaseEntity = {
   id: string;
