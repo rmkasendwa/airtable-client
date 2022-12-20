@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AirtableFieldType } from './__Utils';
+import { AirtableColumnMapping } from './__Utils';
 
 /* MODEL_IMPORTS */
 
@@ -18,19 +18,13 @@ export const camelCaseEntitiesAirtableFieldsValidationSchema = {
 export type PascalCaseEntitiesAirtableColumn =
   keyof typeof camelCaseEntitiesAirtableFieldsValidationSchema;
 
-export type PascalCaseEntityAirtableColumnMapping = {
-  type: AirtableFieldType;
-  propertyName: string;
-};
-
 export const PascalCaseEntityAirtableColumnMapper: Record<
   PascalCaseEntitiesAirtableColumn,
-  PascalCaseEntityAirtableColumnMapping
+  AirtableColumnMapping
 > = {
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
   a: {
     propertyName: 'a',
-    type: 'singleLineText',
   },
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 } as const;
@@ -47,16 +41,12 @@ export const PascalCaseEntityAirtableValidationSchema = z
       created: createdTime,
       ...Object.keys(fields).reduce((accumulator, a) => {
         const key = a as PascalCaseEntitiesAirtableColumn;
-        const { propertyName, type } = (
+        const { propertyName, prefersSingleRecordLink } = (
           PascalCaseEntityAirtableColumnMapper as any
-        )[key] as PascalCaseEntityAirtableColumnMapping;
+        )[key] as AirtableColumnMapping;
         (accumulator as any)[propertyName] = (() => {
-          switch (type) {
-            case 'lookup':
-              if (fields[key] && Array.isArray(fields[key])) {
-                return (fields[key] as string[])[0];
-              }
-              break;
+          if (prefersSingleRecordLink && Array.isArray(fields[key])) {
+            return (fields[key] as string[])[0];
           }
           return fields[key];
         })();

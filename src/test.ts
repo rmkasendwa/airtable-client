@@ -262,9 +262,29 @@ export const getAirtableResponseTypeValidationString = (
 
         const interpolationBlocks: Record<string, string> = {
           ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: fields
-            .map(({ name, type }) => {
+            .map((field) => {
+              const { name } = field;
+              const rootField = getRootAirtableField(field, tables, table);
               const camelCasePropertyName = getCamelCasePropertyName(name);
-              return `["${name}"]: {type: "${type}", propertyName: "${camelCasePropertyName}"}`;
+              return `["${name}"]: ${(() => {
+                return JSON.stringify(
+                  {
+                    propertyName: camelCasePropertyName,
+                    ...(() => {
+                      if (
+                        rootField &&
+                        rootField.options?.prefersSingleRecordLink
+                      ) {
+                        return {
+                          prefersSingleRecordLink: true,
+                        };
+                      }
+                    })(),
+                  },
+                  null,
+                  2
+                );
+              })()}`;
             })
             .join(',\n'),
           ['/* AIRTABLE_ENTITY_FIELDS */']: fields
