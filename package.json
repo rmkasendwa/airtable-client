@@ -46,27 +46,8 @@
     "version": "standard-version",
     "reset-hard": "git clean -dfx && git reset --hard && npm i",
     "start": "tsnd --inspect=9888 --ignore-watch node_modules --respawn --transpile-only src/test.ts",
+    "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,html,htm,json,css,scss,md}\"",
     "prepare-release": "run-s reset-hard test cov:check doc:html version doc:publish"
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
-  },
-  "prettier": {
-    "singleQuote": true
-  },
-  "ava": {
-    "failFast": true,
-    "files": [
-      "!build/module/**"
-    ],
-    "timeout": "60s",
-    "typescript": {
-      "rewritePaths": {
-        "src/": "build/main/"
-      }
-    }
   },
   "nyc": {
     "exclude": [

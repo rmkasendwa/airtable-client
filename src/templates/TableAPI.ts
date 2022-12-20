@@ -3,6 +3,7 @@ import {
   addSearchParams,
   getInterpolatedPath,
 } from '@infinite-debugger/rmk-utils/paths';
+import { z } from 'zod';
 
 import Adapter from './__Adapter';
 import { AIRTABLE_BASE_ID } from './__config';
@@ -17,6 +18,27 @@ export const FIND_ENTITY_BY_ID_ENPOINT_PATH: TemplatePath<{
 export const ENTITY_CREATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
 export const ENTITY_UPDATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
 export const ENTITY_DELETE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
+
+export const PascalCaseEntityAirtableSchema = z.object({
+  id: z.string(),
+  createdTime: z.string().datetime(),
+  fields: z
+    .object({
+      /* AIRTABLE_ENTITY_FIELDS */
+    })
+    .transform((camelCaseEntity: any) => {
+      const { id, createdTime, fields } = camelCaseEntity;
+      return {
+        id,
+        created: createdTime,
+        ...fields,
+      };
+    }),
+});
+
+export type AirtablePascalCaseEntity = z.infer<
+  typeof PascalCaseEntityAirtableSchema
+>;
 
 export type PascalCaseEntity = {
   id: string;
@@ -40,9 +62,13 @@ export const findAllPascalCaseEntities = async (
   > = {}
 ) => {
   const { data } = await Adapter.get(
-    addSearchParams(FIND_ALL_ENTITIES_ENDPOINT_PATH, {
-      ...convertToAirtableFindAllRecordsQueryParams(queryParams as any),
-    })
+    addSearchParams(
+      FIND_ALL_ENTITIES_ENDPOINT_PATH,
+      {
+        ...convertToAirtableFindAllRecordsQueryParams(queryParams as any),
+      },
+      { arrayParamStyle: 'append' }
+    )
   );
   return data;
 };
@@ -159,9 +185,13 @@ export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
  */
 export const deletePascalCaseEntities = async (records: string[]) => {
   const { data } = await Adapter.delete(
-    addSearchParams(ENTITY_DELETE_ENDPOINT_PATH, {
-      records,
-    }),
+    addSearchParams(
+      ENTITY_DELETE_ENDPOINT_PATH,
+      {
+        records,
+      },
+      { arrayParamStyle: 'append' }
+    ),
     {
       data: JSON.stringify({ records }),
     }

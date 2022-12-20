@@ -10,9 +10,12 @@ import {
   removeSync,
   writeFileSync,
 } from 'fs-extra';
+import prettier from 'prettier';
 
 import { findAllTablesByBaseId } from './api';
 import { findAllAirtableBases } from './api/Metadata/Bases';
+
+const prettierConfig = require('../.prettierrc.js');
 
 const sandboxFolder = `${__dirname}/__sandbox`;
 const tableAPITemplateFilePath = `${__dirname}/templates/TableAPI.ts`;
@@ -45,7 +48,7 @@ const tableAPIUtilityFiles = [
 
       const moduleFiles: string[] = [];
 
-      tables.forEach(({ name }) => {
+      tables.forEach(({ name, fields }) => {
         const sanitisedTableName = name.trim().replace(/[^a-zA-Z0-9\s]/g, '');
         const labelPlural = sanitisedTableName;
         const labelSingular = (() => {
@@ -95,7 +98,16 @@ const tableAPIUtilityFiles = [
         const KEBAB_CASE_ENTITY_LABEL =
           LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
 
+        // Generating schema
+        const schemaText = fields
+          .map(({ name }) => {
+            return `["${name}"]: z.string().nullish()`;
+          })
+          .join(',\n');
+
         const interpolationLabels = {
+          ['/* AIRTABLE_ENTITY_FIELDS */']: schemaText,
+
           ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,
           ['Entity Label']: TITLE_CASE_ENTITY_LABEL_WITH_SPACES,
 
@@ -120,12 +132,18 @@ const tableAPIUtilityFiles = [
         console.log(`Writing ${fileName}`);
         writeFileSync(
           fileName,
-          Object.keys(interpolationLabels).reduce((fileContents, key) => {
-            return fileContents.replaceAll(
-              key,
-              (interpolationLabels as any)[key]
-            );
-          }, tableAPITemplate)
+          prettier.format(
+            Object.keys(interpolationLabels).reduce((fileContents, key) => {
+              return fileContents.replaceAll(
+                key,
+                (interpolationLabels as any)[key]
+              );
+            }, tableAPITemplate),
+            {
+              filepath: fileName,
+              ...prettierConfig,
+            }
+          )
         );
       });
 
