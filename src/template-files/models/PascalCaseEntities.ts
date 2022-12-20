@@ -12,6 +12,9 @@ export type PascalCaseEntity = {
   /* ENTITY_INTERFACE_FIELDS */
 };
 
+export type PascalCaseEntityEditableField =
+  /* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */ 'id'; /* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */
+
 export const camelCaseEntitiesAirtableFieldsValidationSchema = {
   /* AIRTABLE_ENTITY_FIELDS */
   a: z.string().nullish(),
@@ -43,7 +46,7 @@ export type AirtablePascalCaseEntity = z.infer<
 >;
 
 export type PascalCaseEntityCreationDetails = Partial<
-  Omit<PascalCaseEntity, 'id'>
+  Pick<PascalCaseEntity, PascalCaseEntityEditableField>
 >;
 
 export type PascalCaseEntityUpdates = PascalCaseEntityCreationDetails &

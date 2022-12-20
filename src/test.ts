@@ -260,12 +260,20 @@ export const getAirtableResponseTypeValidationString = (
         const KEBAB_CASE_ENTITY_LABEL =
           LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
 
+        const columnToPropertyMapper = fields.reduce(
+          (accumulator, { name }) => {
+            accumulator[name] = getCamelCasePropertyName(name);
+            return accumulator;
+          },
+          {} as Record<string, string>
+        );
+
         const interpolationBlocks: Record<string, string> = {
           ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: fields
             .map((field) => {
               const { name } = field;
               const rootField = getRootAirtableField(field, tables, table);
-              const camelCasePropertyName = getCamelCasePropertyName(name);
+              const camelCasePropertyName = columnToPropertyMapper[name];
               return `["${name}"]: ${(() => {
                 const obj = {
                   propertyName: camelCasePropertyName,
@@ -310,6 +318,35 @@ export const getAirtableResponseTypeValidationString = (
               )}.nullish()`;
             })
             .join(',\n'),
+          ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: fields
+            .filter(({ type }) => {
+              switch (type) {
+                case 'singleLineText':
+                case 'multilineText':
+                case 'richText':
+                case 'phoneNumber':
+                case 'singleSelect':
+                case 'url':
+                case 'email':
+                case 'number':
+                case 'percent':
+                case 'currency':
+                case 'count':
+                case 'autoNumber':
+                case 'rating':
+                case 'checkbox':
+                case 'multipleRecordLinks':
+                case 'date':
+                case 'dateTime':
+                case 'lastModifiedTime':
+                case 'createdTime':
+                case 'multipleSelects':
+                  return true;
+              }
+              return false;
+            })
+            .map(({ name }) => `'${columnToPropertyMapper[name]}'`)
+            .join(' | '),
         };
 
         const interpolationLabels: Record<string, string> = {
