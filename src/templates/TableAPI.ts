@@ -6,6 +6,8 @@ import {
 
 import Adapter from './__Adapter';
 import { AIRTABLE_BASE_ID } from './__config';
+import { FindAllRecordsQueryParams } from './__interfaces';
+import { convertToAirtableFindAllRecordsQueryParams } from './__utils';
 
 // Endpoint Paths
 export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities`;
@@ -24,8 +26,18 @@ export type EntityCreationDetails = Partial<Omit<Entity, 'id'>>;
 
 export type EntityUpdates = EntityCreationDetails & Pick<Entity, 'id'>;
 
-export const findAllEntities = async () => {
-  const { data } = await Adapter.get(FIND_ALL_ENTITIES_ENDPOINT_PATH);
+export const entityViews = [''] as const;
+
+export type EntityView = typeof entityViews[number];
+
+export const findAllEntities = async (
+  queryParams: FindAllRecordsQueryParams<Entity, EntityView> = {}
+) => {
+  const { data } = await Adapter.get(
+    addSearchParams(FIND_ALL_ENTITIES_ENDPOINT_PATH, {
+      ...convertToAirtableFindAllRecordsQueryParams(queryParams as any),
+    })
+  );
   return data;
 };
 
