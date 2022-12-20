@@ -46,8 +46,14 @@ const tableAPIUtilityFiles = [
       const moduleFiles: string[] = [];
 
       tables.forEach(({ name }) => {
-        const labelPlural = name;
-        const labelSingular = labelPlural.replace(/s$/g, '');
+        const sanitisedTableName = name.trim().replace(/[^a-zA-Z0-9\s]/g, '');
+        const labelPlural = sanitisedTableName;
+        const labelSingular = (() => {
+          if (labelPlural.match(/ies$/)) {
+            return labelPlural.replace(/ies$/, 'y');
+          }
+          return labelPlural.replace(/s$/g, '');
+        })();
 
         const TITLE_CASE_ENTITIES_LABEL_WITH_SPACES = labelPlural;
         const TITLE_CASE_ENTITY_LABEL_WITH_SPACES = labelSingular;
@@ -109,9 +115,8 @@ const tableAPIUtilityFiles = [
           ['kebab-case-entity']: KEBAB_CASE_ENTITY_LABEL,
         };
 
-        const sanitisedTableName = name.trim().replace(/[^a-zA-Z0-9\s]/g, '');
-        const fileName = `${sandboxFolder}/${sanitisedTableName}.ts`;
-        moduleFiles.push(`./${sanitisedTableName}`);
+        const fileName = `${sandboxFolder}/${PASCAL_CASE_ENTITIES_LABEL}.ts`;
+        moduleFiles.push(`./${PASCAL_CASE_ENTITIES_LABEL}`);
         console.log(`Writing ${fileName}`);
         writeFileSync(
           fileName,
