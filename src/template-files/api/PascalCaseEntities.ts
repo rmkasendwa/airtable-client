@@ -2,7 +2,6 @@ import {
   addSearchParams,
   getInterpolatedPath,
 } from '@infinite-debugger/rmk-utils/paths';
-import { z } from 'zod';
 
 import {
   ENTITY_CREATE_ENDPOINT_PATH,
@@ -12,98 +11,17 @@ import {
   FIND_ENTITY_BY_ID_ENPOINT_PATH,
 } from '../endpoint-paths/PascalCaseEntities';
 import { FindAllRecordsQueryParams } from '../interfaces';
+import { DeleteAirtableRecordResponseValidationSchema } from '../models';
 import {
-  AirtableFieldType,
-  DeleteAirtableRecordResponseValidationSchema,
-} from '../models';
+  FindAllPascalCaseEntitiesReponseValidationSchema,
+  PascalCaseEntity,
+  PascalCaseEntityAirtableValidationSchema,
+  PascalCaseEntityCreationDetails,
+  PascalCaseEntityUpdates,
+  PascalCaseEntityView,
+} from '../models/PascalCaseEntities';
 import { convertToAirtableFindAllRecordsQueryParams } from '../utils';
 import Adapter from './Adapter';
-
-export type PascalCaseEntity = {
-  id: string;
-  /* ENTITY_INTERFACE_FIELDS */
-};
-
-export const camelCaseEntitiesAirtableFieldsValidationSchema = {
-  /* AIRTABLE_ENTITY_FIELDS */
-  a: z.string().nullish(),
-  /* AIRTABLE_ENTITY_FIELDS */
-} as const;
-
-export type PascalCaseEntitiesAirtableColumn =
-  keyof typeof camelCaseEntitiesAirtableFieldsValidationSchema;
-
-export type PascalCaseEntityAirtableColumnMapping = {
-  type: AirtableFieldType;
-  propertyName: string;
-};
-
-export const PascalCaseEntityAirtableColumnMapper: Record<
-  PascalCaseEntitiesAirtableColumn,
-  PascalCaseEntityAirtableColumnMapping
-> = {
-  /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
-  a: {
-    propertyName: 'a',
-    type: 'singleLineText',
-  },
-  /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
-} as const;
-
-export const PascalCaseEntityAirtableValidationSchema = z
-  .object({
-    id: z.string(),
-    createdTime: z.string().datetime(),
-    fields: z.object(camelCaseEntitiesAirtableFieldsValidationSchema),
-  })
-  .transform(({ createdTime, fields, id }) => {
-    return {
-      id,
-      created: createdTime,
-      ...Object.keys(fields).reduce((accumulator, a) => {
-        const key = a as PascalCaseEntitiesAirtableColumn;
-        const { propertyName, type } = (
-          PascalCaseEntityAirtableColumnMapper as any
-        )[key] as PascalCaseEntityAirtableColumnMapping;
-        (accumulator as any)[propertyName] = (() => {
-          switch (type) {
-            case 'lookup':
-              if (fields[key] && Array.isArray(fields[key])) {
-                return (fields[key] as string[])[0];
-              }
-              break;
-          }
-          return fields[key];
-        })();
-        return accumulator;
-      }, {} as Omit<PascalCaseEntity, 'id'>),
-    };
-  });
-
-export type AirtablePascalCaseEntity = z.infer<
-  typeof PascalCaseEntityAirtableValidationSchema
->;
-
-export type PascalCaseEntityCreationDetails = Partial<
-  Omit<PascalCaseEntity, 'id'>
->;
-
-export type PascalCaseEntityUpdates = PascalCaseEntityCreationDetails &
-  Pick<PascalCaseEntity, 'id'>;
-
-export const camelCaseEntityViews = [
-  /* AIRTABLE_VIEWS */
-] as const;
-
-export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
-
-export const FindAllPascalCaseEntitiesReponseValidationSchema = z
-  .object({
-    records: z.array(PascalCaseEntityAirtableValidationSchema),
-  })
-  .transform(({ records }) => {
-    return records;
-  });
 
 /**
  * Finds entities label.

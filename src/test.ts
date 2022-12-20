@@ -27,8 +27,6 @@ const templateFilePaths = globby
   })
   .map((filePath) => normalize(filePath));
 
-console.log({ templateFilePaths });
-
 const getCamelCasePropertyName = (name: string) => {
   return name
     .replace(/[^a-zA-Z0-9\s]/g, '')
@@ -303,7 +301,6 @@ const getCamelCasePropertyName = (name: string) => {
               ...prettierConfig,
             })
           );
-          console.log(`Writing ${filePath}`);
         });
       });
       writeFileSync(
