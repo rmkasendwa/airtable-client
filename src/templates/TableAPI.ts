@@ -27,6 +27,11 @@ export const ENTITY_UPDATE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
 
 export const ENTITY_DELETE_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Label`;
 
+export type PascalCaseEntity = {
+  id: string;
+  /* ENTITY_INTERFACE_FIELDS */
+};
+
 export const camelCaseEntitiesAirtableFieldsValidationSchema = {
   /* AIRTABLE_ENTITY_FIELDS */
   a: z.string().nullish(),
@@ -68,7 +73,7 @@ export const PascalCaseEntityAirtableValidationSchema = z
         const { propertyName, type } = (
           PascalCaseEntityAirtableColumnMapper as any
         )[key] as PascalCaseEntityAirtableColumnMapping;
-        accumulator[propertyName] = (() => {
+        (accumulator as any)[propertyName] = (() => {
           switch (type) {
             case 'lookup':
               if (fields[key] && Array.isArray(fields[key])) {
@@ -79,17 +84,13 @@ export const PascalCaseEntityAirtableValidationSchema = z
           return fields[key];
         })();
         return accumulator;
-      }, {} as any),
+      }, {} as Omit<PascalCaseEntity, 'id'>),
     };
   });
 
 export type AirtablePascalCaseEntity = z.infer<
   typeof PascalCaseEntityAirtableValidationSchema
 >;
-
-export type PascalCaseEntity = {
-  id: string;
-};
 
 export type PascalCaseEntityCreationDetails = Partial<
   Omit<PascalCaseEntity, 'id'>

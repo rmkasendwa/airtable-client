@@ -28,6 +28,14 @@ const tableAPIUtilityFiles = [
   '__utils.ts',
 ].map((filePath) => `${__dirname}/templates/${filePath}`);
 
+const getCamelCasePropertyName = (name: string) => {
+  return name
+    .replace(/[^a-zA-Z0-9\s]/g, '')
+    .replace(/\s/g, '_')
+    .toUpperCase()
+    .toCamelCase('UPPER_CASE');
+};
+
 (async () => {
   const { bases } = await findAllAirtableBases();
   const talentBase = bases.find(({ name }) => name.trim().match(/^Talent$/g));
@@ -99,11 +107,7 @@ const tableAPIUtilityFiles = [
         const interpolationBlocks: Record<string, string> = {
           ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: fields
             .map(({ name, type }) => {
-              const camelCasePropertyName = name
-                .replace(/[^a-zA-Z0-9\s]/g, '')
-                .replace(/\s/g, '_')
-                .toUpperCase()
-                .toCamelCase('UPPER_CASE');
+              const camelCasePropertyName = getCamelCasePropertyName(name);
               return `["${name}"]: {type: "${type}", propertyName: "${camelCasePropertyName}"}`;
             })
             .join(',\n'),
@@ -179,6 +183,76 @@ const tableAPIUtilityFiles = [
               return `"${RegExp.escape(name)}"`;
             })
             .join(', '),
+          ['/* ENTITY_INTERFACE_FIELDS */']: fields
+            .map(({ name, type }) => {
+              const camelCasePropertyName = (() => {
+                const propertyName = getCamelCasePropertyName(name);
+                if (propertyName.match(/^\d/)) {
+                  return `_${propertyName}`;
+                }
+                return propertyName;
+              })();
+
+              if (camelCasePropertyName.length > 0) {
+                const propertyType = (() => {
+                  switch (type) {
+                    case 'multipleSelects':
+                    case 'singleCollaborator':
+                    case 'multipleCollaborators':
+                    case 'multipleAttachments':
+                    case 'formula':
+                    case 'rollup':
+                    case 'barcode':
+                    case 'duration':
+                    case 'button':
+                    case 'createdBy':
+                    case 'lastModifiedBy':
+                    case 'externalSyncSource':
+                      break;
+
+                    // Lists
+                    case 'lookup':
+                    case 'multipleLookupValues':
+                    case 'multipleRecordLinks':
+                      return `string[]`;
+
+                    // Numbers
+                    case 'number':
+                    case 'percent':
+                    case 'currency':
+                    case 'count':
+                    case 'autoNumber':
+                    case 'rating':
+                      return `number`;
+
+                    // Booleans
+                    case 'checkbox':
+                      return `boolean`;
+
+                    // Strings
+                    case 'date':
+                    case 'dateTime':
+                    case 'lastModifiedTime':
+                    case 'createdTime':
+                    case 'email':
+                    case 'url':
+                    case 'singleLineText':
+                    case 'multilineText':
+                    case 'richText':
+                    case 'phoneNumber':
+                    case 'singleSelect':
+                    default:
+                      return `string`;
+                  }
+                  return 'any';
+                })();
+
+                return [`${camelCasePropertyName}?: ${propertyType}`];
+              }
+              return [];
+            })
+            .flat()
+            .join(';\n'),
 
           ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,
           ['Entity Label']: TITLE_CASE_ENTITY_LABEL_WITH_SPACES,
