@@ -150,10 +150,7 @@ export const getAirtableResponseTypeValidationString = (
       return `AirtableAttachmentValidationSchema`;
 
     case 'button':
-      return `z.object({
-        label: z.string(),
-        url: z.string().url()
-      })`;
+      return `AirtableButtonValidationSchema`;
 
     case 'formula':
       return `z.union([${getAirtableResponseTypeValidationString(
@@ -252,6 +249,11 @@ export const getAirtableResponseTypeValidationString = (
 
       tables.forEach((table) => {
         const { name: tableName, fields, views } = table;
+
+        const filteredFields = fields.filter(({ name }) => {
+          return !name.match(/^id$/gi);
+        });
+
         const moduleImports: string[] = [];
 
         console.log(`Processing ${tableName} table...`);
@@ -308,17 +310,20 @@ export const getAirtableResponseTypeValidationString = (
         const KEBAB_CASE_ENTITY_LABEL =
           LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
 
-        const columnToPropertyMapper = fields.reduce((accumulator, field) => {
-          accumulator[field.name] = getCamelCaseFieldPropertyName(
-            field,
-            tables,
-            table
-          );
-          return accumulator;
-        }, {} as Record<string, string>);
+        const columnToPropertyMapper = filteredFields.reduce(
+          (accumulator, field) => {
+            accumulator[field.name] = getCamelCaseFieldPropertyName(
+              field,
+              tables,
+              table
+            );
+            return accumulator;
+          },
+          {} as Record<string, string>
+        );
 
         const interpolationBlocks: Record<string, string> = {
-          ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: fields
+          ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: filteredFields
             .map((field) => {
               const { name } = field;
               const rootField = getRootAirtableField(field, tables, table);
@@ -346,7 +351,7 @@ export const getAirtableResponseTypeValidationString = (
               })()}`;
             })
             .join(',\n'),
-          ['/* AIRTABLE_ENTITY_FIELDS */']: fields
+          ['/* AIRTABLE_ENTITY_FIELDS */']: filteredFields
             .map((field) => {
               const { name } = field;
               const rootField = getRootAirtableField(field, tables, table);
@@ -354,6 +359,11 @@ export const getAirtableResponseTypeValidationString = (
                 case 'multipleAttachments':
                   moduleImports.push(
                     `import {AirtableAttachmentValidationSchema} from './__Utils';`
+                  );
+                  break;
+                case 'button':
+                  moduleImports.push(
+                    `import {AirtableButtonValidationSchema} from './__Utils';`
                   );
                   break;
                 case 'formula':
@@ -367,7 +377,7 @@ export const getAirtableResponseTypeValidationString = (
               )}.nullish()`;
             })
             .join(',\n'),
-          ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: fields
+          ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: filteredFields
             .filter(({ type }) => {
               switch (type) {
                 case 'singleLineText':
@@ -404,8 +414,8 @@ export const getAirtableResponseTypeValidationString = (
               return `"${RegExp.escape(name)}"`;
             })
             .join(', '),
-          ['/* ENTITY_INTERFACE_FIELDS */']: fields
-            .map(({ name, type }) => {
+          ['/* ENTITY_INTERFACE_FIELDS */']: filteredFields
+            .map(({ name, type, options }) => {
               const camelCasePropertyName = (() => {
                 const propertyName = columnToPropertyMapper[name];
                 if (propertyName.match(/^\d/)) {
@@ -432,9 +442,13 @@ export const getAirtableResponseTypeValidationString = (
                       break;
 
                     // Lists
+                    case 'multipleRecordLinks':
+                      if (options?.prefersSingleRecordLink) {
+                        return `string`;
+                      }
+                      return `string[]`;
                     case 'lookup':
                     case 'multipleLookupValues':
-                    case 'multipleRecordLinks':
                       return `string[]`;
 
                     // Numbers

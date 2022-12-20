@@ -117,3 +117,8 @@ export const AirtableAttachmentValidationSchema = z.object({
 export const AirtableFormulaColumnErrorValidationSchema = z.object({
   specialValue: z.enum(['NaN'] as const),
 });
+
+export const AirtableButtonValidationSchema = z.object({
+  label: z.string(),
+  url: z.string().url(),
+});
