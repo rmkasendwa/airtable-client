@@ -24,6 +24,7 @@ const tableAPIUtilityFiles = [
   '__Adapter.ts',
   '__config.ts',
   '__interfaces.ts',
+  '__models.ts',
   '__utils.ts',
 ].map((filePath) => `${__dirname}/templates/${filePath}`);
 

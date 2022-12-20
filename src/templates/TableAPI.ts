@@ -8,6 +8,7 @@ import { z } from 'zod';
 import Adapter from './__Adapter';
 import { AIRTABLE_BASE_ID } from './__config';
 import { FindAllRecordsQueryParams } from './__interfaces';
+import { DeleteAirtableRecordResponseValidationSchema } from './__models';
 import { convertToAirtableFindAllRecordsQueryParams } from './__utils';
 
 // Endpoint Paths
@@ -37,20 +38,19 @@ export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 } as const;
 
-export const PascalCaseEntityAirtableValidationSchema = z.object({
-  id: z.string(),
-  createdTime: z.string().datetime(),
-  fields: z
-    .object(camelCaseEntitiesAirtableFieldsValidationSchema)
-    .transform((camelCaseEntity: any) => {
-      const { id, createdTime, fields } = camelCaseEntity;
-      return {
-        id,
-        created: createdTime,
-        ...fields,
-      };
-    }),
-});
+export const PascalCaseEntityAirtableValidationSchema = z
+  .object({
+    id: z.string(),
+    createdTime: z.string().datetime(),
+    fields: z.object(camelCaseEntitiesAirtableFieldsValidationSchema),
+  })
+  .transform(({ createdTime, fields, id }) => {
+    return {
+      id,
+      created: createdTime,
+      ...fields,
+    };
+  });
 
 export type AirtablePascalCaseEntity = z.infer<
   typeof PascalCaseEntityAirtableValidationSchema
@@ -73,6 +73,20 @@ export const camelCaseEntityViews = [
 
 export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
 
+export const FindAllPascalCaseEntitiesReponseValidationSchema = z
+  .object({
+    records: z.array(PascalCaseEntityAirtableValidationSchema),
+  })
+  .transform(({ records }) => {
+    return records;
+  });
+
+/**
+ * Finds entities label.
+ *
+ * @param queryParams The query params.
+ * @returns The entities label.
+ */
 export const findAllPascalCaseEntities = async (
   queryParams: FindAllRecordsQueryParams<
     PascalCaseEntity,
@@ -88,7 +102,7 @@ export const findAllPascalCaseEntities = async (
       { arrayParamStyle: 'append' }
     )
   );
-  return data;
+  return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
 /**
@@ -101,7 +115,7 @@ export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
   const { data } = await Adapter.get(
     getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, { camelCaseEntityId })
   );
-  return data;
+  return PascalCaseEntityAirtableValidationSchema.parse(data);
 };
 
 /**
@@ -128,7 +142,7 @@ export const createPascalCaseEntities = async (
   const { data } = await Adapter.post(ENTITY_CREATE_ENDPOINT_PATH, {
     data: JSON.stringify({ records }),
   });
-  return data;
+  return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
 /**
@@ -155,7 +169,7 @@ export const updatePascalCaseEntities = async (
   const { data } = await Adapter.post(ENTITY_UPDATE_ENDPOINT_PATH, {
     data: JSON.stringify({ records }),
   });
-  return data;
+  return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
 /**
@@ -182,7 +196,7 @@ export const patchPascalCaseEntities = async (
   const { data } = await Adapter.patch(ENTITY_UPDATE_ENDPOINT_PATH, {
     data: JSON.stringify({ records }),
   });
-  return data;
+  return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
 /**
@@ -214,5 +228,5 @@ export const deletePascalCaseEntities = async (records: string[]) => {
       data: JSON.stringify({ records }),
     }
   );
-  return data;
+  return DeleteAirtableRecordResponseValidationSchema.parse(data);
 };
