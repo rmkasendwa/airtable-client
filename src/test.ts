@@ -14,9 +14,12 @@ import { findAllAirtableBases } from './api/Metadata/Bases';
 
 const sandboxFolder = `${__dirname}/__sandbox`;
 const tableAPITemplateFilePath = `${__dirname}/templates/TableAPI.ts`;
-const tableAPIUtilityFiles = ['__config.ts', '__Adapter.ts'].map(
-  (filePath) => `${__dirname}/templates/${filePath}`
-);
+const tableAPIUtilityFiles = [
+  '__Adapter.ts',
+  '__config.ts',
+  '__interfaces.ts',
+  '__utils.ts',
+].map((filePath) => `${__dirname}/templates/${filePath}`);
 
 (async () => {
   const { bases } = await findAllAirtableBases();
@@ -38,12 +41,24 @@ const tableAPIUtilityFiles = ['__config.ts', '__Adapter.ts'].map(
 
       const tableAPITemplate = readFileSync(tableAPITemplateFilePath, 'utf-8');
 
+      const moduleFiles: string[] = [];
+
       tables.forEach(({ name }) => {
         const sanitisedTableName = name.trim().replace(/[^a-zA-Z0-9\s]/g, '');
         const fileName = `${sandboxFolder}/${sanitisedTableName}.ts`;
+        moduleFiles.push(`./${sanitisedTableName}`);
         console.log(`Writing ${fileName}`);
         writeFileSync(fileName, tableAPITemplate);
       });
+
+      writeFileSync(
+        `${sandboxFolder}/index.ts`,
+        moduleFiles
+          .map((filePath) => {
+            return `export * from '${filePath}'`;
+          })
+          .join('\n')
+      );
     }
   }
 })();
