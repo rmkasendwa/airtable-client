@@ -1,4 +1,10 @@
+export type AirtableBase = {
+  id?: string;
+  name?: string;
+};
+
 export type Table<FocusColumn extends string> = {
+  base?: AirtableBase;
   name: string;
   alias?: string;
   labelPlural?: string;
@@ -10,6 +16,7 @@ export type Table<FocusColumn extends string> = {
 };
 
 export type Config<FocusColumn extends string> = {
+  defaultBase: AirtableBase;
   tables: Table<FocusColumn>[];
 };
 

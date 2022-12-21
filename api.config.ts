@@ -1,6 +1,9 @@
 import { defineConfig } from './config';
 
 module.exports = defineConfig({
+  defaultBase: {
+    name: 'Talent',
+  },
   tables: [
     {
       name: 'Resourcing',
