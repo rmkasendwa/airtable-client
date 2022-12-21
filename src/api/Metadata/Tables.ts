@@ -11,3 +11,5 @@ export const findAllTablesByBaseId = async (baseId: string) => {
 
   return TablesResponseValidationSchema.parse(data);
 };
+
+export const generateTableAPI = async () => {};

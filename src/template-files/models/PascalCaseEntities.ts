@@ -13,13 +13,23 @@ export type PascalCaseEntity = {
   /* ENTITY_INTERFACE_FIELDS */
 };
 
+// All Entities Table table columns
+export const camelCaseEntitiesAirtableColumns = [
+  /* AIRTABLE_ENTITY_COLUMNS */
+  'Name',
+  /* AIRTABLE_ENTITY_COLUMNS */
+] as const;
+
+export type PascalCaseEntitiesAirtableColumn =
+  typeof camelCaseEntitiesAirtableColumns[number];
+
 // Maps Entities Table columns to Entity Label properties.
 export const PascalCaseEntityAirtableColumnToPropertyMapper: Record<
   PascalCaseEntitiesAirtableColumn,
   AirtableColumnMapping<keyof PascalCaseEntity>
 > = {
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
-  a: {
+  ['Name']: {
     propertyName: 'id',
   },
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
@@ -47,19 +57,14 @@ export type PascalCaseEntityUpdates = PascalCaseEntityCreationDetails &
 
 /********************* Validation Schemas ***********************/
 
-export const camelCaseEntitiesAirtableFieldsValidationSchema = {
-  /* AIRTABLE_ENTITY_FIELDS */
-  a: z.string().nullish(),
-  /* AIRTABLE_ENTITY_FIELDS */
-} as const;
-
-export type PascalCaseEntitiesAirtableColumn =
-  keyof typeof camelCaseEntitiesAirtableFieldsValidationSchema;
-
 // Validates Entities Table airtable response.
 export const PascalCaseEntityAirtableResponseValidationSchema =
   getAirtableRecordResponseValidationSchema<PascalCaseEntity>(
-    camelCaseEntitiesAirtableFieldsValidationSchema,
+    z.object({
+      /* AIRTABLE_ENTITY_FIELDS */
+      a: z.string().nullish(),
+      /* AIRTABLE_ENTITY_FIELDS */
+    }),
     PascalCaseEntityAirtableColumnToPropertyMapper
   );
 

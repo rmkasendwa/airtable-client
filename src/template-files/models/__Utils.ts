@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { AnyZodObject, z } from 'zod';
 
 export const airtableFieldTypes = [
   'singleLineText',
@@ -46,14 +46,14 @@ export type AirtableColumnMapping<T extends string> =
   | T;
 
 export const getAirtableRecordResponseValidationSchema = <T>(
-  responseValidationSchema: any,
+  responseFieldsValidationSchema: AnyZodObject,
   columnToPropertyMapper: any
 ) => {
   return z
     .object({
       id: z.string(),
       createdTime: z.string().datetime(),
-      fields: z.object(responseValidationSchema),
+      fields: responseFieldsValidationSchema,
     })
     .transform(({ createdTime, fields, id }) => {
       return {

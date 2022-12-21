@@ -350,6 +350,10 @@ export const getAirtableResponseTypeValidationString = (
         );
 
         const interpolationBlocks: Record<string, string> = {
+          ['/* AIRTABLE_ENTITY_COLUMNS */']: filteredFields
+            .map(({ name }) => `"${name}"`)
+            .join(', '),
+
           ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: filteredFields
             .map((field) => {
               const { name } = field;
@@ -410,7 +414,10 @@ export const getAirtableResponseTypeValidationString = (
             .join(' | '),
 
           ['/* REQUEST_ENTITY_PROPERTIES */']: editableFields
-            .map(({ name }) => `"${columnToPropertyMapper[name]}": z.any()`)
+            .map(
+              ({ name }) =>
+                `"${columnToPropertyMapper[name]}": z.any().nullish()`
+            )
             .join(',\n'),
         };
 
