@@ -63,6 +63,7 @@ export const findAllPascalCaseEntities = async (
  * @returns The entity label.
  */
 export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
+  console.log(`Loading entity label by id: ${camelCaseEntityId}`);
   const { data } = await Adapter.get(
     getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, { camelCaseEntityId })
   );
@@ -91,17 +92,29 @@ export const createPascalCaseEntities = async (
   records: PascalCaseEntityCreationDetails[]
 ) => {
   console.log(
-    `Creating entity label with the following input:\n${JSON.stringify(
+    `Creating entities label with the following input:\n${JSON.stringify(
       records,
       null,
       2
     )}`
   );
-  const { data } = await Adapter.post(ENTITY_CREATE_ENDPOINT_PATH, {
-    data: JSON.stringify({
-      records: CreatePascalCaseEntitiesRequestValidationSchema.parse(records),
-    }),
-  });
+
+  const airtableRequestData = {
+    records: CreatePascalCaseEntitiesRequestValidationSchema.parse(records),
+  };
+
+  console.log(
+    `Sending entities label POST request to airtable with the following input:\n${JSON.stringify(
+      airtableRequestData,
+      null,
+      2
+    )}`
+  );
+
+  const { data } = await Adapter.post(
+    ENTITY_CREATE_ENDPOINT_PATH,
+    airtableRequestData
+  );
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
@@ -126,11 +139,30 @@ export const updatePascalCaseEntity = async (
 export const updatePascalCaseEntities = async (
   records: PascalCaseEntityUpdates[]
 ) => {
-  const { data } = await Adapter.post(ENTITY_UPDATE_ENDPOINT_PATH, {
-    data: JSON.stringify({
-      records: UpdatePascalCaseEntitiesRequestValidationSchema.parse(records),
-    }),
-  });
+  console.log(
+    `Updating entities label with the following input:\n${JSON.stringify(
+      records,
+      null,
+      2
+    )}`
+  );
+
+  const airtableRequestData = {
+    records: UpdatePascalCaseEntitiesRequestValidationSchema.parse(records),
+  };
+
+  console.log(
+    `Sending entities label POST request to airtable with the following input:\n${JSON.stringify(
+      airtableRequestData,
+      null,
+      2
+    )}`
+  );
+
+  const { data } = await Adapter.post(
+    ENTITY_UPDATE_ENDPOINT_PATH,
+    airtableRequestData
+  );
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
@@ -155,11 +187,30 @@ export const patchPascalCaseEntity = async (
 export const patchPascalCaseEntities = async (
   records: PascalCaseEntityUpdates[]
 ) => {
-  const { data } = await Adapter.patch(ENTITY_UPDATE_ENDPOINT_PATH, {
-    data: JSON.stringify({
-      records: UpdatePascalCaseEntitiesRequestValidationSchema.parse(records),
-    }),
-  });
+  console.log(
+    `Updating entities label with the following input:\n${JSON.stringify(
+      records,
+      null,
+      2
+    )}`
+  );
+
+  const airtableRequestData = {
+    records: UpdatePascalCaseEntitiesRequestValidationSchema.parse(records),
+  };
+
+  console.log(
+    `Sending entities label PUT request to airtable with the following input:\n${JSON.stringify(
+      airtableRequestData,
+      null,
+      2
+    )}`
+  );
+
+  const { data } = await Adapter.patch(
+    ENTITY_UPDATE_ENDPOINT_PATH,
+    airtableRequestData
+  );
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
@@ -180,6 +231,13 @@ export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
  * @returns Deleted records response.
  */
 export const deletePascalCaseEntities = async (records: string[]) => {
+  console.log(
+    `Deleting entities label with the following input:\n${JSON.stringify(
+      records,
+      null,
+      2
+    )}`
+  );
   const { data } = await Adapter.delete(
     addSearchParams(
       ENTITY_DELETE_ENDPOINT_PATH,

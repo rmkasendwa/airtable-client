@@ -2,7 +2,7 @@ import { defineConfig } from './models';
 
 export default defineConfig({
   defaultBase: {
-    name: 'Talent',
+    name: 'Talent (topology test apps)',
   },
   tables: [
     {
