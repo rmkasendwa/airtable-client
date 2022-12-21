@@ -13,12 +13,15 @@ import {
 import { FindAllRecordsQueryParams } from '../interfaces';
 import { DeleteAirtableRecordResponseValidationSchema } from '../models/__Utils';
 import {
+  CreatePascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesReponseValidationSchema,
   PascalCaseEntity,
-  PascalCaseEntityAirtableValidationSchema,
+  PascalCaseEntityAirtableRequestValidationSchema,
+  PascalCaseEntityAirtableResponseValidationSchema,
   PascalCaseEntityCreationDetails,
   PascalCaseEntityUpdates,
   PascalCaseEntityView,
+  UpdatePascalCaseEntitiesRequestValidationSchema,
 } from '../models/PascalCaseEntities';
 import { convertToAirtableFindAllRecordsQueryParams } from '../utils';
 import Adapter from './Adapter';
@@ -57,7 +60,7 @@ export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
   const { data } = await Adapter.get(
     getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, { camelCaseEntityId })
   );
-  return PascalCaseEntityAirtableValidationSchema.parse(data);
+  return PascalCaseEntityAirtableResponseValidationSchema.parse(data);
 };
 
 /**
@@ -69,7 +72,13 @@ export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
 export const createPascalCaseEntity = async (
   camelCaseEntityDetails: PascalCaseEntityCreationDetails
 ) => {
-  return (await createPascalCaseEntities([camelCaseEntityDetails])).records[0];
+  return (
+    await createPascalCaseEntities([
+      PascalCaseEntityAirtableRequestValidationSchema.parse(
+        camelCaseEntityDetails
+      ),
+    ])
+  ).records[0];
 };
 
 /**
@@ -82,7 +91,9 @@ export const createPascalCaseEntities = async (
   records: PascalCaseEntityCreationDetails[]
 ) => {
   const { data } = await Adapter.post(ENTITY_CREATE_ENDPOINT_PATH, {
-    data: JSON.stringify({ records }),
+    data: JSON.stringify({
+      records: CreatePascalCaseEntitiesRequestValidationSchema.parse(records),
+    }),
   });
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
@@ -109,7 +120,9 @@ export const updatePascalCaseEntities = async (
   records: PascalCaseEntityUpdates[]
 ) => {
   const { data } = await Adapter.post(ENTITY_UPDATE_ENDPOINT_PATH, {
-    data: JSON.stringify({ records }),
+    data: JSON.stringify({
+      records: UpdatePascalCaseEntitiesRequestValidationSchema.parse(records),
+    }),
   });
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
