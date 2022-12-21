@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@bitauth/libauth": "^1.19.1",
-    "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.0",
+    "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.4",
     "@infinite-debugger/rmk-utils": "^0.1.0-alpha.5",
     "axios": "^1.2.1",
     "base-64": "^1.0.0",

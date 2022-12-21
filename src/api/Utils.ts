@@ -1,56 +1,10 @@
-import { AirtableField, Table } from '../../models';
+import { AirtableField, Table } from '../models';
 
-export const getCamelCaseFieldPropertyName = (
-  field: AirtableField,
-  tables: Table[],
-  currentTable: Table
-) => {
-  const { name } = field;
-  const camelCasePropertyName = name
-    .replace(/[^a-zA-Z0-9\s]/g, '')
-    .replace(/\s/g, '_')
-    .toUpperCase()
-    .toCamelCase('UPPER_CASE');
+export const getCamelCaseFieldPropertyName = ({ name }: AirtableField) => {
+  const camelCasePropertyName = name.toCamelCase();
 
-  const rootField = getRootAirtableField(field, tables, currentTable);
-
-  if (
-    rootField.type === 'multipleRecordLinks' &&
-    !camelCasePropertyName.match(/Ids?$/gi)
-  ) {
-    const linkedTableId = rootField.options?.linkedTableId;
-    const inverseLinkFieldId = rootField.options?.inverseLinkFieldId;
-    if (linkedTableId && inverseLinkFieldId) {
-      const linkedTable = tables.find(({ id }) => id === linkedTableId);
-      if (linkedTable) {
-        const linkedField = linkedTable.fields.find(
-          ({ id }) => id === inverseLinkFieldId
-        );
-        if (linkedField) {
-          return (
-            camelCasePropertyName +
-            linkedTable.name
-              .replace(/[^a-zA-Z0-9\s]/g, '')
-              .replace(/\s/g, '_')
-              .toUpperCase()
-              .toCamelCase('UPPER_CASE')
-              .replace(/^\w/g, (character) => {
-                return character.toUpperCase();
-              }) +
-            linkedField.name
-              .replace(/[^a-zA-Z0-9\s]/g, '')
-              .replace(/\s/g, '_')
-              .toUpperCase()
-              .toCamelCase('UPPER_CASE')
-              .replace(/^\w/g, (character) => {
-                return character.toUpperCase();
-              }) +
-            'Id' +
-            (linkedField.options?.prefersSingleRecordLink ? '' : 's')
-          );
-        }
-      }
-    }
+  if (camelCasePropertyName.match(/^\d/g)) {
+    return `_${camelCasePropertyName}`;
   }
 
   return camelCasePropertyName;

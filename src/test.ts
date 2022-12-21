@@ -75,8 +75,11 @@ const templateFilePaths = globby
     workingBases.forEach(async ({ id: baseId, name: baseName }) => {
       const { tables } = await findAllTablesByBaseId(baseId);
       if (tables.length > 0) {
+        console.log(`Processing \x1b[34m${baseName.trim()}\x1b[0m base...`);
+
+        const pascalCaseBaseName = baseName.toPascalCase();
         const baseAPIOutputFolderPath = normalize(
-          `${outputFolderPath}/${baseName}`
+          `${outputFolderPath}/bases/${pascalCaseBaseName}`
         );
 
         const moduleFiles: string[] = [];
@@ -84,8 +87,11 @@ const templateFilePaths = globby
         tables.forEach((table) => {
           const { name: tableName, fields, views } = table;
 
+          // Filter id, emoji, any field we don't understand
           const filteredFields = fields.filter(({ name }) => {
-            return !name.match(/^id$/gi);
+            return (
+              !name.match(/^id$/gi) && name.replace(/[^\w\s]/g, '').length > 0
+            );
           });
 
           const editableFields = filteredFields.filter(({ type }) => {
@@ -117,11 +123,11 @@ const templateFilePaths = globby
 
           const moduleImports: string[] = [];
 
-          console.log(`Processing ${tableName} table...`);
+          console.log(
+            ` -> Processing \x1b[34m${baseName.trim()}/${tableName.trim()}\x1b[0m table...`
+          );
 
-          const sanitisedTableName = tableName
-            .trim()
-            .replace(/[^a-zA-Z0-9\s]/g, '');
+          const sanitisedTableName = tableName.trim().replace(/[^\w\s]/g, '');
           const labelPlural = (() => {
             if (!sanitisedTableName.match(/s$/g)) {
               return sanitisedTableName + 's';
@@ -150,23 +156,11 @@ const templateFilePaths = globby
             .replace(/\s/g, '_')
             .toUpperCase();
 
-          const CAMEL_CASE_ENTITIES_LABEL =
-            UPPER_CASE_ENTITIES_LABEL.toCamelCase('UPPER_CASE');
-          const CAMEL_CASE_ENTITY_LABEL =
-            UPPER_CASE_ENTITY_LABEL.toCamelCase('UPPER_CASE');
+          const CAMEL_CASE_ENTITIES_LABEL = labelPlural.toCamelCase();
+          const CAMEL_CASE_ENTITY_LABEL = labelSingular.toCamelCase();
 
-          const PASCAL_CASE_ENTITIES_LABEL = CAMEL_CASE_ENTITIES_LABEL.replace(
-            /^\w/g,
-            (character) => {
-              return character.toUpperCase();
-            }
-          );
-          const PASCAL_CASE_ENTITY_LABEL = CAMEL_CASE_ENTITY_LABEL.replace(
-            /^\w/g,
-            (character) => {
-              return character.toUpperCase();
-            }
-          );
+          const PASCAL_CASE_ENTITIES_LABEL = labelPlural.toPascalCase();
+          const PASCAL_CASE_ENTITY_LABEL = labelSingular.toPascalCase();
 
           const KEBAB_CASE_ENTITIES_LABEL =
             LOWER_CASE_ENTITIES_LABEL_WITH_SPACES.replace(/\s/g, '-');
@@ -175,11 +169,7 @@ const templateFilePaths = globby
 
           const columnToPropertyMapper = filteredFields.reduce(
             (accumulator, field) => {
-              accumulator[field.name] = getCamelCaseFieldPropertyName(
-                field,
-                tables,
-                table
-              );
+              accumulator[field.name] = getCamelCaseFieldPropertyName(field);
               return accumulator;
             },
             {} as Record<string, string>
@@ -414,7 +404,7 @@ const templateFilePaths = globby
         );
 
         console.log(
-          `Airtable [${baseName}] base API generated here: ${baseAPIOutputFolderPath}`
+          `\n\x1b[32mAirtable [${baseName.trim()}] base API generated here: ${baseAPIOutputFolderPath}\x1b[0m\n\n`
         );
       }
     });
