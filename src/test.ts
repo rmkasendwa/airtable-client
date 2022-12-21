@@ -14,11 +14,35 @@ import {
 import globby from 'globby';
 import prettier from 'prettier';
 
-import { findAllTablesByBaseId } from './api';
+import {
+  findAllTablesByBaseId,
+  getAirtableResponseTypeValidationString,
+  getCamelCaseFieldPropertyName,
+  getRootAirtableField,
+} from './api';
 import { findAllAirtableBases } from './api/Metadata/Bases';
-import { AirtableField, Table } from './models';
+import { Config } from './models';
+
+const config: Config = (() => {
+  const config = require('./api.config');
+  if (config.default) {
+    return config.default;
+  }
+  return config;
+})();
 
 const prettierConfig = require('../.prettierrc.js');
+
+const configBases = [
+  config.defaultBase,
+  ...config.tables
+    .filter(({ base }) => {
+      return base;
+    })
+    .map(({ base }) => {
+      return base!;
+    }),
+];
 
 const outputFolderPath = normalize(`${__dirname}/__sandbox`);
 const templatesFolderPath = normalize(`${__dirname}/template-files`);
@@ -28,553 +52,371 @@ const templateFilePaths = globby
   })
   .map((filePath) => normalize(filePath));
 
-const getCamelCaseFieldPropertyName = (
-  field: AirtableField,
-  tables: Table[],
-  currentTable: Table
-) => {
-  const { name } = field;
-  const camelCasePropertyName = name
-    .replace(/[^a-zA-Z0-9\s]/g, '')
-    .replace(/\s/g, '_')
-    .toUpperCase()
-    .toCamelCase('UPPER_CASE');
-
-  const rootField = getRootAirtableField(field, tables, currentTable);
-
-  if (
-    rootField.type === 'multipleRecordLinks' &&
-    !camelCasePropertyName.match(/Ids?$/gi)
-  ) {
-    const linkedTableId = rootField.options?.linkedTableId;
-    const inverseLinkFieldId = rootField.options?.inverseLinkFieldId;
-    if (linkedTableId && inverseLinkFieldId) {
-      const linkedTable = tables.find(({ id }) => id === linkedTableId);
-      if (linkedTable) {
-        const linkedField = linkedTable.fields.find(
-          ({ id }) => id === inverseLinkFieldId
-        );
-        if (linkedField) {
-          return (
-            camelCasePropertyName +
-            linkedTable.name
-              .replace(/[^a-zA-Z0-9\s]/g, '')
-              .replace(/\s/g, '_')
-              .toUpperCase()
-              .toCamelCase('UPPER_CASE')
-              .replace(/^\w/g, (character) => {
-                return character.toUpperCase();
-              }) +
-            linkedField.name
-              .replace(/[^a-zA-Z0-9\s]/g, '')
-              .replace(/\s/g, '_')
-              .toUpperCase()
-              .toCamelCase('UPPER_CASE')
-              .replace(/^\w/g, (character) => {
-                return character.toUpperCase();
-              }) +
-            'Id' +
-            (linkedField.options?.prefersSingleRecordLink ? '' : 's')
-          );
-        }
-      }
-    }
-  }
-
-  return camelCasePropertyName;
-};
-
-export const getRootAirtableField = (
-  field: AirtableField,
-  tables: Table[],
-  currentTable: Table
-): AirtableField => {
-  const { type } = field;
-  switch (type) {
-    case 'multipleLookupValues':
-      {
-        const recordLinkFieldId = field.options?.recordLinkFieldId;
-        const fieldIdInLinkedTable = field.options?.fieldIdInLinkedTable;
-        if (recordLinkFieldId) {
-          const recordLinkField = currentTable.fields.find(
-            ({ id }) => id === recordLinkFieldId
-          );
-          if (recordLinkField) {
-            const linkedTableId = recordLinkField.options?.linkedTableId;
-            if (linkedTableId) {
-              const linkedTable = tables.find(({ id }) => id === linkedTableId);
-              if (linkedTable) {
-                const linkedField = linkedTable.fields.find(
-                  ({ id }) => id === fieldIdInLinkedTable
-                );
-                if (linkedField) {
-                  return getRootAirtableField(linkedField, tables, linkedTable);
-                }
-              }
-            }
-          }
-        }
-      }
-      break;
-  }
-  return field;
-};
-
-export type GetAirtableResponseTypeValidationStringOptions = {
-  currentTable: Table;
-  tables: Table[];
-};
-
-export const getAirtableResponseTypeValidationString = (
-  field: AirtableField,
-  options: GetAirtableResponseTypeValidationStringOptions
-): string => {
-  const { tables, currentTable } = options;
-  const rootField = getRootAirtableField(field, tables, currentTable);
-
-  const { type } = field;
-
-  switch (type) {
-    case 'multipleSelects':
-    case 'singleCollaborator':
-    case 'multipleCollaborators':
-    case 'rollup':
-    case 'barcode':
-    case 'duration':
-    case 'createdBy':
-    case 'lastModifiedBy':
-    case 'externalSyncSource':
-      break;
-
-    case 'multipleAttachments':
-      return `AirtableAttachmentValidationSchema`;
-
-    case 'button':
-      return `AirtableButtonValidationSchema`;
-
-    case 'formula':
-      return `z.union([${getAirtableResponseTypeValidationString(
-        {
-          ...field,
-          type: field.options?.result?.type,
-        },
-        {
-          ...options,
-        }
-      )}, AirtableFormulaColumnErrorValidationSchema])`;
-
-    // Dates
-    case 'date':
-    case 'dateTime':
-    case 'lastModifiedTime':
-    case 'createdTime':
-      // return `z.string().datetime()`;
-      return `z.string()`;
-
-    // Lists
-    case 'multipleRecordLinks':
-      return `z.array(z.string())`;
-    case 'lookup':
-    case 'multipleLookupValues':
-      const validationString = (() => {
-        if (rootField !== field) {
-          if (rootField.type === 'multipleRecordLinks') {
-            return `z.string()`;
-          }
-          return getAirtableResponseTypeValidationString(rootField, {
-            ...options,
-          });
-        }
-        return getAirtableResponseTypeValidationString(
-          {
-            ...field,
-            type: field.options?.result?.type,
-          },
-          {
-            ...options,
-          }
-        );
-      })();
-      return `z.array(${validationString})`;
-
-    // Numbers
-    case 'number':
-    case 'percent':
-    case 'currency':
-    case 'count':
-    case 'autoNumber':
-    case 'rating':
-      return `z.number()`;
-
-    // Booleans
-    case 'checkbox':
-      return `z.boolean()`;
-
-    // Special text
-    case 'email':
-      return `z.string().email()`;
-    case 'url':
-      return `z.string().url()`;
-
-    // Regular text
-    case 'singleLineText':
-    case 'multilineText':
-    case 'richText':
-    case 'phoneNumber':
-    case 'singleSelect':
-    default:
-      return `z.string()`;
-  }
-  return `z.any()`;
-};
-
 (async () => {
   const { bases } = await findAllAirtableBases();
-  const talentBase = bases.find(({ name }) => name.trim().match(/^Talent$/g));
-  if (talentBase) {
-    const { tables } = await findAllTablesByBaseId(talentBase.id);
+  const workingBases = bases.filter(({ name, id }) => {
+    return configBases.some(({ id: configBaseId, name: configBaseName }) => {
+      return (
+        (configBaseId && configBaseId === id) ||
+        (configBaseName && configBaseName.trim() === name.trim())
+      );
+    });
+  });
+  if (workingBases.length > 0) {
+    if (existsSync(outputFolderPath)) {
+      readdirSync(outputFolderPath).forEach((path) => {
+        if (!path.match(/test/gi)) {
+          removeSync(`${outputFolderPath}/${path}`);
+        }
+      });
+    }
+    ensureDirSync(outputFolderPath);
 
-    if (tables.length > 0) {
-      if (existsSync(outputFolderPath)) {
-        readdirSync(outputFolderPath).forEach((path) => {
-          if (!path.match(/test/gi)) {
-            removeSync(`${outputFolderPath}/${path}`);
-          }
-        });
-      }
-
-      ensureDirSync(outputFolderPath);
-
-      const moduleFiles: string[] = [];
-
-      tables.forEach((table) => {
-        const { name: tableName, fields, views } = table;
-
-        const filteredFields = fields.filter(({ name }) => {
-          return !name.match(/^id$/gi);
-        });
-
-        const editableFields = filteredFields.filter(({ type }) => {
-          switch (type) {
-            case 'singleLineText':
-            case 'multilineText':
-            case 'richText':
-            case 'phoneNumber':
-            case 'singleSelect':
-            case 'url':
-            case 'email':
-            case 'number':
-            case 'percent':
-            case 'currency':
-            case 'count':
-            case 'autoNumber':
-            case 'rating':
-            case 'checkbox':
-            case 'multipleRecordLinks':
-            case 'date':
-            case 'dateTime':
-            case 'lastModifiedTime':
-            case 'createdTime':
-            case 'multipleSelects':
-              return true;
-          }
-          return false;
-        });
-
-        const moduleImports: string[] = [];
-
-        console.log(`Processing ${tableName} table...`);
-
-        const sanitisedTableName = tableName
-          .trim()
-          .replace(/[^a-zA-Z0-9\s]/g, '');
-        const labelPlural = (() => {
-          if (!sanitisedTableName.match(/s$/g)) {
-            return sanitisedTableName + 's';
-          }
-          return sanitisedTableName;
-        })();
-        const labelSingular = (() => {
-          if (labelPlural.match(/ies$/)) {
-            return labelPlural.replace(/ies$/, 'y');
-          }
-          return labelPlural.replace(/s$/g, '');
-        })();
-
-        const TITLE_CASE_ENTITIES_LABEL_WITH_SPACES = labelPlural;
-        const TITLE_CASE_ENTITY_LABEL_WITH_SPACES = labelSingular;
-
-        const LOWER_CASE_ENTITIES_LABEL_WITH_SPACES = labelPlural.toLowerCase();
-        const LOWER_CASE_ENTITY_LABEL_WITH_SPACES = labelSingular.toLowerCase();
-
-        const UPPER_CASE_ENTITIES_LABEL = labelPlural
-          .replace(/\s/g, '_')
-          .toUpperCase();
-        const UPPER_CASE_ENTITY_LABEL = labelSingular
-          .replace(/\s/g, '_')
-          .toUpperCase();
-
-        const CAMEL_CASE_ENTITIES_LABEL =
-          UPPER_CASE_ENTITIES_LABEL.toCamelCase('UPPER_CASE');
-        const CAMEL_CASE_ENTITY_LABEL =
-          UPPER_CASE_ENTITY_LABEL.toCamelCase('UPPER_CASE');
-
-        const PASCAL_CASE_ENTITIES_LABEL = CAMEL_CASE_ENTITIES_LABEL.replace(
-          /^\w/g,
-          (character) => {
-            return character.toUpperCase();
-          }
-        );
-        const PASCAL_CASE_ENTITY_LABEL = CAMEL_CASE_ENTITY_LABEL.replace(
-          /^\w/g,
-          (character) => {
-            return character.toUpperCase();
-          }
+    workingBases.forEach(async ({ id: baseId, name: baseName }) => {
+      const { tables } = await findAllTablesByBaseId(baseId);
+      if (tables.length > 0) {
+        const baseAPIOutputFolderPath = normalize(
+          `${outputFolderPath}/${baseName}`
         );
 
-        const KEBAB_CASE_ENTITIES_LABEL =
-          LOWER_CASE_ENTITIES_LABEL_WITH_SPACES.replace(/\s/g, '-');
-        const KEBAB_CASE_ENTITY_LABEL =
-          LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
+        const moduleFiles: string[] = [];
 
-        const columnToPropertyMapper = filteredFields.reduce(
-          (accumulator, field) => {
-            accumulator[field.name] = getCamelCaseFieldPropertyName(
-              field,
-              tables,
-              table
-            );
-            return accumulator;
-          },
-          {} as Record<string, string>
-        );
+        tables.forEach((table) => {
+          const { name: tableName, fields, views } = table;
 
-        const interpolationBlocks: Record<string, string> = {
-          ['/* AIRTABLE_ENTITY_COLUMNS */']: filteredFields
-            .map(({ name }) => `"${name}"`)
-            .join(', '),
+          const filteredFields = fields.filter(({ name }) => {
+            return !name.match(/^id$/gi);
+          });
 
-          ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: filteredFields
-            .map((field) => {
-              const { name } = field;
-              const rootField = getRootAirtableField(field, tables, table);
-              const camelCasePropertyName = columnToPropertyMapper[name];
-              return `["${name}"]: ${(() => {
-                const obj = {
-                  propertyName: camelCasePropertyName,
-                  ...(() => {
-                    if (
-                      rootField &&
-                      rootField.options?.prefersSingleRecordLink
-                    ) {
-                      return {
-                        prefersSingleRecordLink: true,
-                      };
-                    }
-                  })(),
-                };
+          const editableFields = filteredFields.filter(({ type }) => {
+            switch (type) {
+              case 'singleLineText':
+              case 'multilineText':
+              case 'richText':
+              case 'phoneNumber':
+              case 'singleSelect':
+              case 'url':
+              case 'email':
+              case 'number':
+              case 'percent':
+              case 'currency':
+              case 'count':
+              case 'autoNumber':
+              case 'rating':
+              case 'checkbox':
+              case 'multipleRecordLinks':
+              case 'date':
+              case 'dateTime':
+              case 'lastModifiedTime':
+              case 'createdTime':
+              case 'multipleSelects':
+                return true;
+            }
+            return false;
+          });
 
-                if (Object.keys(obj).length > 1) {
-                  return JSON.stringify(obj);
-                }
+          const moduleImports: string[] = [];
 
-                return `"${obj.propertyName}"`;
-              })()}`;
-            })
-            .join(',\n'),
-          ['/* AIRTABLE_ENTITY_FIELDS */']: filteredFields
-            .map((field) => {
-              const { name } = field;
-              const rootField = getRootAirtableField(field, tables, table);
-              switch (rootField.type) {
-                case 'multipleAttachments':
-                  moduleImports.push(
-                    `import {AirtableAttachmentValidationSchema} from './__Utils';`
-                  );
-                  break;
-                case 'button':
-                  moduleImports.push(
-                    `import {AirtableButtonValidationSchema} from './__Utils';`
-                  );
-                  break;
-                case 'formula':
-                  moduleImports.push(
-                    `import {AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
-                  );
-              }
-              return `["${name}"]: ${getAirtableResponseTypeValidationString(
+          console.log(`Processing ${tableName} table...`);
+
+          const sanitisedTableName = tableName
+            .trim()
+            .replace(/[^a-zA-Z0-9\s]/g, '');
+          const labelPlural = (() => {
+            if (!sanitisedTableName.match(/s$/g)) {
+              return sanitisedTableName + 's';
+            }
+            return sanitisedTableName;
+          })();
+          const labelSingular = (() => {
+            if (labelPlural.match(/ies$/)) {
+              return labelPlural.replace(/ies$/, 'y');
+            }
+            return labelPlural.replace(/s$/g, '');
+          })();
+
+          const TITLE_CASE_ENTITIES_LABEL_WITH_SPACES = labelPlural;
+          const TITLE_CASE_ENTITY_LABEL_WITH_SPACES = labelSingular;
+
+          const LOWER_CASE_ENTITIES_LABEL_WITH_SPACES =
+            labelPlural.toLowerCase();
+          const LOWER_CASE_ENTITY_LABEL_WITH_SPACES =
+            labelSingular.toLowerCase();
+
+          const UPPER_CASE_ENTITIES_LABEL = labelPlural
+            .replace(/\s/g, '_')
+            .toUpperCase();
+          const UPPER_CASE_ENTITY_LABEL = labelSingular
+            .replace(/\s/g, '_')
+            .toUpperCase();
+
+          const CAMEL_CASE_ENTITIES_LABEL =
+            UPPER_CASE_ENTITIES_LABEL.toCamelCase('UPPER_CASE');
+          const CAMEL_CASE_ENTITY_LABEL =
+            UPPER_CASE_ENTITY_LABEL.toCamelCase('UPPER_CASE');
+
+          const PASCAL_CASE_ENTITIES_LABEL = CAMEL_CASE_ENTITIES_LABEL.replace(
+            /^\w/g,
+            (character) => {
+              return character.toUpperCase();
+            }
+          );
+          const PASCAL_CASE_ENTITY_LABEL = CAMEL_CASE_ENTITY_LABEL.replace(
+            /^\w/g,
+            (character) => {
+              return character.toUpperCase();
+            }
+          );
+
+          const KEBAB_CASE_ENTITIES_LABEL =
+            LOWER_CASE_ENTITIES_LABEL_WITH_SPACES.replace(/\s/g, '-');
+          const KEBAB_CASE_ENTITY_LABEL =
+            LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
+
+          const columnToPropertyMapper = filteredFields.reduce(
+            (accumulator, field) => {
+              accumulator[field.name] = getCamelCaseFieldPropertyName(
                 field,
-                { currentTable: table, tables }
-              )}.nullish()`;
-            })
-            .join(',\n'),
+                tables,
+                table
+              );
+              return accumulator;
+            },
+            {} as Record<string, string>
+          );
 
-          ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: editableFields
-            .map(({ name }) => `'${columnToPropertyMapper[name]}'`)
-            .join(' | '),
+          const interpolationBlocks: Record<string, string> = {
+            ['/* AIRTABLE_ENTITY_COLUMNS */']: filteredFields
+              .map(({ name }) => `"${name}"`)
+              .join(', '),
 
-          ['/* REQUEST_ENTITY_PROPERTIES */']: editableFields
-            .map(
-              ({ name }) =>
-                `"${columnToPropertyMapper[name]}": z.any().nullish()`
-            )
-            .join(',\n'),
-        };
-
-        const interpolationLabels: Record<string, string> = {
-          ['/* AIRTABLE_VIEWS */']: views
-            .map(({ name }) => {
-              return `"${RegExp.escape(name)}"`;
-            })
-            .join(', '),
-
-          ['/* ENTITY_INTERFACE_FIELDS */']: filteredFields
-            .map(({ name, type, options }) => {
-              const camelCasePropertyName = (() => {
-                const propertyName = columnToPropertyMapper[name];
-                if (propertyName.match(/^\d/)) {
-                  return `_${propertyName}`;
-                }
-                return propertyName;
-              })();
-
-              if (camelCasePropertyName.length > 0) {
-                const propertyType = (() => {
-                  switch (type) {
-                    case 'multipleSelects':
-                    case 'singleCollaborator':
-                    case 'multipleCollaborators':
-                    case 'multipleAttachments':
-                    case 'formula':
-                    case 'rollup':
-                    case 'barcode':
-                    case 'duration':
-                    case 'button':
-                    case 'createdBy':
-                    case 'lastModifiedBy':
-                    case 'externalSyncSource':
-                      break;
-
-                    // Lists
-                    case 'multipleRecordLinks':
-                      if (options?.prefersSingleRecordLink) {
-                        return `string`;
+            ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: filteredFields
+              .map((field) => {
+                const { name } = field;
+                const rootField = getRootAirtableField(field, tables, table);
+                const camelCasePropertyName = columnToPropertyMapper[name];
+                return `["${name}"]: ${(() => {
+                  const obj = {
+                    propertyName: camelCasePropertyName,
+                    ...(() => {
+                      if (
+                        rootField &&
+                        rootField.options?.prefersSingleRecordLink
+                      ) {
+                        return {
+                          prefersSingleRecordLink: true,
+                        };
                       }
-                      return `string[]`;
-                    case 'lookup':
-                    case 'multipleLookupValues':
-                      return `string[]`;
+                    })(),
+                  };
 
-                    // Numbers
-                    case 'number':
-                    case 'percent':
-                    case 'currency':
-                    case 'count':
-                    case 'autoNumber':
-                    case 'rating':
-                      return `number`;
-
-                    // Booleans
-                    case 'checkbox':
-                      return `boolean`;
-
-                    // Strings
-                    case 'date':
-                    case 'dateTime':
-                    case 'lastModifiedTime':
-                    case 'createdTime':
-                    case 'email':
-                    case 'url':
-                    case 'singleLineText':
-                    case 'multilineText':
-                    case 'richText':
-                    case 'phoneNumber':
-                    case 'singleSelect':
-                    default:
-                      return `string`;
+                  if (Object.keys(obj).length > 1) {
+                    return JSON.stringify(obj);
                   }
-                  return 'any';
+
+                  return `"${obj.propertyName}"`;
+                })()}`;
+              })
+              .join(',\n'),
+            ['/* AIRTABLE_ENTITY_FIELDS */']: filteredFields
+              .map((field) => {
+                const { name } = field;
+                const rootField = getRootAirtableField(field, tables, table);
+                switch (rootField.type) {
+                  case 'multipleAttachments':
+                    moduleImports.push(
+                      `import {AirtableAttachmentValidationSchema} from './__Utils';`
+                    );
+                    break;
+                  case 'button':
+                    moduleImports.push(
+                      `import {AirtableButtonValidationSchema} from './__Utils';`
+                    );
+                    break;
+                  case 'formula':
+                    moduleImports.push(
+                      `import {AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
+                    );
+                }
+                return `["${name}"]: ${getAirtableResponseTypeValidationString(
+                  field,
+                  { currentTable: table, tables }
+                )}.nullish()`;
+              })
+              .join(',\n'),
+
+            ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: editableFields
+              .map(({ name }) => `'${columnToPropertyMapper[name]}'`)
+              .join(' | '),
+
+            ['/* REQUEST_ENTITY_PROPERTIES */']: editableFields
+              .map(
+                ({ name }) =>
+                  `"${columnToPropertyMapper[name]}": z.any().nullish()`
+              )
+              .join(',\n'),
+          };
+
+          const interpolationLabels: Record<string, string> = {
+            ['/* AIRTABLE_VIEWS */']: views
+              .map(({ name }) => {
+                return `"${RegExp.escape(name)}"`;
+              })
+              .join(', '),
+
+            ['/* ENTITY_INTERFACE_FIELDS */']: filteredFields
+              .map(({ name, type, options }) => {
+                const camelCasePropertyName = (() => {
+                  const propertyName = columnToPropertyMapper[name];
+                  if (propertyName.match(/^\d/)) {
+                    return `_${propertyName}`;
+                  }
+                  return propertyName;
                 })();
 
-                return [`${camelCasePropertyName}?: ${propertyType}`];
-              }
-              return [];
-            })
-            .flat()
-            .join(';\n'),
+                if (camelCasePropertyName.length > 0) {
+                  const propertyType = (() => {
+                    switch (type) {
+                      case 'multipleSelects':
+                      case 'singleCollaborator':
+                      case 'multipleCollaborators':
+                      case 'multipleAttachments':
+                      case 'formula':
+                      case 'rollup':
+                      case 'barcode':
+                      case 'duration':
+                      case 'button':
+                      case 'createdBy':
+                      case 'lastModifiedBy':
+                      case 'externalSyncSource':
+                        break;
 
-          ['/* MODEL_IMPORTS */']: [...new Set(moduleImports)].join('\n'),
+                      // Lists
+                      case 'multipleRecordLinks':
+                        if (options?.prefersSingleRecordLink) {
+                          return `string`;
+                        }
+                        return `string[]`;
+                      case 'lookup':
+                      case 'multipleLookupValues':
+                        return `string[]`;
 
-          ['Entities Table']: tableName,
-          ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,
-          ['Entity Label']: TITLE_CASE_ENTITY_LABEL_WITH_SPACES,
+                      // Numbers
+                      case 'number':
+                      case 'percent':
+                      case 'currency':
+                      case 'count':
+                      case 'autoNumber':
+                      case 'rating':
+                        return `number`;
 
-          ['entities label']: LOWER_CASE_ENTITIES_LABEL_WITH_SPACES,
-          ['entity label']: LOWER_CASE_ENTITY_LABEL_WITH_SPACES,
+                      // Booleans
+                      case 'checkbox':
+                        return `boolean`;
 
-          ['ENTITIES']: UPPER_CASE_ENTITIES_LABEL,
-          ['ENTITY']: UPPER_CASE_ENTITY_LABEL,
+                      // Strings
+                      case 'date':
+                      case 'dateTime':
+                      case 'lastModifiedTime':
+                      case 'createdTime':
+                      case 'email':
+                      case 'url':
+                      case 'singleLineText':
+                      case 'multilineText':
+                      case 'richText':
+                      case 'phoneNumber':
+                      case 'singleSelect':
+                      default:
+                        return `string`;
+                    }
+                    return 'any';
+                  })();
 
-          ['camelCaseEntities']: CAMEL_CASE_ENTITIES_LABEL,
-          ['camelCaseEntity']: CAMEL_CASE_ENTITY_LABEL,
+                  return [`${camelCasePropertyName}?: ${propertyType}`];
+                }
+                return [];
+              })
+              .flat()
+              .join(';\n'),
 
-          ['PascalCaseEntities']: PASCAL_CASE_ENTITIES_LABEL,
-          ['PascalCaseEntity']: PASCAL_CASE_ENTITY_LABEL,
+            ['/* MODEL_IMPORTS */']: [...new Set(moduleImports)].join('\n'),
 
-          ['kebab-case-entities']: KEBAB_CASE_ENTITIES_LABEL,
-          ['kebab-case-entity']: KEBAB_CASE_ENTITY_LABEL,
-        };
+            ['Entities Table']: tableName,
+            ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,
+            ['Entity Label']: TITLE_CASE_ENTITY_LABEL_WITH_SPACES,
 
-        const getInterpolatedString = (templateFileContents: string) => {
-          return Object.keys(interpolationLabels).reduce(
-            (fileContents, key) => {
-              return fileContents.replaceAll(
-                key,
-                (interpolationLabels as any)[key]
-              );
-            },
-            Object.keys(interpolationBlocks).reduce((fileContents, key) => {
-              const escapedKey = RegExp.escape(key);
-              return fileContents.replace(
-                new RegExp(`${escapedKey}[\\s\\S]*${escapedKey}`, 'g'),
-                (interpolationBlocks as any)[key]
-              );
-            }, templateFileContents)
-          );
-        };
+            ['entities label']: LOWER_CASE_ENTITIES_LABEL_WITH_SPACES,
+            ['entity label']: LOWER_CASE_ENTITY_LABEL_WITH_SPACES,
 
-        moduleFiles.push(`./api/${PASCAL_CASE_ENTITIES_LABEL}`);
+            ['ENTITIES']: UPPER_CASE_ENTITIES_LABEL,
+            ['ENTITY']: UPPER_CASE_ENTITY_LABEL,
 
-        templateFilePaths.forEach((templateFilePath) => {
-          const templateFileContents = readFileSync(templateFilePath, 'utf-8');
-          const filePath = getInterpolatedString(
-            `${outputFolderPath}${templateFilePath.replace(
-              templatesFolderPath,
-              ''
-            )}`
-          );
+            ['camelCaseEntities']: CAMEL_CASE_ENTITIES_LABEL,
+            ['camelCaseEntity']: CAMEL_CASE_ENTITY_LABEL,
 
-          ensureDirSync(dirname(filePath));
-          writeFileSync(
-            filePath,
-            prettier.format(getInterpolatedString(templateFileContents), {
-              filepath: filePath,
-              ...prettierConfig,
-            })
-          );
+            ['PascalCaseEntities']: PASCAL_CASE_ENTITIES_LABEL,
+            ['PascalCaseEntity']: PASCAL_CASE_ENTITY_LABEL,
+
+            ['kebab-case-entities']: KEBAB_CASE_ENTITIES_LABEL,
+            ['kebab-case-entity']: KEBAB_CASE_ENTITY_LABEL,
+          };
+
+          const getInterpolatedString = (templateFileContents: string) => {
+            return Object.keys(interpolationLabels).reduce(
+              (fileContents, key) => {
+                return fileContents.replaceAll(
+                  key,
+                  (interpolationLabels as any)[key]
+                );
+              },
+              Object.keys(interpolationBlocks).reduce((fileContents, key) => {
+                const escapedKey = RegExp.escape(key);
+                return fileContents.replace(
+                  new RegExp(`${escapedKey}[\\s\\S]*${escapedKey}`, 'g'),
+                  (interpolationBlocks as any)[key]
+                );
+              }, templateFileContents)
+            );
+          };
+
+          moduleFiles.push(`./api/${PASCAL_CASE_ENTITIES_LABEL}`);
+
+          templateFilePaths.forEach((templateFilePath) => {
+            const templateFileContents = readFileSync(
+              templateFilePath,
+              'utf-8'
+            );
+            const filePath = getInterpolatedString(
+              `${baseAPIOutputFolderPath}${templateFilePath.replace(
+                templatesFolderPath,
+                ''
+              )}`
+            );
+
+            ensureDirSync(dirname(filePath));
+            writeFileSync(
+              filePath,
+              prettier.format(getInterpolatedString(templateFileContents), {
+                filepath: filePath,
+                ...prettierConfig,
+              })
+            );
+          });
         });
-      });
 
-      writeFileSync(
-        `${outputFolderPath}/index.ts`,
-        moduleFiles
-          .map((filePath) => {
-            return `export * from '${filePath}'`;
-          })
-          .join('\n')
-      );
+        writeFileSync(
+          `${baseAPIOutputFolderPath}/index.ts`,
+          moduleFiles
+            .map((filePath) => {
+              return `export * from '${filePath}'`;
+            })
+            .join('\n')
+        );
 
-      console.log(`Airtable API has been generated here: ${outputFolderPath}`);
-    }
+        console.log(
+          `Airtable [${baseName}] base API generated here: ${baseAPIOutputFolderPath}`
+        );
+      }
+    });
   }
 })();

@@ -1,6 +1,6 @@
-import { defineConfig } from './config';
+import { defineConfig } from './models';
 
-module.exports = defineConfig({
+export default defineConfig({
   defaultBase: {
     name: 'Talent',
   },
@@ -28,6 +28,9 @@ module.exports = defineConfig({
       },
     },
     {
+      base: {
+        name: 'Position Model',
+      },
       name: 'Assignments',
       focusColumns: [
         'Name',
