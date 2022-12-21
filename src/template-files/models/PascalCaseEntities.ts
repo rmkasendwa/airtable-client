@@ -13,6 +13,7 @@ export type PascalCaseEntity = {
   /* ENTITY_INTERFACE_FIELDS */
 };
 
+// Maps Entities Table columns to Entity Label properties.
 export const PascalCaseEntityAirtableColumnToPropertyMapper: Record<
   PascalCaseEntitiesAirtableColumn,
   AirtableColumnMapping
@@ -24,12 +25,16 @@ export const PascalCaseEntityAirtableColumnToPropertyMapper: Record<
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 } as const;
 
+/********************* Airtable Entities Table views ***********************/
+
 export const camelCaseEntityViews = [
   /* AIRTABLE_VIEWS */
 ] as const;
 
+// Entities Table table view type.
 export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
 
+// Entity Label editable fields.
 export type PascalCaseEntityCreationDetails = Partial<
   Pick<
     PascalCaseEntity,
@@ -51,12 +56,14 @@ export const camelCaseEntitiesAirtableFieldsValidationSchema = {
 export type PascalCaseEntitiesAirtableColumn =
   keyof typeof camelCaseEntitiesAirtableFieldsValidationSchema;
 
+// Validates Entities Table airtable response.
 export const PascalCaseEntityAirtableResponseValidationSchema =
   getAirtableRecordResponseValidationSchema<PascalCaseEntity>(
     camelCaseEntitiesAirtableFieldsValidationSchema,
     PascalCaseEntityAirtableColumnToPropertyMapper
   );
 
+// Entities Table table columns interface.
 export type AirtablePascalCaseEntity = z.infer<
   typeof PascalCaseEntityAirtableResponseValidationSchema
 >;
@@ -67,6 +74,7 @@ export const FindAllPascalCaseEntitiesReponseValidationSchema = z.object({
   offset: z.string().optional(),
 });
 
+// Maps entity label properties to Entities Table columns
 export const PascalCaseEntityPropertyToAirtableColumnMapper =
   Object.fromEntries(
     Object.entries(PascalCaseEntityAirtableColumnToPropertyMapper).map(
@@ -94,12 +102,14 @@ export const PascalCaseEntityPropertyToAirtableColumnMapper =
     )
   );
 
+// Validates requests to mutate entities label.
 export const PascalCaseEntityAirtableRequestValidationSchema =
   getAirtableRecordRequestValidationSchema<PascalCaseEntity>(
     camelCaseEntitiesAirtableFieldsValidationSchema, // TODO: Generate reverse airtable validation schema.
     PascalCaseEntityPropertyToAirtableColumnMapper
   );
 
+// Validates request to create entity label.
 export const CreatePascalCaseEntityRequestValidationSchema =
   PascalCaseEntityAirtableRequestValidationSchema;
 
@@ -108,6 +118,7 @@ export const CreatePascalCaseEntitiesRequestValidationSchema = z.array(
   CreatePascalCaseEntityRequestValidationSchema
 );
 
+// Validates request to update entity label.
 export const UpdatePascalCaseEntityRequestValidationSchema =
   PascalCaseEntityAirtableRequestValidationSchema;
 
