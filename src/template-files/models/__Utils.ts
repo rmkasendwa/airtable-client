@@ -81,36 +81,31 @@ export const getAirtableRecordResponseValidationSchema = <T>(
 };
 
 export const getAirtableRecordRequestValidationSchema = <T>(
-  requestValidationSchema: any,
+  requestValidationSchema: AnyZodObject,
   propertyToColumnMapper: any
 ) => {
-  return z
-    .object({
-      id: z.string().optional(),
-    })
-    .extend(requestValidationSchema)
-    .transform(({ id, ...fields }) => {
-      return {
-        id,
-        fields: Object.keys(fields).reduce((accumulator, key) => {
-          const mapping = propertyToColumnMapper[
-            key
-          ] as AirtableColumnMapping<string>;
-          if (typeof mapping === 'string') {
-            (accumulator as any)[mapping] = fields[key];
-          } else {
-            const { propertyName, prefersSingleRecordLink } = mapping;
-            (accumulator as any)[propertyName] = (() => {
-              if (prefersSingleRecordLink && !Array.isArray(fields[key])) {
-                return [fields[key]];
-              }
-              return fields[key];
-            })();
-          }
-          return accumulator;
-        }, {} as Omit<T, 'id'>),
-      };
-    });
+  return requestValidationSchema.transform(({ id, ...fields }) => {
+    return {
+      id,
+      fields: Object.keys(fields).reduce((accumulator, key) => {
+        const mapping = propertyToColumnMapper[
+          key
+        ] as AirtableColumnMapping<string>;
+        if (typeof mapping === 'string') {
+          (accumulator as any)[mapping] = fields[key];
+        } else {
+          const { propertyName, prefersSingleRecordLink } = mapping;
+          (accumulator as any)[propertyName] = (() => {
+            if (prefersSingleRecordLink && !Array.isArray(fields[key])) {
+              return [fields[key]];
+            }
+            return fields[key];
+          })();
+        }
+        return accumulator;
+      }, {} as Omit<T, 'id'>),
+    };
+  });
 };
 
 export const DeleteAirtableRecordResponseValidationSchema = z

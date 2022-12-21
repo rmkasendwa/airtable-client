@@ -37,6 +37,13 @@ export const findAllPascalCaseEntities = async (
     PascalCaseEntityView
   > = {}
 ) => {
+  console.log(
+    `Loading entities label with the following input:\n${JSON.stringify(
+      queryParams,
+      null,
+      2
+    )}`
+  );
   const { data } = await Adapter.get(
     addSearchParams(
       FIND_ALL_ENTITIES_ENDPOINT_PATH,
@@ -83,6 +90,13 @@ export const createPascalCaseEntity = async (
 export const createPascalCaseEntities = async (
   records: PascalCaseEntityCreationDetails[]
 ) => {
+  console.log(
+    `Creating entity label with the following input:\n${JSON.stringify(
+      records,
+      null,
+      2
+    )}`
+  );
   const { data } = await Adapter.post(ENTITY_CREATE_ENDPOINT_PATH, {
     data: JSON.stringify({
       records: CreatePascalCaseEntitiesRequestValidationSchema.parse(records),
