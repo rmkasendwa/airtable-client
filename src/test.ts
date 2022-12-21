@@ -18,7 +18,7 @@ import {
   findAllTablesByBaseId,
   getAirtableResponseTypeValidationString,
   getCamelCaseFieldPropertyName,
-  getRootAirtableField,
+  getRootAirtableColumn,
 } from './api';
 import { findAllAirtableBases } from './api/Metadata/Bases';
 import { Config } from './models';
@@ -75,7 +75,7 @@ const templateFilePaths = globby
     workingBases.forEach(async ({ id: baseId, name: baseName }) => {
       const { tables } = await findAllTablesByBaseId(baseId);
       if (tables.length > 0) {
-        console.log(`Processing \x1b[34m${baseName.trim()}\x1b[0m base...`);
+        console.log(`\nProcessing \x1b[34m${baseName.trim()}\x1b[0m base...`);
 
         const pascalCaseBaseName = baseName.toPascalCase();
         const baseAPIOutputFolderPath = normalize(
@@ -85,16 +85,24 @@ const templateFilePaths = globby
         const moduleFiles: string[] = [];
 
         tables.forEach((table) => {
-          const { name: tableName, fields, views } = table;
+          const { name: tableName, fields: columns, views } = table;
 
           // Filter id, emoji, any field we don't understand
-          const filteredFields = fields.filter(({ name }) => {
-            return (
-              !name.match(/^id$/gi) && name.replace(/[^\w\s]/g, '').length > 0
-            );
-          });
+          const filteredColumns = columns
+            .filter(({ name }) => {
+              return (
+                !name.match(/^id$/gi) && name.replace(/[^\w\s]/g, '').length > 0
+              );
+            })
+            .reduce((accumulator, field) => {
+              // Filtering columns with similar names.
+              if (!accumulator.find(({ name }) => name === field.name)) {
+                accumulator.push(field);
+              }
+              return accumulator;
+            }, [] as typeof columns);
 
-          const editableFields = filteredFields.filter(({ type }) => {
+          const editableColumns = filteredColumns.filter(({ type }) => {
             switch (type) {
               case 'singleLineText':
               case 'multilineText':
@@ -167,7 +175,7 @@ const templateFilePaths = globby
           const KEBAB_CASE_ENTITY_LABEL =
             LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
 
-          const columnToPropertyMapper = filteredFields.reduce(
+          const columnToPropertyMapper = filteredColumns.reduce(
             (accumulator, field) => {
               accumulator[field.name] = getCamelCaseFieldPropertyName(field);
               return accumulator;
@@ -176,43 +184,48 @@ const templateFilePaths = globby
           );
 
           const interpolationBlocks: Record<string, string> = {
-            ['/* AIRTABLE_ENTITY_COLUMNS */']: filteredFields
+            ['/* AIRTABLE_ENTITY_COLUMNS */']: filteredColumns
               .map(({ name }) => `"${name}"`)
               .join(', '),
 
-            ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: filteredFields
+            ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']:
+              filteredColumns
+                .map((field) => {
+                  const { name } = field;
+                  const rootColumn = getRootAirtableColumn(
+                    field,
+                    tables,
+                    table
+                  );
+                  const camelCasePropertyName = columnToPropertyMapper[name];
+                  return `["${name}"]: ${(() => {
+                    const obj = {
+                      propertyName: camelCasePropertyName,
+                      ...(() => {
+                        if (
+                          rootColumn &&
+                          rootColumn.options?.prefersSingleRecordLink
+                        ) {
+                          return {
+                            prefersSingleRecordLink: true,
+                          };
+                        }
+                      })(),
+                    };
+
+                    if (Object.keys(obj).length > 1) {
+                      return JSON.stringify(obj);
+                    }
+
+                    return `"${obj.propertyName}"`;
+                  })()}`;
+                })
+                .join(',\n'),
+            ['/* AIRTABLE_ENTITY_FIELDS */']: filteredColumns
               .map((field) => {
                 const { name } = field;
-                const rootField = getRootAirtableField(field, tables, table);
-                const camelCasePropertyName = columnToPropertyMapper[name];
-                return `["${name}"]: ${(() => {
-                  const obj = {
-                    propertyName: camelCasePropertyName,
-                    ...(() => {
-                      if (
-                        rootField &&
-                        rootField.options?.prefersSingleRecordLink
-                      ) {
-                        return {
-                          prefersSingleRecordLink: true,
-                        };
-                      }
-                    })(),
-                  };
-
-                  if (Object.keys(obj).length > 1) {
-                    return JSON.stringify(obj);
-                  }
-
-                  return `"${obj.propertyName}"`;
-                })()}`;
-              })
-              .join(',\n'),
-            ['/* AIRTABLE_ENTITY_FIELDS */']: filteredFields
-              .map((field) => {
-                const { name } = field;
-                const rootField = getRootAirtableField(field, tables, table);
-                switch (rootField.type) {
+                const rootColumn = getRootAirtableColumn(field, tables, table);
+                switch (rootColumn.type) {
                   case 'multipleAttachments':
                     moduleImports.push(
                       `import {AirtableAttachmentValidationSchema} from './__Utils';`
@@ -235,11 +248,11 @@ const templateFilePaths = globby
               })
               .join(',\n'),
 
-            ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: editableFields
+            ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: editableColumns
               .map(({ name }) => `'${columnToPropertyMapper[name]}'`)
               .join(' | '),
 
-            ['/* REQUEST_ENTITY_PROPERTIES */']: editableFields
+            ['/* REQUEST_ENTITY_PROPERTIES */']: editableColumns
               .map(
                 ({ name }) =>
                   `"${columnToPropertyMapper[name]}": z.any().nullish()`
@@ -254,7 +267,7 @@ const templateFilePaths = globby
               })
               .join(', '),
 
-            ['/* ENTITY_INTERFACE_FIELDS */']: filteredFields
+            ['/* ENTITY_INTERFACE_FIELDS */']: filteredColumns
               .map(({ name, type, options }) => {
                 const camelCasePropertyName = (() => {
                   const propertyName = columnToPropertyMapper[name];
@@ -404,7 +417,7 @@ const templateFilePaths = globby
         );
 
         console.log(
-          `\n\x1b[32mAirtable [${baseName.trim()}] base API generated here: ${baseAPIOutputFolderPath}\x1b[0m\n\n`
+          `\n\x1b[32mAirtable [${baseName.trim()}] base API generated here: ${baseAPIOutputFolderPath}\x1b[0m`
         );
       }
     });

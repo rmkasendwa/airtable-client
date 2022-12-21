@@ -10,7 +10,7 @@ export const getCamelCaseFieldPropertyName = ({ name }: AirtableField) => {
   return camelCasePropertyName;
 };
 
-export const getRootAirtableField = (
+export const getRootAirtableColumn = (
   field: AirtableField,
   tables: Table[],
   currentTable: Table
@@ -34,7 +34,11 @@ export const getRootAirtableField = (
                   ({ id }) => id === fieldIdInLinkedTable
                 );
                 if (linkedField) {
-                  return getRootAirtableField(linkedField, tables, linkedTable);
+                  return getRootAirtableColumn(
+                    linkedField,
+                    tables,
+                    linkedTable
+                  );
                 }
               }
             }
@@ -56,7 +60,7 @@ export const getAirtableResponseTypeValidationString = (
   options: GetAirtableResponseTypeValidationStringOptions
 ): string => {
   const { tables, currentTable } = options;
-  const rootField = getRootAirtableField(field, tables, currentTable);
+  const rootField = getRootAirtableColumn(field, tables, currentTable);
 
   const { type } = field;
 
