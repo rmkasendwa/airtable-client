@@ -254,6 +254,33 @@ export const getAirtableResponseTypeValidationString = (
           return !name.match(/^id$/gi);
         });
 
+        const editableFields = filteredFields.filter(({ type }) => {
+          switch (type) {
+            case 'singleLineText':
+            case 'multilineText':
+            case 'richText':
+            case 'phoneNumber':
+            case 'singleSelect':
+            case 'url':
+            case 'email':
+            case 'number':
+            case 'percent':
+            case 'currency':
+            case 'count':
+            case 'autoNumber':
+            case 'rating':
+            case 'checkbox':
+            case 'multipleRecordLinks':
+            case 'date':
+            case 'dateTime':
+            case 'lastModifiedTime':
+            case 'createdTime':
+            case 'multipleSelects':
+              return true;
+          }
+          return false;
+        });
+
         const moduleImports: string[] = [];
 
         console.log(`Processing ${tableName} table...`);
@@ -377,35 +404,14 @@ export const getAirtableResponseTypeValidationString = (
               )}.nullish()`;
             })
             .join(',\n'),
-          ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: filteredFields
-            .filter(({ type }) => {
-              switch (type) {
-                case 'singleLineText':
-                case 'multilineText':
-                case 'richText':
-                case 'phoneNumber':
-                case 'singleSelect':
-                case 'url':
-                case 'email':
-                case 'number':
-                case 'percent':
-                case 'currency':
-                case 'count':
-                case 'autoNumber':
-                case 'rating':
-                case 'checkbox':
-                case 'multipleRecordLinks':
-                case 'date':
-                case 'dateTime':
-                case 'lastModifiedTime':
-                case 'createdTime':
-                case 'multipleSelects':
-                  return true;
-              }
-              return false;
-            })
+
+          ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: editableFields
             .map(({ name }) => `'${columnToPropertyMapper[name]}'`)
             .join(' | '),
+
+          ['/* REQUEST_ENTITY_PROPERTIES */']: editableFields
+            .map(({ name }) => `"${columnToPropertyMapper[name]}": z.any()`)
+            .join(',\n'),
         };
 
         const interpolationLabels: Record<string, string> = {
@@ -414,6 +420,7 @@ export const getAirtableResponseTypeValidationString = (
               return `"${RegExp.escape(name)}"`;
             })
             .join(', '),
+
           ['/* ENTITY_INTERFACE_FIELDS */']: filteredFields
             .map(({ name, type, options }) => {
               const camelCasePropertyName = (() => {
@@ -488,6 +495,7 @@ export const getAirtableResponseTypeValidationString = (
             })
             .flat()
             .join(';\n'),
+
           ['/* MODEL_IMPORTS */']: [...new Set(moduleImports)].join('\n'),
 
           ['Entities Table']: tableName,

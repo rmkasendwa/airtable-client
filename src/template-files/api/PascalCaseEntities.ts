@@ -16,7 +16,6 @@ import {
   CreatePascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesReponseValidationSchema,
   PascalCaseEntity,
-  PascalCaseEntityAirtableRequestValidationSchema,
   PascalCaseEntityAirtableResponseValidationSchema,
   PascalCaseEntityCreationDetails,
   PascalCaseEntityUpdates,
@@ -72,13 +71,7 @@ export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
 export const createPascalCaseEntity = async (
   camelCaseEntityDetails: PascalCaseEntityCreationDetails
 ) => {
-  return (
-    await createPascalCaseEntities([
-      PascalCaseEntityAirtableRequestValidationSchema.parse(
-        camelCaseEntityDetails
-      ),
-    ])
-  ).records[0];
+  return (await createPascalCaseEntities([camelCaseEntityDetails])).records[0];
 };
 
 /**
@@ -149,7 +142,9 @@ export const patchPascalCaseEntities = async (
   records: PascalCaseEntityUpdates[]
 ) => {
   const { data } = await Adapter.patch(ENTITY_UPDATE_ENDPOINT_PATH, {
-    data: JSON.stringify({ records }),
+    data: JSON.stringify({
+      records: UpdatePascalCaseEntitiesRequestValidationSchema.parse(records),
+    }),
   });
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };

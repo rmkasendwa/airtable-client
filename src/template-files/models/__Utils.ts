@@ -38,12 +38,12 @@ export const airtableFieldTypes = [
 
 export type AirtableFieldType = typeof airtableFieldTypes[number];
 
-export type AirtableColumnMapping =
+export type AirtableColumnMapping<T extends string> =
   | {
-      propertyName: string;
+      propertyName: T;
       prefersSingleRecordLink?: boolean;
     }
-  | string;
+  | T;
 
 export const getAirtableRecordResponseValidationSchema = <T>(
   responseValidationSchema: any,
@@ -60,7 +60,9 @@ export const getAirtableRecordResponseValidationSchema = <T>(
         id,
         created: createdTime,
         ...Object.keys(fields).reduce((accumulator, key) => {
-          const mapping = columnToPropertyMapper[key] as AirtableColumnMapping;
+          const mapping = columnToPropertyMapper[
+            key
+          ] as AirtableColumnMapping<string>;
           if (typeof mapping === 'string') {
             (accumulator as any)[mapping] = fields[key];
           } else {
@@ -91,7 +93,9 @@ export const getAirtableRecordRequestValidationSchema = <T>(
       return {
         id,
         fields: Object.keys(fields).reduce((accumulator, key) => {
-          const mapping = propertyToColumnMapper[key] as AirtableColumnMapping;
+          const mapping = propertyToColumnMapper[
+            key
+          ] as AirtableColumnMapping<string>;
           if (typeof mapping === 'string') {
             (accumulator as any)[mapping] = fields[key];
           } else {

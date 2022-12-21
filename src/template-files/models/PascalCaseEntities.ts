@@ -16,11 +16,11 @@ export type PascalCaseEntity = {
 // Maps Entities Table columns to Entity Label properties.
 export const PascalCaseEntityAirtableColumnToPropertyMapper: Record<
   PascalCaseEntitiesAirtableColumn,
-  AirtableColumnMapping
+  AirtableColumnMapping<keyof PascalCaseEntity>
 > = {
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
   a: {
-    propertyName: 'a',
+    propertyName: 'id',
   },
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 } as const;
@@ -105,7 +105,11 @@ export const PascalCaseEntityPropertyToAirtableColumnMapper =
 // Validates requests to mutate entities label.
 export const PascalCaseEntityAirtableRequestValidationSchema =
   getAirtableRecordRequestValidationSchema<PascalCaseEntity>(
-    camelCaseEntitiesAirtableFieldsValidationSchema, // TODO: Generate reverse airtable validation schema.
+    z.object({
+      /* REQUEST_ENTITY_PROPERTIES */
+      a: z.string().nullish(),
+      /* REQUEST_ENTITY_PROPERTIES */
+    }),
     PascalCaseEntityPropertyToAirtableColumnMapper
   );
 
