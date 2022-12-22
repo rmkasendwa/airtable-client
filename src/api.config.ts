@@ -18,14 +18,6 @@ export default defineConfig({
         'Allocation',
         'Status',
       ],
-      columnNameToObjectPropertyMapper: {
-        ['Project Role']: 'projectRoleId',
-        ['Team Member']: 'teamMemberId',
-        ['Resource Start']: 'resourceStartDate',
-        ['Resource End']: 'resourceEndDate',
-        ['Project Override']: 'projectId',
-        ['SOW']: 'sowId',
-      },
     },
     {
       name: 'Assignments',

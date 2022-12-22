@@ -45,9 +45,16 @@ export type AirtableColumnMapping<T extends string> =
     }
   | T;
 
+/**
+ * Generates the airtable record response validation schema.
+ *
+ * @param responseFieldsValidationSchema The response validation schema.
+ * @param columnNameToObjectPropertyMapper The column name to object property mapper.
+ * @returns The airtable record response validation schema.
+ */
 export const getAirtableRecordResponseValidationSchema = <T>(
   responseFieldsValidationSchema: AnyZodObject,
-  columnToPropertyMapper: any
+  columnNameToObjectPropertyMapper: any
 ) => {
   return z
     .object({
@@ -59,8 +66,44 @@ export const getAirtableRecordResponseValidationSchema = <T>(
       return {
         id,
         created: createdTime,
-        ...Object.keys(fields).reduce((accumulator, key) => {
-          const mapping = columnToPropertyMapper[
+        ...Object.keys(fields)
+          .filter((key) => {
+            return fields[key] != null;
+          })
+          .reduce((accumulator, key) => {
+            const mapping = columnNameToObjectPropertyMapper[
+              key
+            ] as AirtableColumnMapping<string>;
+            if (typeof mapping === 'string') {
+              (accumulator as any)[mapping] = fields[key];
+            } else {
+              const { propertyName, prefersSingleRecordLink } = mapping;
+              (accumulator as any)[propertyName] = (() => {
+                if (prefersSingleRecordLink && Array.isArray(fields[key])) {
+                  return (fields[key] as string[])[0];
+                }
+                return fields[key];
+              })();
+            }
+            return accumulator;
+          }, {} as Omit<T, 'id'>),
+      };
+    });
+};
+
+export const getAirtableRecordRequestValidationSchema = <T>(
+  requestValidationSchema: AnyZodObject,
+  objectPropertyToColumnNameMapper: any
+) => {
+  return requestValidationSchema.transform(({ id, ...fields }) => {
+    return {
+      id,
+      fields: Object.keys(fields)
+        .filter((key) => {
+          return fields[key] != null;
+        })
+        .reduce((accumulator, key) => {
+          const mapping = objectPropertyToColumnNameMapper[
             key
           ] as AirtableColumnMapping<string>;
           if (typeof mapping === 'string') {
@@ -68,42 +111,14 @@ export const getAirtableRecordResponseValidationSchema = <T>(
           } else {
             const { propertyName, prefersSingleRecordLink } = mapping;
             (accumulator as any)[propertyName] = (() => {
-              if (prefersSingleRecordLink && Array.isArray(fields[key])) {
-                return (fields[key] as string[])[0];
+              if (prefersSingleRecordLink && !Array.isArray(fields[key])) {
+                return [fields[key]];
               }
               return fields[key];
             })();
           }
           return accumulator;
         }, {} as Omit<T, 'id'>),
-      };
-    });
-};
-
-export const getAirtableRecordRequestValidationSchema = <T>(
-  requestValidationSchema: AnyZodObject,
-  propertyToColumnMapper: any
-) => {
-  return requestValidationSchema.transform(({ id, ...fields }) => {
-    return {
-      id,
-      fields: Object.keys(fields).reduce((accumulator, key) => {
-        const mapping = propertyToColumnMapper[
-          key
-        ] as AirtableColumnMapping<string>;
-        if (typeof mapping === 'string') {
-          (accumulator as any)[mapping] = fields[key];
-        } else {
-          const { propertyName, prefersSingleRecordLink } = mapping;
-          (accumulator as any)[propertyName] = (() => {
-            if (prefersSingleRecordLink && !Array.isArray(fields[key])) {
-              return [fields[key]];
-            }
-            return fields[key];
-          })();
-        }
-        return accumulator;
-      }, {} as Omit<T, 'id'>),
     };
   });
 };
