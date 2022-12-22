@@ -16,7 +16,7 @@ export type ConfigTable<FocusColumn extends string> = {
 
 export type Config<FocusColumn extends string = any> = {
   defaultBase: ConfigAirtableBase;
-  tables: ConfigTable<FocusColumn>[];
+  tables?: ConfigTable<FocusColumn>[];
   bases?: (ConfigAirtableBase & {
     tables?: Omit<ConfigTable<FocusColumn>, 'base'>[];
   })[];

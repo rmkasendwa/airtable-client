@@ -23,7 +23,7 @@ import { findAllAirtableBases } from './api/Metadata/Bases';
 import { Config } from './models';
 
 const config: Config = (() => {
-  const config = require('./api.config');
+  const config = require('./airtable-api.config');
   if (config.default) {
     return config.default;
   }
@@ -34,7 +34,7 @@ const prettierConfig = require('../.prettierrc.js');
 
 const configBases = [
   config.defaultBase,
-  ...config.tables
+  ...(config.tables || [])
     .filter(({ base }) => {
       return base;
     })
@@ -47,7 +47,7 @@ const configBases = [
 ];
 
 const configTables = [
-  ...config.tables.map((table) => {
+  ...(config.tables || []).map((table) => {
     return {
       ...table,
       base: table.base || config.defaultBase,
@@ -98,7 +98,20 @@ const templateFilePaths = globby
     workingBases.forEach(async (workingBase) => {
       const { id: workingBaseId, name: workingBaseName } = workingBase;
       const { tables } = await findAllTablesByBaseId(workingBaseId);
-      if (tables.length > 0) {
+      const filteredTables = tables.filter(({ name }) => {
+        return (
+          configTables.length <= 0 ||
+          configTables.some(({ name: configTableName, base }) => {
+            return (
+              configTableName &&
+              configTableName.trim() === name.trim() &&
+              ((base.id && base.id === workingBaseId) ||
+                (base.name && base.name.trim() === workingBaseName.trim()))
+            );
+          })
+        );
+      });
+      if (filteredTables.length > 0) {
         console.log(
           `\nProcessing \x1b[34m${workingBaseName.trim()}\x1b[0m base...`
         );
@@ -110,7 +123,7 @@ const templateFilePaths = globby
 
         const moduleFiles: string[] = [];
 
-        tables.forEach((table) => {
+        filteredTables.forEach((table) => {
           const { name: tableName, fields: columns, views } = table;
 
           // Table Configuration.
@@ -120,12 +133,13 @@ const templateFilePaths = globby
               labelSingular: string;
             } = { labelPlural: '', labelSingular: '' };
 
-            const configTable = configTables.find(
-              ({ name, base }) =>
-                name === tableName &&
+            const configTable = configTables.find(({ name, base }) => {
+              return (
+                name.trim() === tableName.trim() &&
                 ((base.id && base.id === workingBaseId) ||
                   (base.name && base.name.trim() === workingBaseName.trim()))
-            );
+              );
+            });
 
             if (configTable) {
               const { alias: configTableAlias, name: configTableName } =
