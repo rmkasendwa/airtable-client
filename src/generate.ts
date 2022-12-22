@@ -7,7 +7,6 @@ import {
   ensureDirSync,
   existsSync,
   readFileSync,
-  readdirSync,
   removeSync,
   writeFileSync,
 } from 'fs-extra';
@@ -92,21 +91,19 @@ const templateFilePaths = globby
   });
   if (workingBases.length > 0) {
     if (existsSync(outputFolderPath)) {
-      readdirSync(outputFolderPath).forEach((path) => {
-        if (!path.match(/test/gi)) {
-          removeSync(`${outputFolderPath}/${path}`);
-        }
-      });
+      removeSync(outputFolderPath);
     }
     ensureDirSync(outputFolderPath);
 
-    workingBases.forEach(async (base) => {
-      const { id: baseId, name: baseName } = base;
-      const { tables } = await findAllTablesByBaseId(baseId);
+    workingBases.forEach(async (workingBase) => {
+      const { id: workingBaseId, name: workingBaseName } = workingBase;
+      const { tables } = await findAllTablesByBaseId(workingBaseId);
       if (tables.length > 0) {
-        console.log(`\nProcessing \x1b[34m${baseName.trim()}\x1b[0m base...`);
+        console.log(
+          `\nProcessing \x1b[34m${workingBaseName.trim()}\x1b[0m base...`
+        );
 
-        const pascalCaseBaseName = baseName.toPascalCase();
+        const pascalCaseBaseName = workingBaseName.toPascalCase();
         const baseAPIOutputFolderPath = normalize(
           `${outputFolderPath}/${pascalCaseBaseName}`
         );
@@ -124,8 +121,12 @@ const templateFilePaths = globby
             } = { labelPlural: '', labelSingular: '' };
 
             const configTable = configTables.find(
-              ({ name }) => name === tableName
+              ({ name, base }) =>
+                name === tableName &&
+                ((base.id && base.id === workingBaseId) ||
+                  (base.name && base.name.trim() === workingBaseName.trim()))
             );
+
             if (configTable) {
               const { alias: configTableAlias, name: configTableName } =
                 configTable;
@@ -221,7 +222,7 @@ const templateFilePaths = globby
           const modelImportsCollector: string[] = [];
 
           console.log(
-            ` -> Processing \x1b[34m${baseName.trim()}/${tableName.trim()}\x1b[0m table...`
+            ` -> Processing \x1b[34m${workingBaseName.trim()}/${tableName.trim()}\x1b[0m table...`
           );
 
           const columnToPropertyMapper = filteredTableColumns.reduce(
@@ -234,7 +235,7 @@ const templateFilePaths = globby
 
           const interpolationBlocks =
             getAirtableAPIGeneratorTemplateFileInterpolationBlocks({
-              base,
+              base: workingBase,
               currentTable: table,
               filteredTableColumns,
               editableTableColumns,
@@ -308,7 +309,7 @@ const templateFilePaths = globby
         );
 
         console.log(
-          `\n\x1b[32mAirtable [${baseName.trim()}] base API generated here: ${baseAPIOutputFolderPath}\x1b[0m`
+          `\n\x1b[32mAirtable [${workingBaseName.trim()}] base API generated here: ${baseAPIOutputFolderPath}\x1b[0m`
         );
       }
     });

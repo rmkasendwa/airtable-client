@@ -77,7 +77,7 @@ export const getAirtableResponseTypeValidationString = (
       break;
 
     case 'multipleAttachments':
-      return `AirtableAttachmentValidationSchema`;
+      return `z.array(AirtableAttachmentValidationSchema)`;
 
     case 'button':
       return `AirtableButtonValidationSchema`;
