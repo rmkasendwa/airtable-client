@@ -38,11 +38,11 @@ export const findAllPascalCaseEntities = async (
   > = {}
 ) => {
   console.log(
-    `Loading entities label with the following input:\n${JSON.stringify(
+    `Loading entities label with the following input:\x1b[2m\n${JSON.stringify(
       queryParams,
       null,
       2
-    )}`
+    )}\x1b[0m`
   );
   const { data } = await Adapter.get(
     addSearchParams(
@@ -63,7 +63,7 @@ export const findAllPascalCaseEntities = async (
  * @returns The entity label.
  */
 export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
-  console.log(`Loading entity label by id: ${camelCaseEntityId}`);
+  console.log(`Loading entity label by id: \x1b[2m${camelCaseEntityId}\x1b[0m`);
   const { data } = await Adapter.get(
     getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, { camelCaseEntityId })
   );
@@ -92,11 +92,11 @@ export const createPascalCaseEntities = async (
   records: PascalCaseEntityCreationDetails[]
 ) => {
   console.log(
-    `Creating entities label with the following input:\n${JSON.stringify(
+    `Creating entities label with the following input:\x1b[2m\n${JSON.stringify(
       records,
       null,
       2
-    )}`
+    )}\x1b[0m`
   );
 
   const airtableRequestData = {
@@ -104,11 +104,11 @@ export const createPascalCaseEntities = async (
   };
 
   console.log(
-    `Sending entities label POST request to airtable with the following input:\n${JSON.stringify(
+    `Sending entities label POST request to airtable with the following input:\x1b[2m\n${JSON.stringify(
       airtableRequestData,
       null,
       2
-    )}`
+    )}\x1b[0m`
   );
 
   const { data } = await Adapter.post(
@@ -140,11 +140,11 @@ export const updatePascalCaseEntities = async (
   records: PascalCaseEntityUpdates[]
 ) => {
   console.log(
-    `Updating entities label with the following input:\n${JSON.stringify(
+    `Updating entities label with the following input:\x1b[2m\n${JSON.stringify(
       records,
       null,
       2
-    )}`
+    )}\x1b[0m`
   );
 
   const airtableRequestData = {
@@ -152,11 +152,11 @@ export const updatePascalCaseEntities = async (
   };
 
   console.log(
-    `Sending entities label POST request to airtable with the following input:\n${JSON.stringify(
+    `Sending entities label POST request to airtable with the following input:\n\x1b[2m${JSON.stringify(
       airtableRequestData,
       null,
       2
-    )}`
+    )}\x1b[0m`
   );
 
   const { data } = await Adapter.post(
@@ -188,11 +188,11 @@ export const patchPascalCaseEntities = async (
   records: PascalCaseEntityUpdates[]
 ) => {
   console.log(
-    `Updating entities label with the following input:\n${JSON.stringify(
+    `Updating entities label with the following input:\n\x1b[2m${JSON.stringify(
       records,
       null,
       2
-    )}`
+    )}\x1b[0m`
   );
 
   const airtableRequestData = {
@@ -200,11 +200,11 @@ export const patchPascalCaseEntities = async (
   };
 
   console.log(
-    `Sending entities label PUT request to airtable with the following input:\n${JSON.stringify(
+    `Sending entities label PUT request to airtable with the following input:\x1b[2m\n${JSON.stringify(
       airtableRequestData,
       null,
       2
-    )}`
+    )}\x1b[0m`
   );
 
   const { data } = await Adapter.patch(
@@ -232,11 +232,11 @@ export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
  */
 export const deletePascalCaseEntities = async (records: string[]) => {
   console.log(
-    `Deleting entities label with the following input:\n${JSON.stringify(
+    `Deleting entities label with the following input:\n\x1b[2m${JSON.stringify(
       records,
       null,
       2
-    )}`
+    )}\x1b[0m`
   );
   const { data } = await Adapter.delete(
     addSearchParams(

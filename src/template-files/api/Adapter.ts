@@ -24,11 +24,18 @@ instance.interceptors.response.use(undefined, (err) => {
     return Promise.reject(err);
   }
   config.retry -= 1;
+
+  const retryTimeout = config.retryDelay || 1000;
+  console.log(
+    `\x1b[31mAPI Adapter: Request to ${config.url} failed, retrying in ${retryTimeout}ms\x1b[0m`
+  );
   const delayRetryRequest = new Promise<void>((resolve) => {
     setTimeout(() => {
-      console.log('retry the request', config.url);
+      console.log(
+        `\x1b[32mAPI Adapter: Retrying request to ${config.url}\x1b[0m`
+      );
       resolve();
-    }, config.retryDelay || 1000);
+    }, retryTimeout);
   });
   return delayRetryRequest.then(() => axios(config));
 });
