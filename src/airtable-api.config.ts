@@ -2,7 +2,7 @@ import { defineConfig } from './models';
 
 export default defineConfig({
   defaultBase: {
-    name: 'Talent',
+    name: 'Talent (topology test apps)',
   },
   tables: [
     {
@@ -37,6 +37,9 @@ export default defineConfig({
     {
       name: 'People List',
       alias: 'Team Members',
+    },
+    {
+      name: 'Positions',
     },
   ],
   bases: [{ name: 'Position Model' }, { name: 'Talent (topology test apps)' }],

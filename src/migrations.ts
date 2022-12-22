@@ -1,9 +1,9 @@
 import { writeFileSync } from 'fs-extra';
 
-import { findAllTeamMembers } from './__sandbox/airtable/Talent';
 import {
   createNewAssignments,
   createNewPositions,
+  findAllTeamMembers,
   findAssignmentsPage,
   findResourcingsPage,
 } from './__sandbox/airtable/TalentTopologyTestApps';
