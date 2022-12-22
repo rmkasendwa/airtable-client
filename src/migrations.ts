@@ -4,8 +4,8 @@ import { findAllTeamMembers } from './__sandbox/airtable/Talent';
 import {
   createNewAssignments,
   createNewPositions,
-  findAllAssignments,
-  findAllResourcings,
+  findAssignmentsPage,
+  findResourcingsPage,
 } from './__sandbox/airtable/TalentTopologyTestApps';
 
 /**
@@ -15,7 +15,7 @@ import {
  */
 const moveResourcingsToAssignmentsTable = async (offset?: string) => {
   const { records: pageResourcings, offset: responseOffset } =
-    await findAllResourcings({ offset });
+    await findResourcingsPage({ offset });
 
   if (pageResourcings.length > 0) {
     const mapAssignmentRecords = async (
@@ -74,7 +74,7 @@ const moveResourcingsToAssignmentsTable = async (offset?: string) => {
  */
 const cloneAssignmentsToPositionsTable = async (offset?: string) => {
   const { records: pageAssignments, offset: responseOffset } =
-    await findAllAssignments({ offset });
+    await findAssignmentsPage({ offset });
 
   if (pageAssignments.length > 0) {
     const mapPositionRecords = async (

@@ -11,6 +11,7 @@ import {
   convertToAirtableFindAllRecordsQueryParams,
 } from '../models/__Utils';
 import {
+  AirtablePascalCaseEntity,
   CreatePascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesReponseValidationSchema,
   PascalCaseEntity,
@@ -74,21 +75,21 @@ export const findAllPascalCaseEntities = async (
     'pageSize'
   > = {}
 ) => {
-  const findPages = async (
-    accumulatedRecords = [],
-    offset?: string
-  ): ReturnType<typeof findPascalCaseEntitiesPage> => {
-    const { records, offset: responseOffset } =
+  const records: AirtablePascalCaseEntity[] = [];
+
+  const findPages = async (offset?: string) => {
+    const { records: responseRecords, offset: responseOffset } =
       await findPascalCaseEntitiesPage({ ...queryParams, offset });
 
+    records.push(...responseRecords);
     if (responseOffset) {
-      return await findPages(accumulatedRecords, responseOffset);
+      await findPages(responseOffset);
     }
-
-    return { records: [...accumulatedRecords, ...records] };
   };
 
-  return findPages();
+  await findPages();
+
+  return { records };
 };
 
 /**
