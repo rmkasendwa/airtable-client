@@ -124,7 +124,9 @@ const cloneAssignmentsToPositionsTable = async (offset?: string) => {
     // await moveResourcingsToAssignmentsTable();
     // await cloneAssignmentsToPositionsTable();
 
-    const { records: teamMembers } = await findAllTeamMembers();
+    const { records: teamMembers } = await findAllTeamMembers({
+      fields: ['continentName', 'name'],
+    });
     console.log({ teamMembers, count: teamMembers.length });
   } catch (err: any) {
     const errorFilePath = `${__dirname}/error.json`;

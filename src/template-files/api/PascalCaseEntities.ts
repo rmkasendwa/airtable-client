@@ -17,6 +17,7 @@ import {
   PascalCaseEntity,
   PascalCaseEntityAirtableResponseValidationSchema,
   PascalCaseEntityCreationDetails,
+  PascalCaseEntityPropertyToAirtableColumnNameMapper,
   PascalCaseEntityUpdates,
   PascalCaseEntityView,
   UpdatePascalCaseEntitiesRequestValidationSchema,
@@ -31,6 +32,11 @@ export const FIND_ENTITY_BY_ID_ENPOINT_PATH: TemplatePath<{
 export const ENTITY_CREATE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 export const ENTITY_UPDATE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 export const ENTITY_DELETE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
+
+/***************************** DEFAULTS *********************************/
+const DEFAULT_ENTITY_QUERYABLE_FIELDS: (keyof PascalCaseEntity)[] = [
+  /* ENTITY_FOCUS_FIELDS */
+];
 
 /**
  * Finds entities label limited by queryParams.pageSize
@@ -51,15 +57,27 @@ export const findPascalCaseEntitiesPage = async (
       2
     )}\x1b[0m`
   );
-  const { data } = await Adapter.get(
-    addSearchParams(
-      FIND_ALL_ENTITIES_ENDPOINT_PATH,
-      {
-        ...convertToAirtableFindAllRecordsQueryParams(queryParams as any),
-      },
-      { arrayParamStyle: 'append' }
-    )
+
+  if (!queryParams.fields && DEFAULT_ENTITY_QUERYABLE_FIELDS.length > 0) {
+    queryParams = { ...queryParams, fields: DEFAULT_ENTITY_QUERYABLE_FIELDS };
+  }
+
+  const airtableRequestUrl = addSearchParams(
+    FIND_ALL_ENTITIES_ENDPOINT_PATH,
+    {
+      ...convertToAirtableFindAllRecordsQueryParams(
+        queryParams as any,
+        PascalCaseEntityPropertyToAirtableColumnNameMapper
+      ),
+    },
+    { arrayParamStyle: 'append' }
   );
+
+  console.log(
+    `Sending entities label GET request to airtable to the following URL:\x1b[2m\n${airtableRequestUrl}\x1b[0m`
+  );
+
+  const { data } = await Adapter.get(airtableRequestUrl);
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 

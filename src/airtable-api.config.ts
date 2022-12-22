@@ -9,6 +9,7 @@ export default defineConfig({
       name: 'Resourcing',
       alias: 'Resourcings',
       focusColumns: [
+        'Slot',
         'Project Role',
         'Team Member',
         'Resource Start',

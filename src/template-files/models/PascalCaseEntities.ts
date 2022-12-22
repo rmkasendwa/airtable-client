@@ -107,6 +107,24 @@ export const PascalCaseEntityPropertyToAirtableColumnMapper =
     )
   );
 
+// Maps entity label properties to Entities Table column names
+export const PascalCaseEntityPropertyToAirtableColumnNameMapper =
+  Object.fromEntries(
+    Object.entries(PascalCaseEntityAirtableColumnToPropertyMapper).map(
+      ([key, value]) => {
+        return [
+          (() => {
+            if (typeof value === 'string') {
+              return value;
+            }
+            return value.propertyName;
+          })(),
+          key,
+        ];
+      }
+    )
+  );
+
 // Validates requests to mutate entities label.
 export const PascalCaseEntityAirtableRequestValidationSchema =
   getAirtableRecordRequestValidationSchema<PascalCaseEntity>(

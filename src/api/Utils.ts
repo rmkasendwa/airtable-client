@@ -299,78 +299,74 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
 
     ['/* ENTITY_INTERFACE_FIELDS */']: filteredTableColumns
       .map(({ name, type, options }) => {
-        const camelCasePropertyName = (() => {
-          const propertyName = columnToPropertyMapper[name];
-          if (propertyName.match(/^\d/)) {
-            return `_${propertyName}`;
+        const camelCasePropertyName = columnToPropertyMapper[name];
+        const propertyType = (() => {
+          switch (type) {
+            case 'multipleSelects':
+            case 'singleCollaborator':
+            case 'multipleCollaborators':
+            case 'multipleAttachments':
+            case 'formula':
+            case 'rollup':
+            case 'barcode':
+            case 'duration':
+            case 'button':
+            case 'createdBy':
+            case 'lastModifiedBy':
+            case 'externalSyncSource':
+              break;
+
+            // Lists
+            case 'multipleRecordLinks':
+              if (options?.prefersSingleRecordLink) {
+                return `string`;
+              }
+              return `string[]`;
+            case 'lookup':
+            case 'multipleLookupValues':
+              return `string[]`;
+
+            // Numbers
+            case 'number':
+            case 'percent':
+            case 'currency':
+            case 'count':
+            case 'autoNumber':
+            case 'rating':
+              return `number`;
+
+            // Booleans
+            case 'checkbox':
+              return `boolean`;
+
+            // Strings
+            case 'date':
+            case 'dateTime':
+            case 'lastModifiedTime':
+            case 'createdTime':
+            case 'email':
+            case 'url':
+            case 'singleLineText':
+            case 'multilineText':
+            case 'richText':
+            case 'phoneNumber':
+            case 'singleSelect':
+            default:
+              return `string`;
           }
-          return propertyName;
+          return 'any';
         })();
 
-        if (camelCasePropertyName.length > 0) {
-          const propertyType = (() => {
-            switch (type) {
-              case 'multipleSelects':
-              case 'singleCollaborator':
-              case 'multipleCollaborators':
-              case 'multipleAttachments':
-              case 'formula':
-              case 'rollup':
-              case 'barcode':
-              case 'duration':
-              case 'button':
-              case 'createdBy':
-              case 'lastModifiedBy':
-              case 'externalSyncSource':
-                break;
-
-              // Lists
-              case 'multipleRecordLinks':
-                if (options?.prefersSingleRecordLink) {
-                  return `string`;
-                }
-                return `string[]`;
-              case 'lookup':
-              case 'multipleLookupValues':
-                return `string[]`;
-
-              // Numbers
-              case 'number':
-              case 'percent':
-              case 'currency':
-              case 'count':
-              case 'autoNumber':
-              case 'rating':
-                return `number`;
-
-              // Booleans
-              case 'checkbox':
-                return `boolean`;
-
-              // Strings
-              case 'date':
-              case 'dateTime':
-              case 'lastModifiedTime':
-              case 'createdTime':
-              case 'email':
-              case 'url':
-              case 'singleLineText':
-              case 'multilineText':
-              case 'richText':
-              case 'phoneNumber':
-              case 'singleSelect':
-              default:
-                return `string`;
-            }
-            return 'any';
-          })();
-
-          return [`${camelCasePropertyName}?: ${propertyType}`];
-        }
-        return [];
+        return [`${camelCasePropertyName}?: ${propertyType}`];
       })
       .flat()
       .join(';\n'),
+
+    ['/* ENTITY_FOCUS_FIELDS */']: filteredTableColumns
+      .map(({ name }) => {
+        return `"${columnToPropertyMapper[name]}"`;
+      })
+      .join(', '),
 
     ['/* MODEL_IMPORTS */']: [...new Set(modelImportsCollector)].join('\n'),
 

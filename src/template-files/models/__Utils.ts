@@ -63,14 +63,15 @@ export type FindAllRecordsQueryParams<
 export const convertToAirtableFindAllRecordsQueryParams = <
   T extends FindAllRecordsQueryParams
 >(
-  queryParams: T
+  queryParams: T,
+  objectPropertyToColumnNameMapper: Record<string, string>
 ) => {
   const airtableQueryParams: Omit<
     FindAllRecordsQueryParams,
     'sort' | 'fields'
   > & {
     sort?: string[];
-    fields?: string;
+    fields?: string[];
   } = {
     ...omit(queryParams, 'sort', 'fields'),
     ...(() => {
@@ -89,6 +90,15 @@ export const convertToAirtableFindAllRecordsQueryParams = <
               ];
             })
             .flat(),
+        };
+      }
+    })(),
+    ...(() => {
+      if (queryParams.fields) {
+        return {
+          fields: queryParams.fields.map((field) => {
+            return objectPropertyToColumnNameMapper[field];
+          }),
         };
       }
     })(),
