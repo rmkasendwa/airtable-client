@@ -202,24 +202,25 @@ export const AirtableThumbnailSizeValidationSchema = z.object({
 });
 
 export const AirtableAttachmentThumbnailValidationSchema = z.object({
-  small: AirtableThumbnailSizeValidationSchema,
-  large: AirtableThumbnailSizeValidationSchema,
-  full: AirtableThumbnailSizeValidationSchema,
+  small: AirtableThumbnailSizeValidationSchema.nullish(),
+  large: AirtableThumbnailSizeValidationSchema.nullish(),
+  full: AirtableThumbnailSizeValidationSchema.nullish(),
 });
 
 export const AirtableAttachmentValidationSchema = z.object({
   id: z.string(),
-  width: z.number(),
-  height: z.number(),
+  width: z.number().nullish(),
+  height: z.number().nullish(),
   url: z.string(),
   filename: z.string(),
   size: z.number(),
   type: z.string(),
-  thumbnails: AirtableAttachmentThumbnailValidationSchema,
+  thumbnails: AirtableAttachmentThumbnailValidationSchema.nullish(),
 });
 
 export const AirtableFormulaColumnErrorValidationSchema = z.object({
-  specialValue: z.enum(['NaN'] as const),
+  specialValue: z.enum(['NaN'] as const).nullish(),
+  error: z.string().nullish(),
 });
 
 export const AirtableButtonValidationSchema = z.object({
