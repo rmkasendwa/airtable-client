@@ -2,7 +2,7 @@ import { defineConfig } from './models';
 
 export default defineConfig({
   defaultBase: {
-    name: 'Talent (topology test apps)',
+    name: 'Talent',
   },
   tables: [
     {
@@ -35,4 +35,5 @@ export default defineConfig({
       ],
     },
   ],
+  bases: [{ name: 'Position Model' }, { name: 'Talent (topology test apps)' }],
 });

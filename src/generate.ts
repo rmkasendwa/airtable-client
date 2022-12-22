@@ -42,6 +42,9 @@ const configBases = [
     .map(({ base }) => {
       return base!;
     }),
+  ...(config.bases || []).map(({ id, name }) => {
+    return { id, name };
+  }),
 ];
 
 const outputFolderPath = normalize(`${__dirname}/__sandbox`);
@@ -79,7 +82,7 @@ const templateFilePaths = globby
 
         const pascalCaseBaseName = baseName.toPascalCase();
         const baseAPIOutputFolderPath = normalize(
-          `${outputFolderPath}/bases/${pascalCaseBaseName}`
+          `${outputFolderPath}/airtable/${pascalCaseBaseName}`
         );
 
         const moduleFiles: string[] = [];
@@ -184,6 +187,7 @@ const templateFilePaths = globby
           );
 
           const interpolationBlocks: Record<string, string> = {
+            ['/* AIRTABLE_BASE_ID */']: `"${baseId}"`,
             ['/* AIRTABLE_ENTITY_COLUMNS */']: filteredColumns
               .map(({ name }) => `"${name}"`)
               .join(', '),

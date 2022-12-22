@@ -5,7 +5,7 @@ import {
   createNewPositions,
   findAllAssignments,
   findAllResourcings,
-} from './__sandbox/bases/TalentTopologyTestApps';
+} from './__sandbox/airtable/TalentTopologyTestApps';
 
 /**
  * Moves resourcing records from resourcing table to assignments table.

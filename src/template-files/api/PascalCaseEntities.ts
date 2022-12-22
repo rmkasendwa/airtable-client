@@ -10,8 +10,10 @@ import {
   FIND_ALL_ENTITIES_ENDPOINT_PATH,
   FIND_ENTITY_BY_ID_ENPOINT_PATH,
 } from '../endpoint-paths/PascalCaseEntities';
-import { FindAllRecordsQueryParams } from '../interfaces';
-import { DeleteAirtableRecordResponseValidationSchema } from '../models/__Utils';
+import {
+  DeleteAirtableRecordResponseValidationSchema,
+  FindAllRecordsQueryParams,
+} from '../models/__Utils';
 import {
   CreatePascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesReponseValidationSchema,
@@ -26,7 +28,7 @@ import { convertToAirtableFindAllRecordsQueryParams } from '../utils';
 import Adapter from './Adapter';
 
 /**
- * Finds entities label.
+ * Finds entities label limited by queryParams.pageSize
  *
  * @param queryParams The query params.
  * @returns The entities label.
@@ -56,10 +58,16 @@ export const findPascalCaseEntitiesPage = async (
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
+/**
+ * Finds all entities label in Entities Table table.
+ *
+ * @param queryParams The query params.
+ * @returns The entities label.
+ */
 export const findAllPascalCaseEntities = async (
-  queryParams: FindAllRecordsQueryParams<
-    PascalCaseEntity,
-    PascalCaseEntityView
+  queryParams: Omit<
+    FindAllRecordsQueryParams<PascalCaseEntity, PascalCaseEntityView>,
+    'pageSize'
   > = {}
 ) => {
   const findPages = async (
@@ -73,7 +81,7 @@ export const findAllPascalCaseEntities = async (
       return await findPages(accumulatedRecords, responseOffset);
     }
 
-    return { records: [...records, ...accumulatedRecords] };
+    return { records: [...accumulatedRecords, ...records] };
   };
 
   return findPages();
