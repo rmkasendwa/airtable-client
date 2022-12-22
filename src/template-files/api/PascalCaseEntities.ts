@@ -31,7 +31,7 @@ import Adapter from './Adapter';
  * @param queryParams The query params.
  * @returns The entities label.
  */
-export const findAllPascalCaseEntities = async (
+export const findPascalCaseEntitiesPage = async (
   queryParams: FindAllRecordsQueryParams<
     PascalCaseEntity,
     PascalCaseEntityView
@@ -56,6 +56,29 @@ export const findAllPascalCaseEntities = async (
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
+export const findAllPascalCaseEntities = async (
+  queryParams: FindAllRecordsQueryParams<
+    PascalCaseEntity,
+    PascalCaseEntityView
+  > = {}
+) => {
+  const findPages = async (
+    accumulatedRecords = [],
+    offset?: string
+  ): ReturnType<typeof findPascalCaseEntitiesPage> => {
+    const { records, offset: responseOffset } =
+      await findPascalCaseEntitiesPage({ ...queryParams, offset });
+
+    if (responseOffset) {
+      return await findPages(accumulatedRecords, responseOffset);
+    }
+
+    return { records: [...records, ...accumulatedRecords] };
+  };
+
+  return findPages();
+};
+
 /**
  * Finds entity label by id.
  *
@@ -76,10 +99,11 @@ export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
  * @param camelCaseEntityDetails The entity label details.
  * @returns The created entity label.
  */
-export const createPascalCaseEntity = async (
+export const createNewPascalCaseEntity = async (
   camelCaseEntityDetails: PascalCaseEntityCreationDetails
 ) => {
-  return (await createPascalCaseEntities([camelCaseEntityDetails])).records[0];
+  return (await createNewPascalCaseEntities([camelCaseEntityDetails]))
+    .records[0];
 };
 
 /**
@@ -88,7 +112,7 @@ export const createPascalCaseEntity = async (
  * @param records The entities label to be created.
  * @returns The created entities label.
  */
-export const createPascalCaseEntities = async (
+export const createNewPascalCaseEntities = async (
   records: PascalCaseEntityCreationDetails[]
 ) => {
   console.log(

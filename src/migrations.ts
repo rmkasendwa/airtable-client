@@ -1,8 +1,8 @@
 import { writeFileSync } from 'fs-extra';
 
 import {
-  createAssignments,
-  createPositions,
+  createNewAssignments,
+  createNewPositions,
   findAllAssignments,
   findAllResourcings,
 } from './__sandbox/bases/TalentTopologyTestApps';
@@ -22,7 +22,7 @@ const moveResourcingsToAssignmentsTable = async (offset?: string) => {
     ) => {
       workingResourcings = [...workingResourcings];
       if (workingResourcings.length > 0) {
-        await createAssignments(
+        await createNewAssignments(
           workingResourcings
             .splice(0, 10)
             .map(
@@ -81,7 +81,7 @@ const cloneAssignmentsToPositionsTable = async (offset?: string) => {
     ) => {
       workingAssignments = [...workingAssignments];
       if (workingAssignments.length > 0) {
-        await createPositions(
+        await createNewPositions(
           workingAssignments
             .splice(0, 10)
             .map(
@@ -121,7 +121,8 @@ const cloneAssignmentsToPositionsTable = async (offset?: string) => {
 (async () => {
   try {
     // await moveResourcingsToAssignmentsTable();
-    await cloneAssignmentsToPositionsTable();
+    // await cloneAssignmentsToPositionsTable();
+    await findAllAssignments();
   } catch (err: any) {
     const errorFilePath = `${__dirname}/error.json`;
     console.log(`Processing failed with error writted to ${errorFilePath}`);
