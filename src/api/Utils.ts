@@ -164,8 +164,14 @@ export const getAirtableResponseTypeValidationString = (
   return `z.any()`;
 };
 
-export const getObjectPropertyTypeString = (field: AirtableField): string => {
-  const { type, options } = field;
+export const getObjectPropertyTypeString = (
+  field: AirtableField,
+  options: GetAirtableResponseTypeValidationStringOptions
+): string => {
+  const { tables, currentTable } = options;
+  const rootField = getRootAirtableColumn(field, tables, currentTable);
+
+  const { type } = field;
 
   switch (type) {
     case 'multipleSelects':
@@ -186,20 +192,46 @@ export const getObjectPropertyTypeString = (field: AirtableField): string => {
       return `AirtableButton`;
 
     case 'formula':
-      return `${getObjectPropertyTypeString({
-        ...field,
-        type: field.options?.result?.type,
-      })} | AirtableFormulaColumnError`;
+      return `${getObjectPropertyTypeString(
+        {
+          ...field,
+          type: field.options?.result?.type,
+        },
+        {
+          ...options,
+        }
+      )} | AirtableFormulaColumnError`;
 
     // Lists
     case 'multipleRecordLinks':
-      if (options?.prefersSingleRecordLink) {
+      if (field.options?.prefersSingleRecordLink) {
         return `string`;
       }
       return `string[]`;
     case 'lookup':
     case 'multipleLookupValues':
-      return `string[]`;
+      const propertyTypeString = (() => {
+        if (rootField !== field) {
+          if (rootField.type === 'multipleRecordLinks') {
+            return `string`;
+          }
+          return getObjectPropertyTypeString(rootField, {
+            ...options,
+          });
+        }
+        return getAirtableResponseTypeValidationString(
+          {
+            ...field,
+            type: field.options?.result?.type,
+          },
+          {
+            ...options,
+          }
+        );
+      })();
+      return `${propertyTypeString}${
+        propertyTypeString.match(/\[\]$/g) ? '' : '[]'
+      }`;
 
     // Numbers
     case 'number':
@@ -326,7 +358,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
             );
         }
         return `["${name}"]: ${getAirtableResponseTypeValidationString(field, {
-          currentTable: currentTable,
+          currentTable,
           tables,
         })}.nullish()`;
       })
@@ -417,7 +449,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
             );
         }
         return [
-          `${camelCasePropertyName}?: ${getObjectPropertyTypeString(field)}`,
+          `${camelCasePropertyName}?: ${getObjectPropertyTypeString(field, {
+            currentTable,
+            tables,
+          })}`,
         ];
       })
       .flat()
