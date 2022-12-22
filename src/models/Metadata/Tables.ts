@@ -113,6 +113,8 @@ export const AirtableViewSchema = z.object({
   visibleFieldIds: z.array(z.string()).optional(),
 });
 
+export type AirtableView = z.infer<typeof AirtableViewSchema>;
+
 export const TableValidationSchema = z.object({
   id: z.string(),
   name: z.string(),

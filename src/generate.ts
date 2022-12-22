@@ -17,6 +17,7 @@ import prettier from 'prettier';
 import {
   findAllTablesByBaseId,
   getAirtableAPIGeneratorTemplateFileInterpolationBlocks,
+  getAirtableAPIGeneratorTemplateFileInterpolationLabels,
   getCamelCaseFieldPropertyName,
 } from './api';
 import { findAllAirtableBases } from './api/Metadata/Bases';
@@ -46,7 +47,13 @@ const configBases = [
   }),
 ];
 
-const outputFolderPath = normalize(`${__dirname}/__sandbox`);
+/****************** PATHS *********************/
+
+const airtableAPIFolderName = 'airtable';
+const outputRootPath = `${__dirname}/__sandbox`; // TODO: Get this from command otherwise fallback to process.cwd()
+const outputFolderPath = normalize(
+  `${outputRootPath}/${airtableAPIFolderName}`
+);
 const templatesFolderPath = normalize(`${__dirname}/template-files`);
 const templateFilePaths = globby
   .sync(`src/template-files`, {
@@ -82,7 +89,7 @@ const templateFilePaths = globby
 
         const pascalCaseBaseName = baseName.toPascalCase();
         const baseAPIOutputFolderPath = normalize(
-          `${outputFolderPath}/airtable/${pascalCaseBaseName}`
+          `${outputFolderPath}/${pascalCaseBaseName}`
         );
 
         const moduleFiles: string[] = [];
@@ -132,7 +139,7 @@ const templateFilePaths = globby
             return false;
           });
 
-          const moduleImports: string[] = [];
+          const modelImports: string[] = [];
 
           console.log(
             ` -> Processing \x1b[34m${baseName.trim()}/${tableName.trim()}\x1b[0m table...`
@@ -152,32 +159,6 @@ const templateFilePaths = globby
             return labelPlural.replace(/s$/g, '');
           })();
 
-          const TITLE_CASE_ENTITIES_LABEL_WITH_SPACES = labelPlural;
-          const TITLE_CASE_ENTITY_LABEL_WITH_SPACES = labelSingular;
-
-          const LOWER_CASE_ENTITIES_LABEL_WITH_SPACES =
-            labelPlural.toLowerCase();
-          const LOWER_CASE_ENTITY_LABEL_WITH_SPACES =
-            labelSingular.toLowerCase();
-
-          const UPPER_CASE_ENTITIES_LABEL = labelPlural
-            .replace(/\s/g, '_')
-            .toUpperCase();
-          const UPPER_CASE_ENTITY_LABEL = labelSingular
-            .replace(/\s/g, '_')
-            .toUpperCase();
-
-          const CAMEL_CASE_ENTITIES_LABEL = labelPlural.toCamelCase();
-          const CAMEL_CASE_ENTITY_LABEL = labelSingular.toCamelCase();
-
-          const PASCAL_CASE_ENTITIES_LABEL = labelPlural.toPascalCase();
-          const PASCAL_CASE_ENTITY_LABEL = labelSingular.toPascalCase();
-
-          const KEBAB_CASE_ENTITIES_LABEL =
-            LOWER_CASE_ENTITIES_LABEL_WITH_SPACES.replace(/\s/g, '-');
-          const KEBAB_CASE_ENTITY_LABEL =
-            LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(/\s/g, '-');
-
           const columnToPropertyMapper = filteredColumns.reduce(
             (accumulator, field) => {
               accumulator[field.name] = getCamelCaseFieldPropertyName(field);
@@ -194,112 +175,19 @@ const templateFilePaths = globby
               editableTableColumns: editableColumns,
               tables,
               columnToPropertyMapper,
-              moduleImportCollector: moduleImports,
+              modelImportsCollector: modelImports,
             });
 
-          const interpolationLabels: Record<string, string> = {
-            ['/* AIRTABLE_VIEWS */']: views
-              .map(({ name }) => {
-                return `"${RegExp.escape(name)}"`;
-              })
-              .join(', '),
-
-            ['/* ENTITY_INTERFACE_FIELDS */']: filteredColumns
-              .map(({ name, type, options }) => {
-                const camelCasePropertyName = (() => {
-                  const propertyName = columnToPropertyMapper[name];
-                  if (propertyName.match(/^\d/)) {
-                    return `_${propertyName}`;
-                  }
-                  return propertyName;
-                })();
-
-                if (camelCasePropertyName.length > 0) {
-                  const propertyType = (() => {
-                    switch (type) {
-                      case 'multipleSelects':
-                      case 'singleCollaborator':
-                      case 'multipleCollaborators':
-                      case 'multipleAttachments':
-                      case 'formula':
-                      case 'rollup':
-                      case 'barcode':
-                      case 'duration':
-                      case 'button':
-                      case 'createdBy':
-                      case 'lastModifiedBy':
-                      case 'externalSyncSource':
-                        break;
-
-                      // Lists
-                      case 'multipleRecordLinks':
-                        if (options?.prefersSingleRecordLink) {
-                          return `string`;
-                        }
-                        return `string[]`;
-                      case 'lookup':
-                      case 'multipleLookupValues':
-                        return `string[]`;
-
-                      // Numbers
-                      case 'number':
-                      case 'percent':
-                      case 'currency':
-                      case 'count':
-                      case 'autoNumber':
-                      case 'rating':
-                        return `number`;
-
-                      // Booleans
-                      case 'checkbox':
-                        return `boolean`;
-
-                      // Strings
-                      case 'date':
-                      case 'dateTime':
-                      case 'lastModifiedTime':
-                      case 'createdTime':
-                      case 'email':
-                      case 'url':
-                      case 'singleLineText':
-                      case 'multilineText':
-                      case 'richText':
-                      case 'phoneNumber':
-                      case 'singleSelect':
-                      default:
-                        return `string`;
-                    }
-                    return 'any';
-                  })();
-
-                  return [`${camelCasePropertyName}?: ${propertyType}`];
-                }
-                return [];
-              })
-              .flat()
-              .join(';\n'),
-
-            ['/* MODEL_IMPORTS */']: [...new Set(moduleImports)].join('\n'),
-
-            ['Entities Table']: tableName,
-            ['Entities Label']: TITLE_CASE_ENTITIES_LABEL_WITH_SPACES,
-            ['Entity Label']: TITLE_CASE_ENTITY_LABEL_WITH_SPACES,
-
-            ['entities label']: LOWER_CASE_ENTITIES_LABEL_WITH_SPACES,
-            ['entity label']: LOWER_CASE_ENTITY_LABEL_WITH_SPACES,
-
-            ['ENTITIES']: UPPER_CASE_ENTITIES_LABEL,
-            ['ENTITY']: UPPER_CASE_ENTITY_LABEL,
-
-            ['camelCaseEntities']: CAMEL_CASE_ENTITIES_LABEL,
-            ['camelCaseEntity']: CAMEL_CASE_ENTITY_LABEL,
-
-            ['PascalCaseEntities']: PASCAL_CASE_ENTITIES_LABEL,
-            ['PascalCaseEntity']: PASCAL_CASE_ENTITY_LABEL,
-
-            ['kebab-case-entities']: KEBAB_CASE_ENTITIES_LABEL,
-            ['kebab-case-entity']: KEBAB_CASE_ENTITY_LABEL,
-          };
+          const interpolationLabels =
+            getAirtableAPIGeneratorTemplateFileInterpolationLabels({
+              currentTable: table,
+              filteredTableColumns: filteredColumns,
+              columnToPropertyMapper,
+              modelImportsCollector: modelImports,
+              views,
+              labelPlural,
+              labelSingular,
+            });
 
           const getInterpolatedString = (templateFileContents: string) => {
             return Object.keys(interpolationLabels).reduce(
@@ -319,7 +207,7 @@ const templateFilePaths = globby
             );
           };
 
-          moduleFiles.push(`./api/${PASCAL_CASE_ENTITIES_LABEL}`);
+          moduleFiles.push(`./api/${labelPlural.toPascalCase()}`);
 
           templateFilePaths.forEach((templateFilePath) => {
             const templateFileContents = readFileSync(
@@ -334,6 +222,7 @@ const templateFilePaths = globby
             );
 
             ensureDirSync(dirname(filePath));
+
             writeFileSync(
               filePath,
               prettier.format(getInterpolatedString(templateFileContents), {
