@@ -16,9 +16,8 @@ import prettier from 'prettier';
 
 import {
   findAllTablesByBaseId,
-  getAirtableResponseTypeValidationString,
+  getAirtableAPIGeneratorTemplateFileInterpolationBlocks,
   getCamelCaseFieldPropertyName,
-  getRootAirtableColumn,
 } from './api';
 import { findAllAirtableBases } from './api/Metadata/Bases';
 import { Config } from './models';
@@ -75,7 +74,8 @@ const templateFilePaths = globby
     }
     ensureDirSync(outputFolderPath);
 
-    workingBases.forEach(async ({ id: baseId, name: baseName }) => {
+    workingBases.forEach(async (base) => {
+      const { id: baseId, name: baseName } = base;
       const { tables } = await findAllTablesByBaseId(baseId);
       if (tables.length > 0) {
         console.log(`\nProcessing \x1b[34m${baseName.trim()}\x1b[0m base...`);
@@ -186,83 +186,16 @@ const templateFilePaths = globby
             {} as Record<string, string>
           );
 
-          const interpolationBlocks: Record<string, string> = {
-            ['/* AIRTABLE_BASE_ID */']: `"${baseId}"`,
-            ['/* AIRTABLE_ENTITY_COLUMNS */']: filteredColumns
-              .map(({ name }) => `"${name}"`)
-              .join(', '),
-
-            ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']:
-              filteredColumns
-                .map((field) => {
-                  const { name } = field;
-                  const rootColumn = getRootAirtableColumn(
-                    field,
-                    tables,
-                    table
-                  );
-                  const camelCasePropertyName = columnToPropertyMapper[name];
-                  return `["${name}"]: ${(() => {
-                    const obj = {
-                      propertyName: camelCasePropertyName,
-                      ...(() => {
-                        if (
-                          rootColumn &&
-                          rootColumn.options?.prefersSingleRecordLink
-                        ) {
-                          return {
-                            prefersSingleRecordLink: true,
-                          };
-                        }
-                      })(),
-                    };
-
-                    if (Object.keys(obj).length > 1) {
-                      return JSON.stringify(obj);
-                    }
-
-                    return `"${obj.propertyName}"`;
-                  })()}`;
-                })
-                .join(',\n'),
-            ['/* AIRTABLE_ENTITY_FIELDS */']: filteredColumns
-              .map((field) => {
-                const { name } = field;
-                const rootColumn = getRootAirtableColumn(field, tables, table);
-                switch (rootColumn.type) {
-                  case 'multipleAttachments':
-                    moduleImports.push(
-                      `import {AirtableAttachmentValidationSchema} from './__Utils';`
-                    );
-                    break;
-                  case 'button':
-                    moduleImports.push(
-                      `import {AirtableButtonValidationSchema} from './__Utils';`
-                    );
-                    break;
-                  case 'formula':
-                    moduleImports.push(
-                      `import {AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
-                    );
-                }
-                return `["${name}"]: ${getAirtableResponseTypeValidationString(
-                  field,
-                  { currentTable: table, tables }
-                )}.nullish()`;
-              })
-              .join(',\n'),
-
-            ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: editableColumns
-              .map(({ name }) => `'${columnToPropertyMapper[name]}'`)
-              .join(' | '),
-
-            ['/* REQUEST_ENTITY_PROPERTIES */']: editableColumns
-              .map(
-                ({ name }) =>
-                  `"${columnToPropertyMapper[name]}": z.any().nullish()`
-              )
-              .join(',\n'),
-          };
+          const interpolationBlocks =
+            getAirtableAPIGeneratorTemplateFileInterpolationBlocks({
+              base,
+              currentTable: table,
+              filteredTableColumns: filteredColumns,
+              editableTableColumns: editableColumns,
+              tables,
+              columnToPropertyMapper,
+              moduleImportCollector: moduleImports,
+            });
 
           const interpolationLabels: Record<string, string> = {
             ['/* AIRTABLE_VIEWS */']: views

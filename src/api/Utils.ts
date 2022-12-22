@@ -1,4 +1,4 @@
-import { AirtableField, Table } from '../models';
+import { AirtableBase, AirtableField, Table } from '../models';
 
 export const getCamelCaseFieldPropertyName = ({ name }: AirtableField) => {
   const camelCasePropertyName = name.toCamelCase();
@@ -156,4 +156,92 @@ export const getAirtableResponseTypeValidationString = (
       return `z.string()`;
   }
   return `z.any()`;
+};
+
+export type GetAirtableAPIGeneratorTemplateFileInterpolationBlocksOptions = {
+  base: AirtableBase;
+  currentTable: Table;
+  filteredTableColumns: AirtableField[];
+  editableTableColumns: AirtableField[];
+  tables: Table[];
+  columnToPropertyMapper: Record<string, string>;
+  moduleImportCollector: string[];
+};
+
+export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
+  base,
+  currentTable,
+  filteredTableColumns,
+  editableTableColumns,
+  tables,
+  columnToPropertyMapper,
+  moduleImportCollector,
+}: GetAirtableAPIGeneratorTemplateFileInterpolationBlocksOptions) => {
+  const { id: baseId } = base;
+  return {
+    ['/* AIRTABLE_BASE_ID */']: `"${baseId}"`,
+    ['/* AIRTABLE_ENTITY_COLUMNS */']: filteredTableColumns
+      .map(({ name }) => `"${name}"`)
+      .join(', '),
+
+    ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: filteredTableColumns
+      .map((field) => {
+        const { name } = field;
+        const rootColumn = getRootAirtableColumn(field, tables, currentTable);
+        const camelCasePropertyName = columnToPropertyMapper[name];
+        return `["${name}"]: ${(() => {
+          const obj = {
+            propertyName: camelCasePropertyName,
+            ...(() => {
+              if (rootColumn && rootColumn.options?.prefersSingleRecordLink) {
+                return {
+                  prefersSingleRecordLink: true,
+                };
+              }
+            })(),
+          };
+
+          if (Object.keys(obj).length > 1) {
+            return JSON.stringify(obj);
+          }
+
+          return `"${obj.propertyName}"`;
+        })()}`;
+      })
+      .join(',\n'),
+    ['/* AIRTABLE_ENTITY_FIELDS */']: filteredTableColumns
+      .map((field) => {
+        const { name } = field;
+        const rootColumn = getRootAirtableColumn(field, tables, currentTable);
+        switch (rootColumn.type) {
+          case 'multipleAttachments':
+            moduleImportCollector.push(
+              `import {AirtableAttachmentValidationSchema} from './__Utils';`
+            );
+            break;
+          case 'button':
+            moduleImportCollector.push(
+              `import {AirtableButtonValidationSchema} from './__Utils';`
+            );
+            break;
+          case 'formula':
+            moduleImportCollector.push(
+              `import {AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
+            );
+        }
+        return `["${name}"]: ${getAirtableResponseTypeValidationString(field, {
+          currentTable: currentTable,
+          tables,
+        })}.nullish()`;
+      })
+      .join(',\n'),
+
+    ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: editableTableColumns
+      .map(({ name }) => `'${columnToPropertyMapper[name]}'`)
+      .join(' | '),
+
+    ['/* REQUEST_ENTITY_PROPERTIES */']: editableTableColumns
+      .map(({ name }) => `"${columnToPropertyMapper[name]}": z.any().nullish()`)
+      .join(',\n'),
+  } as Record<string, string>;
 };

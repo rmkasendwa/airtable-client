@@ -13,6 +13,7 @@ import {
 import {
   DeleteAirtableRecordResponseValidationSchema,
   FindAllRecordsQueryParams,
+  convertToAirtableFindAllRecordsQueryParams,
 } from '../models/__Utils';
 import {
   CreatePascalCaseEntitiesRequestValidationSchema,
@@ -24,7 +25,6 @@ import {
   PascalCaseEntityView,
   UpdatePascalCaseEntitiesRequestValidationSchema,
 } from '../models/PascalCaseEntities';
-import { convertToAirtableFindAllRecordsQueryParams } from '../utils';
 import Adapter from './Adapter';
 
 /**

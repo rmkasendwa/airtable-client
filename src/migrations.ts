@@ -122,7 +122,9 @@ const cloneAssignmentsToPositionsTable = async (offset?: string) => {
   try {
     // await moveResourcingsToAssignmentsTable();
     // await cloneAssignmentsToPositionsTable();
-    await findAllAssignments();
+
+    const { records: assignments } = await findAllAssignments();
+    console.log({ assignments });
   } catch (err: any) {
     const errorFilePath = `${__dirname}/error.json`;
     console.log(`Processing failed with error writted to ${errorFilePath}`);

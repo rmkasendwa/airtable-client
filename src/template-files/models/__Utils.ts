@@ -1,3 +1,4 @@
+import { omit } from 'lodash';
 import { AnyZodObject, z } from 'zod';
 
 export const airtableFieldTypes = [
@@ -57,6 +58,43 @@ export type FindAllRecordsQueryParams<
   timeZone?: string;
   userLocale?: string;
   offset?: string;
+};
+
+export const convertToAirtableFindAllRecordsQueryParams = <
+  T extends FindAllRecordsQueryParams
+>(
+  queryParams: T
+) => {
+  const airtableQueryParams: Omit<
+    FindAllRecordsQueryParams,
+    'sort' | 'fields'
+  > & {
+    sort?: string[];
+    fields?: string;
+  } = {
+    ...omit(queryParams, 'sort', 'fields'),
+    ...(() => {
+      if (queryParams.sort) {
+        return {
+          sort: queryParams.sort
+            .map(({ field, direction }, index) => {
+              return [
+                `sort[${index}][field]=${field}`,
+                ...(() => {
+                  if (direction) {
+                    return `sort[${index}][direction]=${direction}`;
+                  }
+                  return [];
+                })(),
+              ];
+            })
+            .flat(),
+        };
+      }
+    })(),
+  };
+
+  return airtableQueryParams;
 };
 
 export type AirtableColumnMapping<T extends string> =
