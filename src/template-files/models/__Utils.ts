@@ -96,9 +96,13 @@ export const convertToAirtableFindAllRecordsQueryParams = <
     ...(() => {
       if (queryParams.fields) {
         return {
-          fields: queryParams.fields.map((field) => {
-            return objectPropertyToColumnNameMapper[field];
-          }),
+          fields: queryParams.fields
+            .filter((field) => {
+              return objectPropertyToColumnNameMapper[field];
+            })
+            .map((field) => {
+              return objectPropertyToColumnNameMapper[field];
+            }),
         };
       }
     })(),

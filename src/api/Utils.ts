@@ -254,6 +254,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   views,
   labelSingular,
   labelPlural,
+  focusColumnNames,
 }: Omit<
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
   'base' | 'editableTableColumns' | 'tables'
@@ -261,6 +262,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   views: AirtableView[];
   labelSingular: string;
   labelPlural: string;
+  focusColumnNames: string[];
 }) => {
   const { name: tableName } = currentTable;
 
@@ -362,9 +364,9 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
       .flat()
       .join(';\n'),
 
-    ['/* ENTITY_FOCUS_FIELDS */']: filteredTableColumns
-      .map(({ name }) => {
-        return `"${columnToPropertyMapper[name]}"`;
+    ['/* ENTITY_FOCUS_FIELDS */']: focusColumnNames
+      .map((columnName) => {
+        return `"${columnToPropertyMapper[columnName]}"`;
       })
       .join(', '),
 

@@ -127,7 +127,11 @@ const templateFilePaths = globby
           const { name: tableName, fields: columns, views } = table;
 
           // Table Configuration.
-          const { labelPlural, labelSingular, focusColumns } = (() => {
+          const {
+            labelPlural,
+            labelSingular,
+            focusColumns: focusColumnNames,
+          } = (() => {
             const outputConfig: {
               labelPlural: string;
               labelSingular: string;
@@ -202,7 +206,7 @@ const templateFilePaths = globby
               return (
                 !name.match(/^id$/gi) &&
                 name.replace(/[^\w\s]/g, '').length > 0 &&
-                (!focusColumns || focusColumns.includes(name))
+                (!focusColumnNames || focusColumnNames.includes(name))
               );
             })
             .reduce((accumulator, field) => {
@@ -276,6 +280,7 @@ const templateFilePaths = globby
               views,
               labelPlural,
               labelSingular,
+              focusColumnNames: focusColumnNames || [],
             });
 
           const getInterpolatedString = (templateFileContents: string) => {
