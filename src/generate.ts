@@ -127,10 +127,11 @@ const templateFilePaths = globby
           const { name: tableName, fields: columns, views } = table;
 
           // Table Configuration.
-          const { labelPlural, labelSingular } = (() => {
-            const labelConfig: {
+          const { labelPlural, labelSingular, focusColumns } = (() => {
+            const outputConfig: {
               labelPlural: string;
               labelSingular: string;
+              focusColumns?: string[];
             } = { labelPlural: '', labelSingular: '' };
 
             const configTable = configTables.find(({ name, base }) => {
@@ -142,15 +143,18 @@ const templateFilePaths = globby
             });
 
             if (configTable) {
-              const { alias: configTableAlias, name: configTableName } =
-                configTable;
+              const {
+                alias: configTableAlias,
+                name: configTableName,
+                focusColumns,
+              } = configTable;
               if (configTable.labelPlural) {
-                labelConfig.labelPlural = configTable.labelPlural;
+                outputConfig.labelPlural = configTable.labelPlural;
               } else {
                 const sanitisedTableName = (configTableAlias || configTableName)
                   .trim()
                   .replace(/[^\w\s]/g, '');
-                labelConfig.labelPlural = (() => {
+                outputConfig.labelPlural = (() => {
                   if (!sanitisedTableName.match(/s$/g)) {
                     return sanitisedTableName + 's';
                   }
@@ -158,42 +162,47 @@ const templateFilePaths = globby
                 })();
               }
               if (configTable.labelSingular) {
-                labelConfig.labelSingular = configTable.labelSingular;
+                outputConfig.labelSingular = configTable.labelSingular;
               } else {
-                const labelPlural = labelConfig.labelPlural!;
-                labelConfig.labelSingular = (() => {
+                const labelPlural = outputConfig.labelPlural!;
+                outputConfig.labelSingular = (() => {
                   if (labelPlural.match(/ies$/)) {
                     return labelPlural.replace(/ies$/, 'y');
                   }
                   return labelPlural.replace(/s$/g, '');
                 })();
               }
+              if (focusColumns) {
+                outputConfig.focusColumns = focusColumns;
+              }
             } else {
               const sanitisedTableName = tableName
                 .trim()
                 .replace(/[^\w\s]/g, '');
-              labelConfig.labelPlural = (() => {
+              outputConfig.labelPlural = (() => {
                 if (!sanitisedTableName.match(/s$/g)) {
                   return sanitisedTableName + 's';
                 }
                 return sanitisedTableName;
               })();
-              labelConfig.labelSingular = (() => {
-                if (labelConfig.labelPlural.match(/ies$/)) {
-                  return labelConfig.labelPlural.replace(/ies$/, 'y');
+              outputConfig.labelSingular = (() => {
+                if (outputConfig.labelPlural.match(/ies$/)) {
+                  return outputConfig.labelPlural.replace(/ies$/, 'y');
                 }
-                return labelConfig.labelPlural.replace(/s$/g, '');
+                return outputConfig.labelPlural.replace(/s$/g, '');
               })();
             }
 
-            return labelConfig;
+            return outputConfig;
           })();
 
           // Filter id, emoji, any field we don't understand
           const filteredTableColumns = columns
             .filter(({ name }) => {
               return (
-                !name.match(/^id$/gi) && name.replace(/[^\w\s]/g, '').length > 0
+                !name.match(/^id$/gi) &&
+                name.replace(/[^\w\s]/g, '').length > 0 &&
+                (!focusColumns || focusColumns.includes(name))
               );
             })
             .reduce((accumulator, field) => {
