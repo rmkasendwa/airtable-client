@@ -28,7 +28,6 @@ const moveResourcingsToAssignmentsTable = async (offset?: string) => {
             .splice(0, 10)
             .map(
               ({
-                slot,
                 projectOverride,
                 projectRole,
                 teamMember,
@@ -39,7 +38,6 @@ const moveResourcingsToAssignmentsTable = async (offset?: string) => {
                 status,
               }) => {
                 return {
-                  name: slot,
                   billingAllocation: allocation,
                   timingAllocation: allocation,
                   startDate: resourceStart,

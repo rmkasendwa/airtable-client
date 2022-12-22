@@ -22,6 +22,10 @@ import {
 import { findAllAirtableBases } from './api/Metadata/Bases';
 import { Config, ConfigColumnNameToObjectPropertyMapper } from './models';
 
+const args = process.argv;
+
+const generateAllTables = args.includes('--all');
+
 const config: Config<string> = (() => {
   const config = require('./airtable-api.config');
   if (config.default) {
@@ -29,8 +33,6 @@ const config: Config<string> = (() => {
   }
   return config;
 })();
-
-const prettierConfig = require('../.prettierrc.js');
 
 const configBases = [
   config.defaultBase,
@@ -100,6 +102,7 @@ const templateFilePaths = globby
       const { tables } = await findAllTablesByBaseId(workingBaseId);
       const filteredTables = tables.filter(({ name }) => {
         return (
+          generateAllTables ||
           configTables.length <= 0 ||
           configTables.some(({ name: configTableName, base }) => {
             return (
@@ -204,7 +207,6 @@ const templateFilePaths = globby
             return outputConfig;
           })();
 
-          // Filter id, emoji, any field we don't understand
           const filteredTableColumns = columns
             .filter(({ name }) => {
               return (
@@ -280,6 +282,7 @@ const templateFilePaths = globby
             getAirtableAPIGeneratorTemplateFileInterpolationLabels({
               currentTable: table,
               filteredTableColumns,
+              tables,
               columnToPropertyMapper,
               modelImportsCollector,
               views,
@@ -292,16 +295,13 @@ const templateFilePaths = globby
           const getInterpolatedString = (templateFileContents: string) => {
             return Object.keys(interpolationLabels).reduce(
               (fileContents, key) => {
-                return fileContents.replaceAll(
-                  key,
-                  (interpolationLabels as any)[key]
-                );
+                return fileContents.replaceAll(key, interpolationLabels[key]);
               },
               Object.keys(interpolationBlocks).reduce((fileContents, key) => {
                 const escapedKey = RegExp.escape(key);
                 return fileContents.replace(
                   new RegExp(`${escapedKey}[\\s\\S]*${escapedKey}`, 'g'),
-                  (interpolationBlocks as any)[key]
+                  interpolationBlocks[key]
                 );
               }, templateFileContents)
             );
@@ -327,7 +327,12 @@ const templateFilePaths = globby
               filePath,
               prettier.format(getInterpolatedString(templateFileContents), {
                 filepath: filePath,
-                ...prettierConfig,
+                semi: true,
+                trailingComma: 'es5',
+                singleQuote: true,
+                printWidth: 80,
+                tabWidth: 2,
+                endOfLine: 'auto',
               })
             );
           });

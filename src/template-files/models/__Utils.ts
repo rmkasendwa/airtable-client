@@ -237,12 +237,23 @@ export const AirtableAttachmentValidationSchema = z.object({
   thumbnails: AirtableAttachmentThumbnailValidationSchema.nullish(),
 });
 
+export type AirtableAttachment = z.infer<
+  typeof AirtableAttachmentValidationSchema
+>;
+
+// Validates airtable formula column errors.
 export const AirtableFormulaColumnErrorValidationSchema = z.object({
   specialValue: z.enum(['NaN'] as const).nullish(),
   error: z.string().nullish(),
 });
 
+export type AirtableFormulaColumnError = z.infer<
+  typeof AirtableFormulaColumnErrorValidationSchema
+>;
+
 export const AirtableButtonValidationSchema = z.object({
   label: z.string(),
   url: z.string().url(),
 });
+
+export type AirtableButton = z.infer<typeof AirtableButtonValidationSchema>;

@@ -164,6 +164,74 @@ export const getAirtableResponseTypeValidationString = (
   return `z.any()`;
 };
 
+export const getObjectPropertyTypeString = (field: AirtableField): string => {
+  const { type, options } = field;
+
+  switch (type) {
+    case 'multipleSelects':
+    case 'singleCollaborator':
+    case 'multipleCollaborators':
+    case 'rollup':
+    case 'barcode':
+    case 'duration':
+    case 'createdBy':
+    case 'lastModifiedBy':
+    case 'externalSyncSource':
+      break;
+
+    case 'multipleAttachments':
+      return `AirtableAttachment[]`;
+
+    case 'button':
+      return `AirtableButton`;
+
+    case 'formula':
+      return `${getObjectPropertyTypeString({
+        ...field,
+        type: field.options?.result?.type,
+      })} | AirtableFormulaColumnError`;
+
+    // Lists
+    case 'multipleRecordLinks':
+      if (options?.prefersSingleRecordLink) {
+        return `string`;
+      }
+      return `string[]`;
+    case 'lookup':
+    case 'multipleLookupValues':
+      return `string[]`;
+
+    // Numbers
+    case 'number':
+    case 'percent':
+    case 'currency':
+    case 'count':
+    case 'autoNumber':
+    case 'rating':
+      return `number`;
+
+    // Booleans
+    case 'checkbox':
+      return `boolean`;
+
+    // Strings
+    case 'date':
+    case 'dateTime':
+    case 'lastModifiedTime':
+    case 'createdTime':
+    case 'email':
+    case 'url':
+    case 'singleLineText':
+    case 'multilineText':
+    case 'richText':
+    case 'phoneNumber':
+    case 'singleSelect':
+    default:
+      return `string`;
+  }
+  return 'any';
+};
+
 export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   base: AirtableBase;
   currentTable: Table;
@@ -283,9 +351,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   labelSingular,
   labelPlural,
   focusColumnNames,
+  tables,
 }: Omit<
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
-  'base' | 'editableTableColumns' | 'tables'
+  'base' | 'editableTableColumns'
 > & {
   views: AirtableView[];
   labelSingular: string;
@@ -328,66 +397,28 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
       .join(', '),
 
     ['/* ENTITY_INTERFACE_FIELDS */']: filteredTableColumns
-      .map(({ name, type, options }) => {
-        const camelCasePropertyName = columnToPropertyMapper[name];
-        const propertyType = (() => {
-          switch (type) {
-            case 'multipleSelects':
-            case 'singleCollaborator':
-            case 'multipleCollaborators':
-            case 'multipleAttachments':
-            case 'formula':
-            case 'rollup':
-            case 'barcode':
-            case 'duration':
-            case 'button':
-            case 'createdBy':
-            case 'lastModifiedBy':
-            case 'externalSyncSource':
-              break;
-
-            // Lists
-            case 'multipleRecordLinks':
-              if (options?.prefersSingleRecordLink) {
-                return `string`;
-              }
-              return `string[]`;
-            case 'lookup':
-            case 'multipleLookupValues':
-              return `string[]`;
-
-            // Numbers
-            case 'number':
-            case 'percent':
-            case 'currency':
-            case 'count':
-            case 'autoNumber':
-            case 'rating':
-              return `number`;
-
-            // Booleans
-            case 'checkbox':
-              return `boolean`;
-
-            // Strings
-            case 'date':
-            case 'dateTime':
-            case 'lastModifiedTime':
-            case 'createdTime':
-            case 'email':
-            case 'url':
-            case 'singleLineText':
-            case 'multilineText':
-            case 'richText':
-            case 'phoneNumber':
-            case 'singleSelect':
-            default:
-              return `string`;
-          }
-          return 'any';
-        })();
-
-        return [`${camelCasePropertyName}?: ${propertyType}`];
+      .map((field) => {
+        const camelCasePropertyName = columnToPropertyMapper[field.name];
+        const rootColumn = getRootAirtableColumn(field, tables, currentTable);
+        switch (rootColumn.type) {
+          case 'multipleAttachments':
+            modelImportsCollector.push(
+              `import {AirtableAttachment} from './__Utils';`
+            );
+            break;
+          case 'button':
+            modelImportsCollector.push(
+              `import {AirtableButton} from './__Utils';`
+            );
+            break;
+          case 'formula':
+            modelImportsCollector.push(
+              `import {AirtableFormulaColumnError} from './__Utils';`
+            );
+        }
+        return [
+          `${camelCasePropertyName}?: ${getObjectPropertyTypeString(field)}`,
+        ];
       })
       .flat()
       .join(';\n'),

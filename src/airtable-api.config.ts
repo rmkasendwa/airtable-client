@@ -119,6 +119,9 @@ export default defineConfig({
     {
       name: 'Positions',
     },
+    {
+      name: 'SOWs',
+    },
   ],
   bases: [{ name: 'Position Model' }, { name: 'Talent (topology test apps)' }],
 });
