@@ -1,4 +1,10 @@
-import { AirtableBase, AirtableField, AirtableView, Table } from '../models';
+import {
+  AirtableBase,
+  AirtableField,
+  AirtableView,
+  ConfigColumnNameToObjectPropertyMapper,
+  Table,
+} from '../models';
 
 export const getCamelCaseFieldPropertyName = ({ name }: AirtableField) => {
   const camelCasePropertyName = name.toCamelCase();
@@ -166,6 +172,7 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   tables: Table[];
   columnToPropertyMapper: Record<string, string>;
   modelImportsCollector: string[];
+  columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
 };
 
 export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
@@ -176,6 +183,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   tables,
   columnToPropertyMapper,
   modelImportsCollector,
+  columnNameToObjectPropertyMapper = {},
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
   const { id: baseId } = base;
   return {
@@ -189,11 +197,31 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         const { name } = field;
         const rootColumn = getRootAirtableColumn(field, tables, currentTable);
         const camelCasePropertyName = columnToPropertyMapper[name];
+        const columnNameToObjectPropertyMapperConfig =
+          columnNameToObjectPropertyMapper[name];
+
         return `["${name}"]: ${(() => {
           const obj = {
-            propertyName: camelCasePropertyName,
+            propertyName: (() => {
+              if (columnNameToObjectPropertyMapperConfig) {
+                if (
+                  typeof columnNameToObjectPropertyMapperConfig === 'string'
+                ) {
+                  return columnNameToObjectPropertyMapperConfig;
+                }
+                if (columnNameToObjectPropertyMapperConfig.propertyName) {
+                  return columnNameToObjectPropertyMapperConfig.propertyName;
+                }
+              }
+              return camelCasePropertyName;
+            })(),
             ...(() => {
-              if (rootColumn && rootColumn.options?.prefersSingleRecordLink) {
+              if (
+                (rootColumn && rootColumn.options?.prefersSingleRecordLink) ||
+                (columnNameToObjectPropertyMapperConfig &&
+                  typeof columnNameToObjectPropertyMapperConfig !== 'string' &&
+                  columnNameToObjectPropertyMapperConfig.prefersSingleRecordLink)
+              ) {
                 return {
                   prefersSingleRecordLink: true,
                 };

@@ -111,11 +111,13 @@ export const convertToAirtableFindAllRecordsQueryParams = <
   return airtableQueryParams;
 };
 
+export type AirtableColumnConfigMapping<T extends string> = {
+  propertyName: T;
+  prefersSingleRecordLink?: boolean;
+};
+
 export type AirtableColumnMapping<T extends string> =
-  | {
-      propertyName: T;
-      prefersSingleRecordLink?: boolean;
-    }
+  | AirtableColumnConfigMapping<T>
   | T;
 
 /**
@@ -166,7 +168,10 @@ export const getAirtableRecordResponseValidationSchema = <T>(
 
 export const getAirtableRecordRequestValidationSchema = <T>(
   requestValidationSchema: AnyZodObject,
-  objectPropertyToColumnNameMapper: any
+  objectPropertyToColumnNameMapper: Record<
+    string,
+    AirtableColumnConfigMapping<string>
+  >
 ) => {
   return requestValidationSchema.transform(({ id, ...fields }) => {
     return {

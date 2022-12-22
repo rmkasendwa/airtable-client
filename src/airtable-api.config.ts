@@ -110,6 +110,11 @@ export default defineConfig({
         'Project Names',
         'Active Project Count',
       ],
+      columnNameToObjectPropertyMapper: {
+        ['Continent Name']: {
+          prefersSingleRecordLink: true,
+        },
+      },
     },
     {
       name: 'Positions',

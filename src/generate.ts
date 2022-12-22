@@ -20,9 +20,9 @@ import {
   getCamelCaseFieldPropertyName,
 } from './api';
 import { findAllAirtableBases } from './api/Metadata/Bases';
-import { Config } from './models';
+import { Config, ConfigColumnNameToObjectPropertyMapper } from './models';
 
-const config: Config = (() => {
+const config: Config<string> = (() => {
   const config = require('./airtable-api.config');
   if (config.default) {
     return config.default;
@@ -131,11 +131,13 @@ const templateFilePaths = globby
             labelPlural,
             labelSingular,
             focusColumns: focusColumnNames,
+            columnNameToObjectPropertyMapper,
           } = (() => {
             const outputConfig: {
               labelPlural: string;
               labelSingular: string;
               focusColumns?: string[];
+              columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
             } = { labelPlural: '', labelSingular: '' };
 
             const configTable = configTables.find(({ name, base }) => {
@@ -151,6 +153,7 @@ const templateFilePaths = globby
                 alias: configTableAlias,
                 name: configTableName,
                 focusColumns,
+                columnNameToObjectPropertyMapper,
               } = configTable;
               if (configTable.labelPlural) {
                 outputConfig.labelPlural = configTable.labelPlural;
@@ -176,9 +179,10 @@ const templateFilePaths = globby
                   return labelPlural.replace(/s$/g, '');
                 })();
               }
-              if (focusColumns) {
-                outputConfig.focusColumns = focusColumns;
-              }
+              focusColumns && (outputConfig.focusColumns = focusColumns);
+              columnNameToObjectPropertyMapper &&
+                (outputConfig.columnNameToObjectPropertyMapper =
+                  columnNameToObjectPropertyMapper);
             } else {
               const sanitisedTableName = tableName
                 .trim()
@@ -269,6 +273,7 @@ const templateFilePaths = globby
               tables,
               columnToPropertyMapper,
               modelImportsCollector,
+              columnNameToObjectPropertyMapper,
             });
 
           const interpolationLabels =
@@ -281,6 +286,7 @@ const templateFilePaths = globby
               labelPlural,
               labelSingular,
               focusColumnNames: focusColumnNames || [],
+              columnNameToObjectPropertyMapper,
             });
 
           const getInterpolatedString = (templateFileContents: string) => {

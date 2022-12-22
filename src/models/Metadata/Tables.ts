@@ -43,7 +43,7 @@ export const AirtableFieldResultSchema = z.object({
   // options: options2Schema, // Should circular reference options schema
 });
 
-export const AirtableFieldOptionsSchema = z.object({
+export const AirtableFieldOptionsValidationSchema = z.object({
   isValid: z.boolean().optional(),
   referencedFieldIds: z.array(z.string()).optional(),
   result: AirtableFieldResultSchema.nullish(),
@@ -84,12 +84,16 @@ export const AirtableFieldOptionsSchema = z.object({
   durationFormat: z.string().optional(),
 });
 
+export type AirtableFieldOptions = z.infer<
+  typeof AirtableFieldOptionsValidationSchema
+>;
+
 export const AirtableFieldSchema = z.object({
   id: z.string(),
   type: z.enum(airtableFieldTypes).optional(),
   name: z.string(),
   description: z.string().optional(),
-  options: AirtableFieldOptionsSchema.optional(),
+  options: AirtableFieldOptionsValidationSchema.optional(),
 });
 
 export type AirtableField = z.infer<typeof AirtableFieldSchema>;

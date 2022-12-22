@@ -1,6 +1,15 @@
-import { AirtableBase } from './Metadata';
+import { AirtableBase, AirtableFieldOptions } from './Metadata';
 
 export type ConfigAirtableBase = Partial<Pick<AirtableBase, 'id' | 'name'>>;
+
+export type ConfigColumnNameToObjectPropertyMapper<FocusColumn extends string> =
+  Partial<{
+    [P in FocusColumn]:
+      | string
+      | (Pick<AirtableFieldOptions, 'prefersSingleRecordLink'> & {
+          propertyName?: string;
+        });
+  }>;
 
 export type ConfigTable<FocusColumn extends string> = {
   base?: ConfigAirtableBase;
@@ -9,12 +18,10 @@ export type ConfigTable<FocusColumn extends string> = {
   labelPlural?: string;
   labelSingular?: string;
   focusColumns?: FocusColumn[];
-  columnNameToObjectPropertyMapper?: Partial<{
-    [P in FocusColumn]: string;
-  }>;
+  columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<FocusColumn>;
 };
 
-export type Config<FocusColumn extends string = any> = {
+export type Config<FocusColumn extends string> = {
   defaultBase: ConfigAirtableBase;
   tables?: ConfigTable<FocusColumn>[];
   bases?: (ConfigAirtableBase & {
@@ -22,4 +29,6 @@ export type Config<FocusColumn extends string = any> = {
   })[];
 };
 
-export const defineConfig = (config: Config) => config;
+export const defineConfig = <FocusColumn extends string>(
+  config: Config<FocusColumn>
+) => config;

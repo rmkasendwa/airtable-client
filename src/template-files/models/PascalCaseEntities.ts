@@ -80,7 +80,7 @@ export const FindAllPascalCaseEntitiesReponseValidationSchema = z.object({
 });
 
 // Maps entity label properties to Entities Table columns
-export const PascalCaseEntityPropertyToAirtableColumnMapper =
+export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
   Object.fromEntries(
     Object.entries(PascalCaseEntityAirtableColumnToPropertyMapper).map(
       ([key, value]) => {
@@ -133,7 +133,7 @@ export const PascalCaseEntityAirtableRequestValidationSchema =
       a: z.string().nullish(),
       /* REQUEST_ENTITY_PROPERTIES */
     }),
-    PascalCaseEntityPropertyToAirtableColumnMapper
+    PascalCaseEntityPropertyToAirtableColumnConfigMapper
   );
 
 // Validates request to create entity label.
