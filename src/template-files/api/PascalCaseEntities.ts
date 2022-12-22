@@ -1,15 +1,10 @@
 import {
+  TemplatePath,
   addSearchParams,
   getInterpolatedPath,
 } from '@infinite-debugger/rmk-utils/paths';
 
-import {
-  ENTITY_CREATE_ENDPOINT_PATH,
-  ENTITY_DELETE_ENDPOINT_PATH,
-  ENTITY_UPDATE_ENDPOINT_PATH,
-  FIND_ALL_ENTITIES_ENDPOINT_PATH,
-  FIND_ENTITY_BY_ID_ENPOINT_PATH,
-} from '../endpoint-paths/PascalCaseEntities';
+import { AIRTABLE_BASE_ID } from '../config';
 import {
   DeleteAirtableRecordResponseValidationSchema,
   FindAllRecordsQueryParams,
@@ -26,6 +21,15 @@ import {
   UpdatePascalCaseEntitiesRequestValidationSchema,
 } from '../models/PascalCaseEntities';
 import Adapter from './Adapter';
+
+/**************************** ENDPOINT PATHS *****************************/
+export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Table`;
+export const FIND_ENTITY_BY_ID_ENPOINT_PATH: TemplatePath<{
+  camelCaseEntityId: string;
+}> = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/:camelCaseEntityId`;
+export const ENTITY_CREATE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
+export const ENTITY_UPDATE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
+export const ENTITY_DELETE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 
 /**
  * Finds entities label limited by queryParams.pageSize

@@ -125,7 +125,7 @@ export const getAirtableResponseTypeValidationString = (
           }
         );
       })();
-      return `z.array(${validationString})`;
+      return `z.array(${validationString}.nullish())`;
 
     // Numbers
     case 'number':

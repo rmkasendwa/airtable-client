@@ -1,5 +1,6 @@
 import { writeFileSync } from 'fs-extra';
 
+import { findAllTeamMembers } from './__sandbox/airtable/Talent';
 import {
   createNewAssignments,
   createNewPositions,
@@ -123,8 +124,8 @@ const cloneAssignmentsToPositionsTable = async (offset?: string) => {
     // await moveResourcingsToAssignmentsTable();
     // await cloneAssignmentsToPositionsTable();
 
-    const { records: assignments } = await findAllAssignments();
-    console.log({ assignments });
+    const { records: teamMembers } = await findAllTeamMembers();
+    console.log({ teamMembers, count: teamMembers.length });
   } catch (err: any) {
     const errorFilePath = `${__dirname}/error.json`;
     console.log(`Processing failed with error writted to ${errorFilePath}`);

@@ -34,6 +34,10 @@ export default defineConfig({
         'Resourcing Status',
       ],
     },
+    {
+      name: 'People List',
+      alias: 'Team Members',
+    },
   ],
   bases: [{ name: 'Position Model' }, { name: 'Talent (topology test apps)' }],
 });

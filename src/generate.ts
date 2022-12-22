@@ -47,6 +47,25 @@ const configBases = [
   }),
 ];
 
+const configTables = [
+  ...config.tables.map((table) => {
+    return {
+      ...table,
+      base: table.base || config.defaultBase,
+    };
+  }),
+  ...(config.bases || [])
+    .map((base) => {
+      return (base.tables || []).map((table) => {
+        return {
+          ...table,
+          base,
+        };
+      });
+    })
+    .flat(),
+];
+
 /****************** PATHS *********************/
 
 const airtableAPIFolderName = 'airtable';
@@ -97,8 +116,66 @@ const templateFilePaths = globby
         tables.forEach((table) => {
           const { name: tableName, fields: columns, views } = table;
 
+          // Table Configuration.
+          const { labelPlural, labelSingular } = (() => {
+            const labelConfig: {
+              labelPlural: string;
+              labelSingular: string;
+            } = { labelPlural: '', labelSingular: '' };
+
+            const configTable = configTables.find(
+              ({ name }) => name === tableName
+            );
+            if (configTable) {
+              const { alias: configTableAlias, name: configTableName } =
+                configTable;
+              if (configTable.labelPlural) {
+                labelConfig.labelPlural = configTable.labelPlural;
+              } else {
+                const sanitisedTableName = (configTableAlias || configTableName)
+                  .trim()
+                  .replace(/[^\w\s]/g, '');
+                labelConfig.labelPlural = (() => {
+                  if (!sanitisedTableName.match(/s$/g)) {
+                    return sanitisedTableName + 's';
+                  }
+                  return sanitisedTableName;
+                })();
+              }
+              if (configTable.labelSingular) {
+                labelConfig.labelSingular = configTable.labelSingular;
+              } else {
+                const labelPlural = labelConfig.labelPlural!;
+                labelConfig.labelSingular = (() => {
+                  if (labelPlural.match(/ies$/)) {
+                    return labelPlural.replace(/ies$/, 'y');
+                  }
+                  return labelPlural.replace(/s$/g, '');
+                })();
+              }
+            } else {
+              const sanitisedTableName = tableName
+                .trim()
+                .replace(/[^\w\s]/g, '');
+              labelConfig.labelPlural = (() => {
+                if (!sanitisedTableName.match(/s$/g)) {
+                  return sanitisedTableName + 's';
+                }
+                return sanitisedTableName;
+              })();
+              labelConfig.labelSingular = (() => {
+                if (labelConfig.labelPlural.match(/ies$/)) {
+                  return labelConfig.labelPlural.replace(/ies$/, 'y');
+                }
+                return labelConfig.labelPlural.replace(/s$/g, '');
+              })();
+            }
+
+            return labelConfig;
+          })();
+
           // Filter id, emoji, any field we don't understand
-          const filteredColumns = columns
+          const filteredTableColumns = columns
             .filter(({ name }) => {
               return (
                 !name.match(/^id$/gi) && name.replace(/[^\w\s]/g, '').length > 0
@@ -112,54 +189,42 @@ const templateFilePaths = globby
               return accumulator;
             }, [] as typeof columns);
 
-          const editableColumns = filteredColumns.filter(({ type }) => {
-            switch (type) {
-              case 'singleLineText':
-              case 'multilineText':
-              case 'richText':
-              case 'phoneNumber':
-              case 'singleSelect':
-              case 'url':
-              case 'email':
-              case 'number':
-              case 'percent':
-              case 'currency':
-              case 'count':
-              case 'autoNumber':
-              case 'rating':
-              case 'checkbox':
-              case 'multipleRecordLinks':
-              case 'date':
-              case 'dateTime':
-              case 'lastModifiedTime':
-              case 'createdTime':
-              case 'multipleSelects':
-                return true;
+          const editableTableColumns = filteredTableColumns.filter(
+            ({ type }) => {
+              switch (type) {
+                case 'singleLineText':
+                case 'multilineText':
+                case 'richText':
+                case 'phoneNumber':
+                case 'singleSelect':
+                case 'url':
+                case 'email':
+                case 'number':
+                case 'percent':
+                case 'currency':
+                case 'count':
+                case 'autoNumber':
+                case 'rating':
+                case 'checkbox':
+                case 'multipleRecordLinks':
+                case 'date':
+                case 'dateTime':
+                case 'lastModifiedTime':
+                case 'createdTime':
+                case 'multipleSelects':
+                  return true;
+              }
+              return false;
             }
-            return false;
-          });
+          );
 
-          const modelImports: string[] = [];
+          const modelImportsCollector: string[] = [];
 
           console.log(
             ` -> Processing \x1b[34m${baseName.trim()}/${tableName.trim()}\x1b[0m table...`
           );
 
-          const sanitisedTableName = tableName.trim().replace(/[^\w\s]/g, '');
-          const labelPlural = (() => {
-            if (!sanitisedTableName.match(/s$/g)) {
-              return sanitisedTableName + 's';
-            }
-            return sanitisedTableName;
-          })();
-          const labelSingular = (() => {
-            if (labelPlural.match(/ies$/)) {
-              return labelPlural.replace(/ies$/, 'y');
-            }
-            return labelPlural.replace(/s$/g, '');
-          })();
-
-          const columnToPropertyMapper = filteredColumns.reduce(
+          const columnToPropertyMapper = filteredTableColumns.reduce(
             (accumulator, field) => {
               accumulator[field.name] = getCamelCaseFieldPropertyName(field);
               return accumulator;
@@ -171,19 +236,19 @@ const templateFilePaths = globby
             getAirtableAPIGeneratorTemplateFileInterpolationBlocks({
               base,
               currentTable: table,
-              filteredTableColumns: filteredColumns,
-              editableTableColumns: editableColumns,
+              filteredTableColumns,
+              editableTableColumns,
               tables,
               columnToPropertyMapper,
-              modelImportsCollector: modelImports,
+              modelImportsCollector,
             });
 
           const interpolationLabels =
             getAirtableAPIGeneratorTemplateFileInterpolationLabels({
               currentTable: table,
-              filteredTableColumns: filteredColumns,
+              filteredTableColumns,
               columnToPropertyMapper,
-              modelImportsCollector: modelImports,
+              modelImportsCollector,
               views,
               labelPlural,
               labelSingular,

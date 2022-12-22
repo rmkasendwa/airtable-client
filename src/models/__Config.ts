@@ -8,7 +8,7 @@ export type ConfigTable<FocusColumn extends string> = {
   alias?: string;
   labelPlural?: string;
   labelSingular?: string;
-  focusColumns: FocusColumn[];
+  focusColumns?: FocusColumn[];
   columnNameToObjectPropertyMapper?: Partial<{
     [P in FocusColumn]: string;
   }>;
@@ -18,7 +18,7 @@ export type Config<FocusColumn extends string = any> = {
   defaultBase: ConfigAirtableBase;
   tables: ConfigTable<FocusColumn>[];
   bases?: (ConfigAirtableBase & {
-    tables?: ConfigTable<FocusColumn>[];
+    tables?: Omit<ConfigTable<FocusColumn>, 'base'>[];
   })[];
 };
 
