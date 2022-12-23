@@ -126,19 +126,18 @@ export const PascalCaseEntityPropertyToAirtableColumnNameMapper =
   );
 
 // Validates requests to mutate entities label.
-export const PascalCaseEntityAirtableRequestValidationSchema =
-  getAirtableRecordRequestValidationSchema<PascalCaseEntity>(
-    z.object({
-      /* REQUEST_ENTITY_PROPERTIES */
-      a: z.string().nullish(),
-      /* REQUEST_ENTITY_PROPERTIES */
-    }),
-    PascalCaseEntityPropertyToAirtableColumnConfigMapper
-  );
+export const PascalCaseEntityAirtableRequestValidationSchema = z.object({
+  /* REQUEST_ENTITY_PROPERTIES */
+  a: z.string().nullish(),
+  /* REQUEST_ENTITY_PROPERTIES */
+});
 
 // Validates request to create entity label.
 export const CreatePascalCaseEntityRequestValidationSchema =
-  PascalCaseEntityAirtableRequestValidationSchema;
+  getAirtableRecordRequestValidationSchema(
+    PascalCaseEntityAirtableRequestValidationSchema,
+    PascalCaseEntityPropertyToAirtableColumnConfigMapper
+  );
 
 // Validates request to create entities label.
 export const CreatePascalCaseEntitiesRequestValidationSchema = z.array(
@@ -147,7 +146,12 @@ export const CreatePascalCaseEntitiesRequestValidationSchema = z.array(
 
 // Validates request to update entity label.
 export const UpdatePascalCaseEntityRequestValidationSchema =
-  PascalCaseEntityAirtableRequestValidationSchema;
+  getAirtableRecordRequestValidationSchema(
+    PascalCaseEntityAirtableRequestValidationSchema.extend({
+      id: z.string(),
+    }),
+    PascalCaseEntityPropertyToAirtableColumnConfigMapper
+  );
 
 // Validates request to update entities label.
 export const UpdatePascalCaseEntitiesRequestValidationSchema = z.array(

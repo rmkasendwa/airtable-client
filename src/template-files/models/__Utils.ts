@@ -166,7 +166,7 @@ export const getAirtableRecordResponseValidationSchema = <T>(
     });
 };
 
-export const getAirtableRecordRequestValidationSchema = <T>(
+export const getAirtableRecordRequestValidationSchema = (
   requestValidationSchema: AnyZodObject,
   objectPropertyToColumnNameMapper: Record<
     string,
@@ -196,7 +196,7 @@ export const getAirtableRecordRequestValidationSchema = <T>(
             })();
           }
           return accumulator;
-        }, {} as Omit<T, 'id'>),
+        }, {} as Record<string, any>),
     };
   });
 };

@@ -264,6 +264,89 @@ export const getObjectPropertyTypeString = (
   return 'any';
 };
 
+export const getRequestObjectValidationString = (
+  field: AirtableField,
+  options: GetAirtableResponseTypeValidationStringOptions
+): string => {
+  const { tables, currentTable } = options;
+  const rootField = getRootAirtableColumn(field, tables, currentTable);
+
+  const { type } = field;
+
+  switch (type) {
+    case 'multipleSelects':
+    case 'singleCollaborator':
+    case 'multipleCollaborators':
+    case 'rollup':
+    case 'barcode':
+    case 'duration':
+    case 'createdBy':
+    case 'lastModifiedBy':
+    case 'externalSyncSource':
+      break;
+
+    // Lists
+    case 'multipleRecordLinks':
+      if (field.options?.prefersSingleRecordLink) {
+        return `z.string()`;
+      }
+      return `z.array(z.string())`;
+    case 'lookup':
+    case 'multipleLookupValues':
+      const propertyTypeString = (() => {
+        if (rootField !== field) {
+          if (rootField.type === 'multipleRecordLinks') {
+            return `z.string()`;
+          }
+          return getObjectPropertyTypeString(rootField, {
+            ...options,
+          });
+        }
+        return getAirtableResponseTypeValidationString(
+          {
+            ...field,
+            type: field.options?.result?.type,
+          },
+          {
+            ...options,
+          }
+        );
+      })();
+      return `${propertyTypeString}${
+        propertyTypeString.match(/\[\]$/g) ? '' : '[]'
+      }`;
+
+    // Numbers
+    case 'number':
+    case 'percent':
+    case 'currency':
+    case 'count':
+    case 'autoNumber':
+    case 'rating':
+      return `z.number()`;
+
+    // Booleans
+    case 'checkbox':
+      return `z.boolean()`;
+
+    // Strings
+    case 'date':
+    case 'dateTime':
+    case 'lastModifiedTime':
+    case 'createdTime':
+    case 'email':
+    case 'url':
+    case 'singleLineText':
+    case 'multilineText':
+    case 'richText':
+    case 'phoneNumber':
+    case 'singleSelect':
+    default:
+      return `z.string()`;
+  }
+  return 'z.any()';
+};
+
 export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   base: AirtableBase;
   currentTable: Table;
@@ -369,7 +452,15 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       .join(' | '),
 
     ['/* REQUEST_ENTITY_PROPERTIES */']: editableTableColumns
-      .map(({ name }) => `"${columnToPropertyMapper[name]}": z.any().nullish()`)
+      .map(
+        (field) =>
+          `"${
+            columnToPropertyMapper[field.name]
+          }": ${getRequestObjectValidationString(field, {
+            currentTable,
+            tables,
+          })}.nullish()`
+      )
       .join(',\n'),
   } as Record<string, string>;
 };
