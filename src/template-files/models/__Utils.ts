@@ -194,7 +194,7 @@ export const getAirtableRecordResponseValidationSchema = <
                       };
                       if (lookups && lookups.length > 0) {
                         lookups.forEach((lookupColumnName) => {
-                          if (fields[lookupColumnName][index]) {
+                          if (fields[lookupColumnName]?.[index]) {
                             linkObject[
                               lookupColumnNameToObjectPropertyMapper[
                                 lookupColumnName

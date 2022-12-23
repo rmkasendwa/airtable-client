@@ -127,7 +127,7 @@ const cloneAssignmentsToPositionsTable = async (offset?: string) => {
     // await cloneAssignmentsToPositionsTable();
 
     const { records: teamMembers } = await findAllTeamMembers({
-      fields: ['name', 'country', 'billable'],
+      // fields: ['name', 'country', 'billable'],
     });
     console.log({ teamMembers, count: teamMembers.length });
     writeFileSync(
@@ -135,12 +135,13 @@ const cloneAssignmentsToPositionsTable = async (offset?: string) => {
       JSON.stringify(teamMembers, null, 2)
     );
   } catch (err: any) {
+    console.error(err);
     const errorFilePath = `${__dirname}/error.json`;
     console.log(`Processing failed with error writted to ${errorFilePath}`);
     if (err.isAxiosError) {
       writeFileSync(
         errorFilePath,
-        JSON.stringify([err.response?.data, err], null, 2)
+        JSON.stringify([err.response?.data, ...err], null, 2)
       );
     } else {
       writeFileSync(`${__dirname}/error.json`, JSON.stringify(err, null, 2));
