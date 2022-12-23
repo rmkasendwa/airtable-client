@@ -84,9 +84,9 @@ export type PascalCaseEntityUpdates = PascalCaseEntityCreationDetails &
 export const PascalCaseEntityAirtableResponseValidationSchema =
   getAirtableRecordResponseValidationSchema<PascalCaseEntity>(
     z.object({
-      /* AIRTABLE_ENTITY_FIELDS */
+      /* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */
       a: z.string().nullish(),
-      /* AIRTABLE_ENTITY_FIELDS */
+      /* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */
     }),
     PascalCaseEntityAirtableColumnToObjectPropertyMapper
   );

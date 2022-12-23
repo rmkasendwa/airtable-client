@@ -126,7 +126,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         })
         .join(',\n'),
 
-    ['/* AIRTABLE_ENTITY_FIELDS */']: filteredTableColumns
+    ['/* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */']: filteredTableColumns
       .map((field) => {
         const { name } = field;
         const rootColumn = getRootAirtableColumn(field, tables, currentTable);

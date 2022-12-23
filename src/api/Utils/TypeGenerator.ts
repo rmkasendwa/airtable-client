@@ -270,11 +270,13 @@ export const getRequestObjectValidationString = (
       break;
 
     // Lists
-    case 'multipleRecordLinks':
+    case 'multipleRecordLinks': {
+      const validationString = `z.object({\nid: z.string()\n})`;
       if (field.options?.prefersSingleRecordLink) {
-        return `z.string()`;
+        return validationString;
       }
-      return `z.array(z.string())`;
+      return `z.array(${validationString})`;
+    }
     case 'lookup':
     case 'multipleLookupValues':
       const propertyTypeString = (() => {
