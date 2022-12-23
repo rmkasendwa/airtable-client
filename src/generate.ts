@@ -123,6 +123,7 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
           })
         );
       });
+
       if (filteredTables.length > 0) {
         console.log(
           `\nProcessing \x1b[34m${workingBaseName.trim()}\x1b[0m base...`
@@ -218,6 +219,9 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
           })();
 
           const filteredTableColumns = columns
+            .sort((a, b) => {
+              return a.name.localeCompare(b.name);
+            })
             .filter(({ name }) => {
               return (
                 !name.match(/^id$/gi) &&
@@ -236,9 +240,30 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
               return accumulator;
             }, [] as typeof columns);
 
-          const lookupTableColumns = table.fields.filter(({ type }) => {
-            return type === 'multipleLookupValues';
-          });
+          const lookupTableColumns = columns
+            .filter(({ type }) => {
+              return type === 'multipleLookupValues';
+            })
+            .reduce((accumulator, field) => {
+              // Filtering lookup columns with similar references.
+              if (
+                !accumulator.find(({ options }) => {
+                  return (
+                    options?.recordLinkFieldId &&
+                    options?.fieldIdInLinkedTable &&
+                    field.options?.recordLinkFieldId &&
+                    field.options?.fieldIdInLinkedTable &&
+                    field.options.recordLinkFieldId ===
+                      field.options.recordLinkFieldId &&
+                    options.fieldIdInLinkedTable ===
+                      field.options.fieldIdInLinkedTable
+                  );
+                })
+              ) {
+                accumulator.push(field);
+              }
+              return accumulator;
+            }, [] as typeof columns);
 
           const editableTableColumns = filteredTableColumns.filter(
             ({ type }) => {
@@ -272,7 +297,7 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
           const modelImportsCollector: string[] = [];
 
           console.log(
-            ` -> Processing \x1b[34m${workingBaseName.trim()}/${tableName.trim()}\x1b[0m table...`
+            `  -> Processing \x1b[34m${workingBaseName.trim()}/${tableName.trim()}\x1b[0m table...`
           );
 
           const columnNameToObjectPropertyMapper = filteredTableColumns.reduce(

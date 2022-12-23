@@ -153,6 +153,7 @@ export const getObjectPropertyTypeString = (
   options: GetAirtableResponseTypeValidationStringOptions & {
     lookupColumnNameToObjectPropertyMapper: Record<string, string>;
     lookupTableColumns: AirtableField[];
+    modelImportsCollector: string[];
   }
 ): string => {
   const {
@@ -160,6 +161,7 @@ export const getObjectPropertyTypeString = (
     currentTable,
     lookupTableColumns,
     lookupColumnNameToObjectPropertyMapper,
+    modelImportsCollector,
   } = options;
   const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
   const { type } = tableColumn;
@@ -176,12 +178,19 @@ export const getObjectPropertyTypeString = (
       break;
 
     case 'multipleAttachments':
+      modelImportsCollector.push(
+        `import {AirtableAttachment} from './__Utils';`
+      );
       return `AirtableAttachment[]`;
 
     case 'button':
+      modelImportsCollector.push(`import {AirtableButton} from './__Utils';`);
       return `AirtableButton`;
 
     case 'formula':
+      modelImportsCollector.push(
+        `import {AirtableFormulaColumnError} from './__Utils';`
+      );
       return `${getObjectPropertyTypeString(
         {
           ...tableColumn,

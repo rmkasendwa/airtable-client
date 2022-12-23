@@ -67,17 +67,6 @@ export const camelCaseEntityViews = [
 // Entities Table table view type.
 export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
 
-// Entity Label editable fields.
-export type PascalCaseEntityCreationDetails = Partial<
-  Pick<
-    PascalCaseEntity,
-    /* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */ 'id' /* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */
-  >
->;
-
-export type PascalCaseEntityUpdates = PascalCaseEntityCreationDetails &
-  Pick<PascalCaseEntity, 'id'>;
-
 /********************* Validation Schemas ***********************/
 
 // Validates Entities Table airtable response.
@@ -163,6 +152,11 @@ export const CreatePascalCaseEntityRequestValidationSchema =
     PascalCaseEntityPropertyToAirtableColumnConfigMapper
   );
 
+// Entity Label editable fields.
+export type PascalCaseEntityCreationDetails = z.infer<
+  typeof PascalCaseEntityAirtableRequestValidationSchema
+>;
+
 // Validates request to create entities label.
 export const CreatePascalCaseEntitiesRequestValidationSchema = z.array(
   CreatePascalCaseEntityRequestValidationSchema
@@ -176,6 +170,9 @@ export const UpdatePascalCaseEntityRequestValidationSchema =
     }),
     PascalCaseEntityPropertyToAirtableColumnConfigMapper
   );
+
+export type PascalCaseEntityUpdates = PascalCaseEntityCreationDetails &
+  Pick<PascalCaseEntity, 'id'>;
 
 // Validates request to update entities label.
 export const UpdatePascalCaseEntitiesRequestValidationSchema = z.array(

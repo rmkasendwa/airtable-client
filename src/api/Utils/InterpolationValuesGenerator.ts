@@ -95,7 +95,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           if (type === 'multipleRecordLinks') {
             obj.isMultipleRecordLinksField = true;
 
-            const lookups = currentTable.fields
+            const lookups = lookupTableColumns
               .filter(({ options, type }) => {
                 return (
                   type === 'multipleLookupValues' &&
@@ -158,10 +158,6 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       })
       .join(',\n'),
 
-    ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: editableTableColumns
-      .map(({ name }) => `'${columnNameToObjectPropertyMapper[name]}'`)
-      .join(' | '),
-
     ['/* REQUEST_ENTITY_PROPERTIES */']: editableTableColumns
       .map(
         (field) =>
@@ -210,29 +206,13 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
       .map((field) => {
         const camelCasePropertyName =
           columnNameToObjectPropertyMapper[field.name];
-        const rootColumn = getRootAirtableColumn(field, tables, currentTable);
-        switch (rootColumn.type) {
-          case 'multipleAttachments':
-            modelImportsCollector.push(
-              `import {AirtableAttachment} from './__Utils';`
-            );
-            break;
-          case 'button':
-            modelImportsCollector.push(
-              `import {AirtableButton} from './__Utils';`
-            );
-            break;
-          case 'formula':
-            modelImportsCollector.push(
-              `import {AirtableFormulaColumnError} from './__Utils';`
-            );
-        }
         return [
           `${camelCasePropertyName}?: ${getObjectPropertyTypeString(field, {
             currentTable,
             tables,
             lookupColumnNameToObjectPropertyMapper,
             lookupTableColumns,
+            modelImportsCollector,
           })}`,
         ];
       })
