@@ -153,16 +153,6 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
 }) => {
   const { name: tableName } = currentTable;
 
-  const LOWER_CASE_ENTITIES_LABEL_WITH_SPACES = labelPlural.toLowerCase();
-  const LOWER_CASE_ENTITY_LABEL_WITH_SPACES = labelSingular.toLowerCase();
-
-  const KEBAB_CASE_ENTITIES_LABEL =
-    LOWER_CASE_ENTITIES_LABEL_WITH_SPACES.replace(/\s/g, '-');
-  const KEBAB_CASE_ENTITY_LABEL = LOWER_CASE_ENTITY_LABEL_WITH_SPACES.replace(
-    /\s/g,
-    '-'
-  );
-
   return {
     ['/* AIRTABLE_VIEWS */']: views
       .map(({ name }) => {
@@ -212,8 +202,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
     ['Entities Label']: labelPlural,
     ['Entity Label']: labelSingular,
 
-    ['entities label']: LOWER_CASE_ENTITIES_LABEL_WITH_SPACES,
-    ['entity label']: LOWER_CASE_ENTITY_LABEL_WITH_SPACES,
+    ['entities label']: labelPlural.toLowerCase(),
+    ['entity label']: labelSingular.toLowerCase(),
 
     ['ENTITIES']: labelPlural.replace(/\s/g, '_').toUpperCase(),
     ['ENTITY']: labelSingular.replace(/\s/g, '_').toUpperCase(),
@@ -224,7 +214,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
     ['PascalCaseEntities']: labelPlural.toPascalCase(),
     ['PascalCaseEntity']: labelSingular.toPascalCase(),
 
-    ['kebab-case-entities']: KEBAB_CASE_ENTITIES_LABEL,
-    ['kebab-case-entity']: KEBAB_CASE_ENTITY_LABEL,
+    ['kebab-case-entities']: labelPlural.toKebabCase(),
+    ['kebab-case-entity']: labelSingular.toKebabCase(),
   } as Record<string, string>;
 };

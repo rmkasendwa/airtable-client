@@ -15,7 +15,7 @@
     "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,html,htm,json,css,scss,md}\""
   },
   "dependencies": {
-    "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.4",
+    "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.5",
     "@infinite-debugger/rmk-utils": "^0.1.0-alpha.5",
     "axios": "^1.2.1",
     "base-64": "^1.0.0",
