@@ -15,7 +15,7 @@ import {
 export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   base: AirtableBase;
   currentTable: Table;
-  filteredTableColumns: AirtableField[];
+  nonLookupTableColumns: AirtableField[];
   lookupTableColumns: AirtableField[];
   editableTableColumns: AirtableField[];
   tables: Table[];
@@ -23,12 +23,14 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   lookupColumnNameToObjectPropertyMapper: Record<string, string>;
   modelImportsCollector: string[];
   configColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
+  queryableNonLookupFields: string[];
+  queryableLookupFields: string[];
 };
 
 export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   base,
   currentTable,
-  filteredTableColumns,
+  nonLookupTableColumns,
   lookupTableColumns,
   editableTableColumns,
   tables,
@@ -36,12 +38,13 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   lookupColumnNameToObjectPropertyMapper,
   modelImportsCollector,
   configColumnNameToObjectPropertyMapper = {},
+  queryableLookupFields,
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
   const { id: baseId } = base;
   return {
     ['/* AIRTABLE_BASE_ID */']: `"${baseId}"`,
 
-    ['/* AIRTABLE_ENTITY_COLUMNS */']: filteredTableColumns
+    ['/* AIRTABLE_ENTITY_COLUMNS */']: nonLookupTableColumns
       .map(({ name }) => `"${name}"`)
       .join(', '),
 
@@ -49,7 +52,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       .map(({ name }) => `"${name}"`)
       .join(', '),
 
-    ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: filteredTableColumns
+    ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: nonLookupTableColumns
       .map((tableColumn) => {
         const { id: tableColumnId, name, type } = tableColumn;
         const rootColumn = getRootAirtableColumn(
@@ -129,7 +132,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         .join(',\n'),
 
     ['/* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */']: [
-      ...filteredTableColumns,
+      ...nonLookupTableColumns,
       ...lookupTableColumns,
     ]
       .map((field) => {
@@ -169,12 +172,19 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           })}.nullish()`
       )
       .join(',\n'),
+
+    ['/* QUERYABLE_FIELD_TYPE */']: (() => {
+      if (queryableLookupFields.length > 0) {
+        return `| ${queryableLookupFields.join(' | ')}`;
+      }
+      return '';
+    })(),
   } as Record<string, string>;
 };
 
 export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   currentTable,
-  filteredTableColumns,
+  nonLookupTableColumns,
   lookupTableColumns,
   columnNameToObjectPropertyMapper,
   modelImportsCollector,
@@ -182,7 +192,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   views,
   labelSingular,
   labelPlural,
-  focusColumnNames,
+  queryableNonLookupFields,
+  queryableLookupFields,
   tables,
 }: Omit<
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
@@ -191,7 +202,6 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   views: AirtableView[];
   labelSingular: string;
   labelPlural: string;
-  focusColumnNames: string[];
 }) => {
   const { name: tableName } = currentTable;
 
@@ -202,7 +212,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
       })
       .join(', '),
 
-    ['/* ENTITY_INTERFACE_FIELDS */']: filteredTableColumns
+    ['/* ENTITY_INTERFACE_FIELDS */']: nonLookupTableColumns
       .map((field) => {
         const camelCasePropertyName =
           columnNameToObjectPropertyMapper[field.name];
@@ -219,14 +229,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
       .flat()
       .join(';\n'),
 
-    ['/* ENTITY_FOCUS_FIELDS */']: focusColumnNames
-      .filter((columnName) => {
-        return columnNameToObjectPropertyMapper[columnName];
-      })
-      .map((columnName) => {
-        return `"${columnNameToObjectPropertyMapper[columnName]}"`;
-      })
-      .join(', '),
+    ['/* QUERYABLE_FIELDS */']: [
+      ...queryableNonLookupFields,
+      ...queryableLookupFields,
+    ].join(', '),
 
     ['/* MODEL_IMPORTS */']: [...new Set(modelImportsCollector)].join('\n'),
 

@@ -159,6 +159,7 @@ export const getAirtableRecordResponseValidationSchema = <
           .filter((key) => {
             return fields[key] != null;
           })
+          .sort()
           .reduce((accumulator, key) => {
             if (!lookupColumnNameToObjectPropertyMapper[key]) {
               const noneLookupColumMapping =

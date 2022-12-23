@@ -18,6 +18,7 @@ import {
   PascalCaseEntityAirtableResponseValidationSchema,
   PascalCaseEntityCreationDetails,
   PascalCaseEntityPropertyToAirtableColumnNameMapper,
+  PascalCaseEntityQueryableField,
   PascalCaseEntityUpdates,
   PascalCaseEntityView,
   UpdatePascalCaseEntitiesRequestValidationSchema,
@@ -34,8 +35,8 @@ export const ENTITY_UPDATE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 export const ENTITY_DELETE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 
 /***************************** DEFAULTS *********************************/
-const DEFAULT_ENTITY_QUERYABLE_FIELDS: (keyof PascalCaseEntity)[] = [
-  /* ENTITY_FOCUS_FIELDS */
+const DEFAULT_ENTITY_QUERYABLE_FIELDS: PascalCaseEntityQueryableField[] = [
+  /* QUERYABLE_FIELDS */
 ];
 
 /**

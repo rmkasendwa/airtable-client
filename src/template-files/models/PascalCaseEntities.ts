@@ -67,6 +67,10 @@ export const camelCaseEntityViews = [
 // Entities Table table view type.
 export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
 
+export type PascalCaseEntityQueryableField =
+  | keyof PascalCaseEntity /* QUERYABLE_FIELD_TYPE */
+  | 'id' /* QUERYABLE_FIELD_TYPE */;
+
 /********************* Validation Schemas ***********************/
 
 // Validates Entities Table airtable response.
