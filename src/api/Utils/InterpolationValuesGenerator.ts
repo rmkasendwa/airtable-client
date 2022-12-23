@@ -179,8 +179,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   currentTable,
   filteredTableColumns,
+  lookupTableColumns,
   columnNameToObjectPropertyMapper,
   modelImportsCollector,
+  lookupColumnNameToObjectPropertyMapper,
   views,
   labelSingular,
   labelPlural,
@@ -229,6 +231,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
           `${camelCasePropertyName}?: ${getObjectPropertyTypeString(field, {
             currentTable,
             tables,
+            lookupColumnNameToObjectPropertyMapper,
+            lookupTableColumns,
           })}`,
         ];
       })

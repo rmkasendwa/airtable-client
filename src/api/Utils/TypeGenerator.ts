@@ -149,12 +149,20 @@ export const getAirtableResponseTypeValidationString = (
 };
 
 export const getObjectPropertyTypeString = (
-  field: AirtableField,
-  options: GetAirtableResponseTypeValidationStringOptions
+  tableColumn: AirtableField,
+  options: GetAirtableResponseTypeValidationStringOptions & {
+    lookupColumnNameToObjectPropertyMapper: Record<string, string>;
+    lookupTableColumns: AirtableField[];
+  }
 ): string => {
-  const { tables, currentTable } = options;
-  const rootField = getRootAirtableColumn(field, tables, currentTable);
-  const { type } = field;
+  const {
+    tables,
+    currentTable,
+    lookupTableColumns,
+    lookupColumnNameToObjectPropertyMapper,
+  } = options;
+  const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
+  const { type } = tableColumn;
   switch (type) {
     case 'multipleSelects':
     case 'singleCollaborator':
@@ -176,18 +184,30 @@ export const getObjectPropertyTypeString = (
     case 'formula':
       return `${getObjectPropertyTypeString(
         {
-          ...field,
-          type: field.options?.result?.type,
+          ...tableColumn,
+          type: tableColumn.options?.result?.type,
         },
-        {
-          ...options,
-        }
+        options
       )} | AirtableFormulaColumnError`;
 
     // Lists
     case 'multipleRecordLinks': {
-      const typeString = `{id: string}`;
-      if (field.options?.prefersSingleRecordLink) {
+      const typeString = `{
+        id: string;
+        ${lookupTableColumns
+          .filter((lookupTableColumn) => {
+            return (
+              lookupTableColumn.options?.recordLinkFieldId === tableColumn.id
+            );
+          })
+          .map((lookupTableColumn) => {
+            return `${
+              lookupColumnNameToObjectPropertyMapper[lookupTableColumn.name]
+            }: ${getObjectPropertyTypeString(lookupTableColumn, options)}`;
+          })
+          .join(';')}
+      }`;
+      if (tableColumn.options?.prefersSingleRecordLink) {
         return typeString;
       }
       return `${typeString}[]`;
@@ -195,22 +215,18 @@ export const getObjectPropertyTypeString = (
     case 'lookup':
     case 'multipleLookupValues':
       const propertyTypeString = (() => {
-        if (rootField !== field) {
+        if (rootField !== tableColumn) {
           if (rootField.type === 'multipleRecordLinks') {
             return `string`;
           }
-          return getObjectPropertyTypeString(rootField, {
-            ...options,
-          });
+          return getObjectPropertyTypeString(rootField, options);
         }
         return getAirtableResponseTypeValidationString(
           {
-            ...field,
-            type: field.options?.result?.type,
+            ...tableColumn,
+            type: tableColumn.options?.result?.type,
           },
-          {
-            ...options,
-          }
+          options
         );
       })();
       return `${propertyTypeString}${
@@ -284,7 +300,7 @@ export const getRequestObjectValidationString = (
           if (rootField.type === 'multipleRecordLinks') {
             return `z.string()`;
           }
-          return getObjectPropertyTypeString(rootField, {
+          return getRequestObjectValidationString(rootField, {
             ...options,
           });
         }
