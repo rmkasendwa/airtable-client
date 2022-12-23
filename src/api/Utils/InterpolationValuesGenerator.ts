@@ -93,6 +93,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           };
 
           if (type === 'multipleRecordLinks') {
+            obj.isMultipleRecordLinksField = true;
+
             const lookups = currentTable.fields
               .filter(({ options, type }) => {
                 return (
@@ -126,7 +128,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         })
         .join(',\n'),
 
-    ['/* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */']: filteredTableColumns
+    ['/* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */']: [
+      ...filteredTableColumns,
+      ...lookupTableColumns,
+    ]
       .map((field) => {
         const { name } = field;
         const rootColumn = getRootAirtableColumn(field, tables, currentTable);
@@ -231,6 +236,9 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
       .join(';\n'),
 
     ['/* ENTITY_FOCUS_FIELDS */']: focusColumnNames
+      .filter((columnName) => {
+        return columnNameToObjectPropertyMapper[columnName];
+      })
       .map((columnName) => {
         return `"${columnNameToObjectPropertyMapper[columnName]}"`;
       })

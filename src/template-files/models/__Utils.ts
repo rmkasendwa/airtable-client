@@ -116,6 +116,7 @@ export type AirtableColumnConfigMapping<
   AirtableColumnName extends string
 > = {
   propertyName: ObjectPropertyName;
+  isMultipleRecordLinksField?: boolean;
   prefersSingleRecordLink?: boolean;
   lookups?: AirtableColumnName[];
 };
@@ -134,9 +135,15 @@ export type AirtableColumnMapping<
  * @param columnNameToObjectPropertyMapper The column name to object property mapper.
  * @returns The airtable record response validation schema.
  */
-export const getAirtableRecordResponseValidationSchema = <T>(
+export const getAirtableRecordResponseValidationSchema = <
+  T extends Record<string, any>
+>(
   responseFieldsValidationSchema: AnyZodObject,
-  columnNameToObjectPropertyMapper: any
+  columnNameToObjectPropertyMapper: Record<
+    string,
+    AirtableColumnMapping<string, string>
+  >,
+  lookupColumnNameToObjectPropertyMapper: Record<string, string>
 ) => {
   return z
     .object({
@@ -153,19 +160,58 @@ export const getAirtableRecordResponseValidationSchema = <T>(
             return fields[key] != null;
           })
           .reduce((accumulator, key) => {
-            const mapping = columnNameToObjectPropertyMapper[
-              key
-            ] as AirtableColumnMapping<string, string>;
-            if (typeof mapping === 'string') {
-              (accumulator as any)[mapping] = fields[key];
-            } else {
-              const { propertyName, prefersSingleRecordLink } = mapping;
-              (accumulator as any)[propertyName] = (() => {
-                if (prefersSingleRecordLink && Array.isArray(fields[key])) {
-                  return (fields[key] as string[])[0];
+            if (!lookupColumnNameToObjectPropertyMapper[key]) {
+              const noneLookupColumMapping =
+                columnNameToObjectPropertyMapper[key];
+              if (typeof noneLookupColumMapping === 'string') {
+                (accumulator as any)[noneLookupColumMapping] = fields[key];
+              } else if (noneLookupColumMapping.isMultipleRecordLinksField) {
+                if (fields[key] != null && Array.isArray(fields[key])) {
+                  const linkFieldValue = fields[key] as string[];
+                  const { propertyName, prefersSingleRecordLink, lookups } =
+                    noneLookupColumMapping;
+                  const linkObjectOrObjects = (() => {
+                    if (prefersSingleRecordLink) {
+                      const linkObject: Record<string, any> = {
+                        id: linkFieldValue[0],
+                      };
+                      if (lookups && lookups.length > 0) {
+                        lookups.forEach((lookupColumnName) => {
+                          if (fields[lookupColumnName]) {
+                            linkObject[
+                              lookupColumnNameToObjectPropertyMapper[
+                                lookupColumnName
+                              ]
+                            ] = fields[lookupColumnName];
+                          }
+                        });
+                      }
+                      return linkObject;
+                    }
+                    return linkFieldValue.map((id, index) => {
+                      const linkObject: Record<string, any> = {
+                        id,
+                      };
+                      if (lookups && lookups.length > 0) {
+                        lookups.forEach((lookupColumnName) => {
+                          if (fields[lookupColumnName][index]) {
+                            linkObject[
+                              lookupColumnNameToObjectPropertyMapper[
+                                lookupColumnName
+                              ]
+                            ] = fields[lookupColumnName][index];
+                          }
+                        });
+                      }
+                      return linkObject;
+                    });
+                  })();
+                  (accumulator as any)[propertyName] = linkObjectOrObjects;
                 }
-                return fields[key];
-              })();
+              } else {
+                (accumulator as any)[noneLookupColumMapping.propertyName] =
+                  fields[key];
+              }
             }
             return accumulator;
           }, {} as Omit<T, 'id'>),

@@ -88,7 +88,8 @@ export const PascalCaseEntityAirtableResponseValidationSchema =
       a: z.string().nullish(),
       /* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */
     }),
-    PascalCaseEntityAirtableColumnToObjectPropertyMapper
+    PascalCaseEntityAirtableColumnToObjectPropertyMapper,
+    PascalCaseEntityAirtableLookupColumnToObjectPropertyMapper
   );
 
 // Entities Table table columns interface.

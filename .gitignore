@@ -12,3 +12,4 @@ yarn.lock
 sandbox
 __sandbox
 error.json
+output.json

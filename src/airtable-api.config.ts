@@ -111,7 +111,7 @@ export default defineConfig({
         'Active Project Count',
       ],
       columnNameToObjectPropertyMapper: {
-        ['Continent Name']: {
+        ['Country']: {
           prefersSingleRecordLink: true,
         },
       },
