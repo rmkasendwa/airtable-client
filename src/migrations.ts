@@ -43,7 +43,11 @@ const moveResourcingsToAssignmentsTable = async (offset?: string) => {
                   startDate: resourceStart,
                   endDate: resourceEnd,
                   project: projectOverride,
-                  resourcingStatus: status,
+                  resourcingStatus: (() => {
+                    if (typeof status === 'string') {
+                      return status;
+                    }
+                  })(),
                   role: projectRole,
                   teamMember,
                   sow,
