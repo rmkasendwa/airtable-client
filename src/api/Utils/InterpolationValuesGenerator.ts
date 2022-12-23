@@ -16,22 +16,26 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   base: AirtableBase;
   currentTable: Table;
   filteredTableColumns: AirtableField[];
+  lookupTableColumns: AirtableField[];
   editableTableColumns: AirtableField[];
   tables: Table[];
-  columnToPropertyMapper: Record<string, string>;
+  columnNameToObjectPropertyMapper: Record<string, string>;
+  lookupColumnNameToObjectPropertyMapper: Record<string, string>;
   modelImportsCollector: string[];
-  columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
+  configColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
 };
 
 export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   base,
   currentTable,
   filteredTableColumns,
+  lookupTableColumns,
   editableTableColumns,
   tables,
-  columnToPropertyMapper,
+  columnNameToObjectPropertyMapper,
+  lookupColumnNameToObjectPropertyMapper,
   modelImportsCollector,
-  columnNameToObjectPropertyMapper = {},
+  configColumnNameToObjectPropertyMapper = {},
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
   const { id: baseId } = base;
   return {
@@ -41,10 +45,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       .map(({ name }) => `"${name}"`)
       .join(', '),
 
-    ['/* AIRTABLE_ENTITY_LOOKUP_COLUMNS */']: currentTable.fields
-      .filter(({ type }) => {
-        return type === 'multipleLookupValues';
-      })
+    ['/* AIRTABLE_ENTITY_LOOKUP_COLUMNS */']: lookupTableColumns
       .map(({ name }) => `"${name}"`)
       .join(', '),
 
@@ -56,21 +57,22 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           tables,
           currentTable
         );
-        const camelCasePropertyName = columnToPropertyMapper[name];
-        const columnNameToObjectPropertyMapperConfig =
-          columnNameToObjectPropertyMapper[name];
+        const camelCasePropertyName = columnNameToObjectPropertyMapper[name];
+        const configColumnNameToObjectPropertyMapperConfig =
+          configColumnNameToObjectPropertyMapper[name];
 
         return `["${name}"]: ${(() => {
           const obj: any = {
             propertyName: (() => {
-              if (columnNameToObjectPropertyMapperConfig) {
+              if (configColumnNameToObjectPropertyMapperConfig) {
                 if (
-                  typeof columnNameToObjectPropertyMapperConfig === 'string'
+                  typeof configColumnNameToObjectPropertyMapperConfig ===
+                  'string'
                 ) {
-                  return columnNameToObjectPropertyMapperConfig;
+                  return configColumnNameToObjectPropertyMapperConfig;
                 }
-                if (columnNameToObjectPropertyMapperConfig.propertyName) {
-                  return columnNameToObjectPropertyMapperConfig.propertyName;
+                if (configColumnNameToObjectPropertyMapperConfig.propertyName) {
+                  return configColumnNameToObjectPropertyMapperConfig.propertyName;
                 }
               }
               return camelCasePropertyName;
@@ -78,9 +80,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
             ...(() => {
               if (
                 (rootColumn && rootColumn.options?.prefersSingleRecordLink) ||
-                (columnNameToObjectPropertyMapperConfig &&
-                  typeof columnNameToObjectPropertyMapperConfig !== 'string' &&
-                  columnNameToObjectPropertyMapperConfig.prefersSingleRecordLink)
+                (configColumnNameToObjectPropertyMapperConfig &&
+                  typeof configColumnNameToObjectPropertyMapperConfig !==
+                    'string' &&
+                  configColumnNameToObjectPropertyMapperConfig.prefersSingleRecordLink)
               ) {
                 return {
                   prefersSingleRecordLink: true,
@@ -115,6 +118,14 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       })
       .join(',\n'),
 
+    ['/* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */']:
+      lookupTableColumns
+        .map((tableColumn) => {
+          const { name } = tableColumn;
+          return `["${name}"]: "${lookupColumnNameToObjectPropertyMapper[name]}"`;
+        })
+        .join(',\n'),
+
     ['/* AIRTABLE_ENTITY_FIELDS */']: filteredTableColumns
       .map((field) => {
         const { name } = field;
@@ -143,14 +154,14 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       .join(',\n'),
 
     ['/* AIRTABLE_ENTITY_EDITABLE_FIELD_TYPE */']: editableTableColumns
-      .map(({ name }) => `'${columnToPropertyMapper[name]}'`)
+      .map(({ name }) => `'${columnNameToObjectPropertyMapper[name]}'`)
       .join(' | '),
 
     ['/* REQUEST_ENTITY_PROPERTIES */']: editableTableColumns
       .map(
         (field) =>
           `"${
-            columnToPropertyMapper[field.name]
+            columnNameToObjectPropertyMapper[field.name]
           }": ${getRequestObjectValidationString(field, {
             currentTable,
             tables,
@@ -163,7 +174,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   currentTable,
   filteredTableColumns,
-  columnToPropertyMapper,
+  columnNameToObjectPropertyMapper,
   modelImportsCollector,
   views,
   labelSingular,
@@ -190,7 +201,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
 
     ['/* ENTITY_INTERFACE_FIELDS */']: filteredTableColumns
       .map((field) => {
-        const camelCasePropertyName = columnToPropertyMapper[field.name];
+        const camelCasePropertyName =
+          columnNameToObjectPropertyMapper[field.name];
         const rootColumn = getRootAirtableColumn(field, tables, currentTable);
         switch (rootColumn.type) {
           case 'multipleAttachments':
@@ -220,7 +232,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
 
     ['/* ENTITY_FOCUS_FIELDS */']: focusColumnNames
       .map((columnName) => {
-        return `"${columnToPropertyMapper[columnName]}"`;
+        return `"${columnNameToObjectPropertyMapper[columnName]}"`;
       })
       .join(', '),
 

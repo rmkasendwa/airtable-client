@@ -143,13 +143,13 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
             labelPlural,
             labelSingular,
             focusColumns: focusColumnNames,
-            columnNameToObjectPropertyMapper,
+            configColumnNameToObjectPropertyMapper,
           } = (() => {
             const outputConfig: {
               labelPlural: string;
               labelSingular: string;
               focusColumns?: string[];
-              columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
+              configColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
             } = { labelPlural: '', labelSingular: '' };
 
             const configTable = configTables.find(({ name, base }) => {
@@ -165,7 +165,8 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
                 alias: configTableAlias,
                 name: configTableName,
                 focusColumns,
-                columnNameToObjectPropertyMapper,
+                columnNameToObjectPropertyMapper:
+                  configColumnNameToObjectPropertyMapper,
               } = configTable;
               if (configTable.labelPlural) {
                 outputConfig.labelPlural = configTable.labelPlural;
@@ -192,9 +193,9 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
                 })();
               }
               focusColumns && (outputConfig.focusColumns = focusColumns);
-              columnNameToObjectPropertyMapper &&
-                (outputConfig.columnNameToObjectPropertyMapper =
-                  columnNameToObjectPropertyMapper);
+              configColumnNameToObjectPropertyMapper &&
+                (outputConfig.configColumnNameToObjectPropertyMapper =
+                  configColumnNameToObjectPropertyMapper);
             } else {
               const sanitisedTableName = tableName
                 .trim()
@@ -235,6 +236,10 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
               return accumulator;
             }, [] as typeof columns);
 
+          const lookupTableColumns = table.fields.filter(({ type }) => {
+            return type === 'multipleLookupValues';
+          });
+
           const editableTableColumns = filteredTableColumns.filter(
             ({ type }) => {
               switch (type) {
@@ -270,7 +275,7 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
             ` -> Processing \x1b[34m${workingBaseName.trim()}/${tableName.trim()}\x1b[0m table...`
           );
 
-          const columnToPropertyMapper = filteredTableColumns.reduce(
+          const columnNameToObjectPropertyMapper = filteredTableColumns.reduce(
             (accumulator, field) => {
               accumulator[field.name] = getCamelCaseFieldPropertyName(field);
               return accumulator;
@@ -278,30 +283,69 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
             {} as Record<string, string>
           );
 
+          const lookupColumnNameToObjectPropertyMapper =
+            lookupTableColumns.reduce((accumulator, field) => {
+              const parentField = (() => {
+                const recordLinkFieldId = field.options?.recordLinkFieldId;
+                if (recordLinkFieldId) {
+                  const recordLinkField = table.fields.find(
+                    ({ id }) => id === recordLinkFieldId
+                  );
+                  if (recordLinkField) {
+                    const linkedTableId =
+                      recordLinkField.options?.linkedTableId;
+                    const fieldIdInLinkedTable =
+                      field.options?.fieldIdInLinkedTable;
+                    if (linkedTableId && fieldIdInLinkedTable) {
+                      const linkedTable = tables.find(
+                        ({ id }) => id === linkedTableId
+                      );
+                      if (linkedTable) {
+                        const linkedField = linkedTable.fields.find(
+                          ({ id }) => id === fieldIdInLinkedTable
+                        );
+                        if (linkedField) {
+                          return linkedField;
+                        }
+                      }
+                    }
+                  }
+                }
+                return field;
+              })();
+              accumulator[field.name] =
+                getCamelCaseFieldPropertyName(parentField);
+              return accumulator;
+            }, {} as Record<string, string>);
+
           const interpolationBlocks =
             getAirtableAPIGeneratorTemplateFileInterpolationBlocks({
               base: workingBase,
               currentTable: table,
               filteredTableColumns,
+              lookupTableColumns,
               editableTableColumns,
               tables,
-              columnToPropertyMapper,
-              modelImportsCollector,
               columnNameToObjectPropertyMapper,
+              lookupColumnNameToObjectPropertyMapper,
+              modelImportsCollector,
+              configColumnNameToObjectPropertyMapper,
             });
 
           const interpolationLabels =
             getAirtableAPIGeneratorTemplateFileInterpolationLabels({
               currentTable: table,
               filteredTableColumns,
+              lookupTableColumns,
               tables,
-              columnToPropertyMapper,
+              columnNameToObjectPropertyMapper,
+              lookupColumnNameToObjectPropertyMapper,
               modelImportsCollector,
               views,
               labelPlural,
               labelSingular,
               focusColumnNames: focusColumnNames || [],
-              columnNameToObjectPropertyMapper,
+              configColumnNameToObjectPropertyMapper,
             });
 
           const getInterpolatedString = (templateFileContents: string) => {

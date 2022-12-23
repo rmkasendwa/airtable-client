@@ -13,16 +13,7 @@ export type PascalCaseEntity = {
   /* ENTITY_INTERFACE_FIELDS */
 };
 
-// All Entities Table table columns
-export const camelCaseEntitiesAirtableColumns = [
-  /* AIRTABLE_ENTITY_COLUMNS */
-  'Name',
-  /* AIRTABLE_ENTITY_COLUMNS */
-] as const;
-
-export type PascalCaseEntitiesAirtableColumn =
-  typeof camelCaseEntitiesAirtableColumns[number];
-
+// All Entities Table lookup table columns
 export const camelCaseEntitiesAirtableLookupColumns = [
   /* AIRTABLE_ENTITY_LOOKUP_COLUMNS */
   'Name',
@@ -32,8 +23,28 @@ export const camelCaseEntitiesAirtableLookupColumns = [
 export type PascalCaseEntitiesAirtableLookupColumn =
   typeof camelCaseEntitiesAirtableLookupColumns[number];
 
-// Maps Entities Table columns to Entity Label properties.
-export const PascalCaseEntityAirtableColumnToPropertyMapper: Record<
+// Maps Entities Table lookup columns to Entity Label properties.
+export const PascalCaseEntityAirtableLookupColumnToObjectPropertyMapper: Record<
+  PascalCaseEntitiesAirtableLookupColumn,
+  string
+> = {
+  /* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */
+  ['Name']: 'name',
+  /* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */
+};
+
+// All Entities Table non lookup table columns
+export const camelCaseEntitiesAirtableColumns = [
+  /* AIRTABLE_ENTITY_COLUMNS */
+  'Name',
+  /* AIRTABLE_ENTITY_COLUMNS */
+] as const;
+
+export type PascalCaseEntitiesAirtableColumn =
+  typeof camelCaseEntitiesAirtableColumns[number];
+
+// Maps Entities Table non lookup columns to Entity Label properties.
+export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
   PascalCaseEntitiesAirtableColumn,
   AirtableColumnMapping<
     keyof PascalCaseEntity,
@@ -77,7 +88,7 @@ export const PascalCaseEntityAirtableResponseValidationSchema =
       a: z.string().nullish(),
       /* AIRTABLE_ENTITY_FIELDS */
     }),
-    PascalCaseEntityAirtableColumnToPropertyMapper
+    PascalCaseEntityAirtableColumnToObjectPropertyMapper
   );
 
 // Entities Table table columns interface.
@@ -94,7 +105,7 @@ export const FindAllPascalCaseEntitiesReponseValidationSchema = z.object({
 // Maps entity label properties to Entities Table columns
 export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
   Object.fromEntries(
-    Object.entries(PascalCaseEntityAirtableColumnToPropertyMapper).map(
+    Object.entries(PascalCaseEntityAirtableColumnToObjectPropertyMapper).map(
       ([key, value]) => {
         const propertyName = (() => {
           if (typeof value === 'string') {
@@ -122,7 +133,7 @@ export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
 // Maps entity label properties to Entities Table column names
 export const PascalCaseEntityPropertyToAirtableColumnNameMapper =
   Object.fromEntries(
-    Object.entries(PascalCaseEntityAirtableColumnToPropertyMapper).map(
+    Object.entries(PascalCaseEntityAirtableColumnToObjectPropertyMapper).map(
       ([key, value]) => {
         return [
           (() => {
