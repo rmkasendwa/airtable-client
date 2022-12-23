@@ -23,17 +23,29 @@ export const camelCaseEntitiesAirtableColumns = [
 export type PascalCaseEntitiesAirtableColumn =
   typeof camelCaseEntitiesAirtableColumns[number];
 
+export const camelCaseEntitiesAirtableLookupColumns = [
+  /* AIRTABLE_ENTITY_LOOKUP_COLUMNS */
+  'Name',
+  /* AIRTABLE_ENTITY_LOOKUP_COLUMNS */
+] as const;
+
+export type PascalCaseEntitiesAirtableLookupColumn =
+  typeof camelCaseEntitiesAirtableLookupColumns[number];
+
 // Maps Entities Table columns to Entity Label properties.
 export const PascalCaseEntityAirtableColumnToPropertyMapper: Record<
   PascalCaseEntitiesAirtableColumn,
-  AirtableColumnMapping<keyof PascalCaseEntity>
+  AirtableColumnMapping<
+    keyof PascalCaseEntity,
+    PascalCaseEntitiesAirtableLookupColumn
+  >
 > = {
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
   ['Name']: {
     propertyName: 'id',
   },
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
-} as const;
+};
 
 /********************* Airtable Entities Table views ***********************/
 

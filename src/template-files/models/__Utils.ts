@@ -111,14 +111,21 @@ export const convertToAirtableFindAllRecordsQueryParams = <
   return airtableQueryParams;
 };
 
-export type AirtableColumnConfigMapping<T extends string> = {
-  propertyName: T;
+export type AirtableColumnConfigMapping<
+  ObjectPropertyName extends string,
+  AirtableColumnName extends string
+> = {
+  propertyName: ObjectPropertyName;
   prefersSingleRecordLink?: boolean;
+  lookups?: AirtableColumnName[];
 };
 
-export type AirtableColumnMapping<T extends string> =
-  | AirtableColumnConfigMapping<T>
-  | T;
+export type AirtableColumnMapping<
+  ObjectPropertyName extends string,
+  AirtableColumnName extends string
+> =
+  | AirtableColumnConfigMapping<ObjectPropertyName, AirtableColumnName>
+  | ObjectPropertyName;
 
 /**
  * Generates the airtable record response validation schema.
@@ -148,7 +155,7 @@ export const getAirtableRecordResponseValidationSchema = <T>(
           .reduce((accumulator, key) => {
             const mapping = columnNameToObjectPropertyMapper[
               key
-            ] as AirtableColumnMapping<string>;
+            ] as AirtableColumnMapping<string, string>;
             if (typeof mapping === 'string') {
               (accumulator as any)[mapping] = fields[key];
             } else {
@@ -170,7 +177,7 @@ export const getAirtableRecordRequestValidationSchema = (
   requestValidationSchema: AnyZodObject,
   objectPropertyToColumnNameMapper: Record<
     string,
-    AirtableColumnConfigMapping<string>
+    AirtableColumnConfigMapping<string, string>
   >
 ) => {
   return requestValidationSchema.transform(({ id, ...fields }) => {
@@ -183,7 +190,7 @@ export const getAirtableRecordRequestValidationSchema = (
         .reduce((accumulator, key) => {
           const mapping = objectPropertyToColumnNameMapper[
             key
-          ] as AirtableColumnMapping<string>;
+          ] as AirtableColumnMapping<string, string>;
           if (typeof mapping === 'string') {
             (accumulator as any)[mapping] = fields[key];
           } else {

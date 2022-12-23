@@ -20,7 +20,11 @@ import {
   getCamelCaseFieldPropertyName,
 } from './api';
 import { findAllAirtableBases } from './api/Metadata/Bases';
-import { Config, ConfigColumnNameToObjectPropertyMapper } from './models';
+import {
+  AirtableFieldType,
+  Config,
+  ConfigColumnNameToObjectPropertyMapper,
+} from './models';
 
 const args = process.argv;
 
@@ -68,7 +72,6 @@ const configTables = [
 ];
 
 /****************** PATHS *********************/
-
 const airtableAPIFolderName = 'airtable';
 const outputRootPath = `${__dirname}/__sandbox`; // TODO: Get this from command otherwise fallback to process.cwd()
 const outputFolderPath = normalize(
@@ -80,6 +83,12 @@ const templateFilePaths = globby
     absolute: true,
   })
   .map((filePath) => normalize(filePath));
+
+// Constants
+const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
+  'lookup',
+  'multipleLookupValues',
+];
 
 (async () => {
   const { bases } = await findAllAirtableBases();
@@ -214,6 +223,9 @@ const templateFilePaths = globby
                 name.replace(/[^\w\s]/g, '').length > 0 &&
                 (!focusColumnNames || focusColumnNames.includes(name))
               );
+            })
+            .filter(({ type }) => {
+              return !type || !LOOKUP_TABLE_COLUMN_TYPES.includes(type);
             })
             .reduce((accumulator, field) => {
               // Filtering columns with similar names.

@@ -154,9 +154,7 @@ export const getObjectPropertyTypeString = (
 ): string => {
   const { tables, currentTable } = options;
   const rootField = getRootAirtableColumn(field, tables, currentTable);
-
   const { type } = field;
-
   switch (type) {
     case 'multipleSelects':
     case 'singleCollaborator':
@@ -187,11 +185,13 @@ export const getObjectPropertyTypeString = (
       )} | AirtableFormulaColumnError`;
 
     // Lists
-    case 'multipleRecordLinks':
+    case 'multipleRecordLinks': {
+      const typeString = `{id: string}`;
       if (field.options?.prefersSingleRecordLink) {
-        return `string`;
+        return typeString;
       }
-      return `string[]`;
+      return `${typeString}[]`;
+    }
     case 'lookup':
     case 'multipleLookupValues':
       const propertyTypeString = (() => {

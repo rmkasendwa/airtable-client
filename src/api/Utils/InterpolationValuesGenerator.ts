@@ -41,16 +41,27 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       .map(({ name }) => `"${name}"`)
       .join(', '),
 
+    ['/* AIRTABLE_ENTITY_LOOKUP_COLUMNS */']: currentTable.fields
+      .filter(({ type }) => {
+        return type === 'multipleLookupValues';
+      })
+      .map(({ name }) => `"${name}"`)
+      .join(', '),
+
     ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: filteredTableColumns
-      .map((field) => {
-        const { name } = field;
-        const rootColumn = getRootAirtableColumn(field, tables, currentTable);
+      .map((tableColumn) => {
+        const { id: tableColumnId, name, type } = tableColumn;
+        const rootColumn = getRootAirtableColumn(
+          tableColumn,
+          tables,
+          currentTable
+        );
         const camelCasePropertyName = columnToPropertyMapper[name];
         const columnNameToObjectPropertyMapperConfig =
           columnNameToObjectPropertyMapper[name];
 
         return `["${name}"]: ${(() => {
-          const obj = {
+          const obj: any = {
             propertyName: (() => {
               if (columnNameToObjectPropertyMapperConfig) {
                 if (
@@ -78,7 +89,24 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
             })(),
           };
 
-          if (Object.keys(obj).length > 1) {
+          if (type === 'multipleRecordLinks') {
+            const lookups = currentTable.fields
+              .filter(({ options, type }) => {
+                return (
+                  type === 'multipleLookupValues' &&
+                  tableColumnId === options?.recordLinkFieldId
+                );
+              })
+              .map(({ name }) => {
+                return name;
+              });
+
+            if (lookups.length > 0) {
+              obj.lookups = lookups;
+            }
+          }
+
+          if (Object.keys(obj).length > 1 || type === 'multipleRecordLinks') {
             return JSON.stringify(obj);
           }
 
