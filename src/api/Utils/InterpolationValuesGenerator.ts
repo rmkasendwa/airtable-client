@@ -125,10 +125,17 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 
     ['/* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */']:
       lookupTableColumns
-        .map((tableColumn) => {
-          const { name } = tableColumn;
-          return `["${name}"]: "${lookupColumnNameToObjectPropertyMapper[name]}"`;
+        .map(({ name, options }) => {
+          const parentColumn = nonLookupTableColumns.find(
+            ({ id }) => id === options?.recordLinkFieldId
+          );
+          if (parentColumn) {
+            return `["${name}"]: "${
+              columnNameToObjectPropertyMapper[parentColumn.name]
+            }.${lookupColumnNameToObjectPropertyMapper[name]}"`;
+          }
         })
+        .filter((lookupColumnMapping) => lookupColumnMapping)
         .join(',\n'),
 
     ['/* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */']: [

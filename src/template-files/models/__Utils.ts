@@ -100,20 +100,13 @@ export const convertToAirtableFindAllRecordsQueryParams = <
           fields: queryParams.fields
             .filter((field) => {
               if (field.includes('.')) {
-                const [refPropertyName, lookupPropertyName] = field.split('.');
-                return (
-                  objectPropertyToColumnNameMapper[refPropertyName] &&
-                  lookupObjectPropertyToColumnNameMapper[lookupPropertyName]
-                );
+                return lookupObjectPropertyToColumnNameMapper[field];
               }
               return objectPropertyToColumnNameMapper[field];
             })
             .map((field) => {
               if (field.includes('.')) {
-                const [, lookupPropertyName] = field.split('.');
-                return lookupObjectPropertyToColumnNameMapper[
-                  lookupPropertyName
-                ];
+                return lookupObjectPropertyToColumnNameMapper[field];
               }
               return objectPropertyToColumnNameMapper[field];
             }),
@@ -193,11 +186,12 @@ export const getAirtableRecordResponseValidationSchema = <
                       if (lookups && lookups.length > 0) {
                         lookups.forEach((lookupColumnName) => {
                           if (fields[lookupColumnName]) {
-                            linkObject[
+                            const [, lookupPropertyName] =
                               lookupColumnNameToObjectPropertyMapper[
                                 lookupColumnName
-                              ]
-                            ] = fields[lookupColumnName];
+                              ].split('.');
+                            linkObject[lookupPropertyName] =
+                              fields[lookupColumnName];
                           }
                         });
                       }

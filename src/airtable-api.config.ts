@@ -93,7 +93,7 @@ export default defineConfig({
         'Topology Permission Codes',
         'Topology Permission Exclude Codes',
 
-        'SOW Id',
+        'SOWs',
         'Picture',
         'Github Username',
 

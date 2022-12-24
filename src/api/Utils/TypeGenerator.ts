@@ -230,7 +230,7 @@ export const getObjectPropertyTypeString = (
           }
           return getObjectPropertyTypeString(rootField, options);
         }
-        return getAirtableResponseTypeValidationString(
+        return getObjectPropertyTypeString(
           {
             ...tableColumn,
             type: tableColumn.options?.result?.type,
@@ -238,8 +238,14 @@ export const getObjectPropertyTypeString = (
           options
         );
       })();
+      const parentTableColumn = currentTable.fields.find(
+        ({ id }) => id === tableColumn.options?.recordLinkFieldId
+      );
       return `${propertyTypeString}${
-        propertyTypeString.match(/\[\]$/g) ? '' : '[]'
+        !propertyTypeString.match(/\[\]$/g) &&
+        !parentTableColumn?.options?.prefersSingleRecordLink
+          ? '[]'
+          : ''
       }`;
 
     // Numbers
@@ -313,7 +319,7 @@ export const getRequestObjectValidationString = (
             ...options,
           });
         }
-        return getAirtableResponseTypeValidationString(
+        return getRequestObjectValidationString(
           {
             ...field,
             type: field.options?.result?.type,
