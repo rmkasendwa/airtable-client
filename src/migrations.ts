@@ -129,7 +129,7 @@ const cloneAssignmentsToPositionsTable = async (offset?: string) => {
     const { records: teamMembers } = await findAllTeamMembers({
       // fields: ['name', 'country', 'billable'],
     });
-    console.log({ teamMembers, count: teamMembers.length });
+    console.log({ count: teamMembers.length });
     writeFileSync(
       `${__dirname}/output.json`,
       JSON.stringify(teamMembers, null, 2)

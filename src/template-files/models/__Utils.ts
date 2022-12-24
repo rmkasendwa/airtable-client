@@ -39,16 +39,16 @@ export const airtableFieldTypes = [
 
 export type AirtableFieldType = typeof airtableFieldTypes[number];
 
-export type AirtableSortOption<T> = {
-  field: keyof T;
+export type AirtableSortOption<T extends string = string> = {
+  field: T;
   direction?: 'asc' | 'desc';
 };
 
 export type FindAllRecordsQueryParams<
-  T extends Record<string, any> = Record<string, any>,
+  T extends string = string,
   ViewType extends string = string
 > = {
-  fields?: (keyof T)[];
+  fields?: T[];
   filterByFormula?: string;
   maxRecords?: number;
   pageSize?: number;
@@ -64,7 +64,8 @@ export const convertToAirtableFindAllRecordsQueryParams = <
   T extends FindAllRecordsQueryParams
 >(
   queryParams: T,
-  objectPropertyToColumnNameMapper: Record<string, string>
+  objectPropertyToColumnNameMapper: Record<string, string>,
+  lookupObjectPropertyToColumnNameMapper: Record<string, string>
 ) => {
   const airtableQueryParams: Omit<
     FindAllRecordsQueryParams,
@@ -98,9 +99,22 @@ export const convertToAirtableFindAllRecordsQueryParams = <
         return {
           fields: queryParams.fields
             .filter((field) => {
+              if (field.includes('.')) {
+                const [refPropertyName, lookupPropertyName] = field.split('.');
+                return (
+                  objectPropertyToColumnNameMapper[refPropertyName] &&
+                  lookupObjectPropertyToColumnNameMapper[lookupPropertyName]
+                );
+              }
               return objectPropertyToColumnNameMapper[field];
             })
             .map((field) => {
+              if (field.includes('.')) {
+                const [, lookupPropertyName] = field.split('.');
+                return lookupObjectPropertyToColumnNameMapper[
+                  lookupPropertyName
+                ];
+              }
               return objectPropertyToColumnNameMapper[field];
             }),
         };

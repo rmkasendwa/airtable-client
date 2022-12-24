@@ -24,7 +24,7 @@ export type PascalCaseEntitiesAirtableLookupColumn =
   typeof camelCaseEntitiesAirtableLookupColumns[number];
 
 // Maps Entities Table lookup columns to Entity Label properties.
-export const PascalCaseEntityAirtableLookupColumnToObjectPropertyMapper: Record<
+export const PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper: Record<
   PascalCaseEntitiesAirtableLookupColumn,
   string
 > = {
@@ -32,6 +32,16 @@ export const PascalCaseEntityAirtableLookupColumnToObjectPropertyMapper: Record<
   ['Name']: 'name',
   /* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */
 };
+
+// Maps entity label properties to Entities Table lookup column names
+export const PascalCaseEntityPropertyToAirtableLookupColumnNameMapper =
+  Object.fromEntries(
+    Object.entries(
+      PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper
+    ).map(([key, value]) => {
+      return [value, key];
+    })
+  );
 
 // All Entities Table non lookup table columns
 export const camelCaseEntitiesAirtableColumns = [
@@ -82,7 +92,7 @@ export const PascalCaseEntityAirtableResponseValidationSchema =
       /* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */
     }),
     PascalCaseEntityAirtableColumnToObjectPropertyMapper,
-    PascalCaseEntityAirtableLookupColumnToObjectPropertyMapper
+    PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper
   );
 
 // Entities Table table columns interface.

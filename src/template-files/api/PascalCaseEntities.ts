@@ -14,10 +14,10 @@ import {
   AirtablePascalCaseEntity,
   CreatePascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesReponseValidationSchema,
-  PascalCaseEntity,
   PascalCaseEntityAirtableResponseValidationSchema,
   PascalCaseEntityCreationDetails,
   PascalCaseEntityPropertyToAirtableColumnNameMapper,
+  PascalCaseEntityPropertyToAirtableLookupColumnNameMapper,
   PascalCaseEntityQueryableField,
   PascalCaseEntityUpdates,
   PascalCaseEntityView,
@@ -47,7 +47,7 @@ const DEFAULT_ENTITY_QUERYABLE_FIELDS: PascalCaseEntityQueryableField[] = [
  */
 export const findPascalCaseEntitiesPage = async (
   queryParams: FindAllRecordsQueryParams<
-    PascalCaseEntity,
+    PascalCaseEntityQueryableField,
     PascalCaseEntityView
   > = {}
 ) => {
@@ -68,7 +68,8 @@ export const findPascalCaseEntitiesPage = async (
     {
       ...convertToAirtableFindAllRecordsQueryParams(
         queryParams as any,
-        PascalCaseEntityPropertyToAirtableColumnNameMapper
+        PascalCaseEntityPropertyToAirtableColumnNameMapper,
+        PascalCaseEntityPropertyToAirtableLookupColumnNameMapper
       ),
     },
     { arrayParamStyle: 'append' }
@@ -90,7 +91,10 @@ export const findPascalCaseEntitiesPage = async (
  */
 export const findAllPascalCaseEntities = async (
   queryParams: Omit<
-    FindAllRecordsQueryParams<PascalCaseEntity, PascalCaseEntityView>,
+    FindAllRecordsQueryParams<
+      PascalCaseEntityQueryableField,
+      PascalCaseEntityView
+    >,
     'pageSize'
   > = {}
 ) => {
