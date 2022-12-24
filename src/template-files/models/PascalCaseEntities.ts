@@ -67,6 +67,7 @@ export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
 
 /********************* Airtable Entities Table views ***********************/
 
+// Entities Table table focus views.
 export const camelCaseEntityViews = [
   /* AIRTABLE_VIEWS */
 ] as const;

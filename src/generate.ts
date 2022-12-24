@@ -145,12 +145,14 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
             labelSingular,
             focusColumns: focusColumnNames,
             configColumnNameToObjectPropertyMapper,
+            configViews,
           } = (() => {
             const outputConfig: {
               labelPlural: string;
               labelSingular: string;
               focusColumns?: string[];
               configColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
+              configViews?: string[];
             } = { labelPlural: '', labelSingular: '' };
 
             const configTable = configTables.find(({ name, base }) => {
@@ -168,6 +170,7 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
                 focusColumns,
                 columnNameToObjectPropertyMapper:
                   configColumnNameToObjectPropertyMapper,
+                views,
               } = configTable;
               if (configTable.labelPlural) {
                 outputConfig.labelPlural = configTable.labelPlural;
@@ -197,6 +200,7 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
               configColumnNameToObjectPropertyMapper &&
                 (outputConfig.configColumnNameToObjectPropertyMapper =
                   configColumnNameToObjectPropertyMapper);
+              views && (outputConfig.configViews = views);
             } else {
               const sanitisedTableName = tableName
                 .trim()
@@ -217,6 +221,13 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
 
             return outputConfig;
           })();
+
+          // Filtering views
+          const filteredViews = views
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .filter(({ name }) => {
+              return !configViews || configViews.includes(name);
+            });
 
           const filteredTableColumns = columns
             .sort((a, b) => {
@@ -433,7 +444,7 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
               columnNameToObjectPropertyMapper,
               lookupColumnNameToObjectPropertyMapper,
               modelImportsCollector,
-              views,
+              views: filteredViews,
               labelPlural,
               labelSingular,
               configColumnNameToObjectPropertyMapper,

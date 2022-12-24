@@ -116,6 +116,7 @@ export default defineConfig({
         },
         'State/province': 'state',
       },
+      views: ['Current Team', 'All Team Members', 'Alumni', 'Bench'],
     },
     {
       name: 'Positions',

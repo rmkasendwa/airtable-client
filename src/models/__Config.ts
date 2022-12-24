@@ -19,6 +19,7 @@ export type ConfigTable<FocusColumn extends string> = {
   labelSingular?: string;
   focusColumns?: FocusColumn[];
   columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<FocusColumn>;
+  views?: string[];
 };
 
 export type Config<FocusColumn extends string> = {

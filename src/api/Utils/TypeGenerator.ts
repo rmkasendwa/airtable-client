@@ -58,7 +58,6 @@ export const getAirtableResponseTypeValidationString = (
     case 'multipleSelects':
     case 'singleCollaborator':
     case 'multipleCollaborators':
-    case 'rollup':
     case 'barcode':
     case 'duration':
     case 'createdBy':
@@ -82,6 +81,17 @@ export const getAirtableResponseTypeValidationString = (
           ...options,
         }
       )}, AirtableFormulaColumnErrorValidationSchema])`;
+
+    case 'rollup':
+      return getAirtableResponseTypeValidationString(
+        {
+          ...field,
+          type: field.options?.result?.type,
+        },
+        {
+          ...options,
+        }
+      );
 
     // Dates
     case 'date':
@@ -169,7 +179,6 @@ export const getObjectPropertyTypeString = (
     case 'multipleSelects':
     case 'singleCollaborator':
     case 'multipleCollaborators':
-    case 'rollup':
     case 'barcode':
     case 'duration':
     case 'createdBy':
@@ -198,6 +207,15 @@ export const getObjectPropertyTypeString = (
         },
         options
       )} | AirtableFormulaColumnError`;
+
+    case 'rollup':
+      return getObjectPropertyTypeString(
+        {
+          ...tableColumn,
+          type: tableColumn.options?.result?.type,
+        },
+        options
+      );
 
     // Lists
     case 'multipleRecordLinks': {
