@@ -323,7 +323,31 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
 
           const columnNameToObjectPropertyMapper = nonLookupTableColumns.reduce(
             (accumulator, field) => {
-              accumulator[field.name] = getCamelCaseFieldPropertyName(field);
+              accumulator[field.name] = (() => {
+                if (configColumnNameToObjectPropertyMapper) {
+                  if (
+                    configColumnNameToObjectPropertyMapper[field.name] &&
+                    typeof configColumnNameToObjectPropertyMapper[
+                      field.name
+                    ] !== 'string' &&
+                    (configColumnNameToObjectPropertyMapper[field.name] as any)
+                      .propertyName
+                  ) {
+                    return (
+                      configColumnNameToObjectPropertyMapper[field.name] as any
+                    ).propertyName;
+                  }
+                  if (
+                    configColumnNameToObjectPropertyMapper[field.name] &&
+                    typeof configColumnNameToObjectPropertyMapper[
+                      field.name
+                    ] === 'string'
+                  ) {
+                    return configColumnNameToObjectPropertyMapper[field.name];
+                  }
+                }
+                return getCamelCaseFieldPropertyName(field);
+              })();
               return accumulator;
             },
             {} as Record<string, string>

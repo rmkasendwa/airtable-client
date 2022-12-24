@@ -114,6 +114,7 @@ export default defineConfig({
         ['Country']: {
           prefersSingleRecordLink: true,
         },
+        'State/province': 'state',
       },
     },
     {
