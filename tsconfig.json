@@ -30,13 +30,13 @@
     /* Additional Checks */
     "noUnusedLocals": true /* Report errors on unused locals. */,
     "noUnusedParameters": true /* Report errors on unused parameters. */,
-    "outDir": "build/main",
+    "outDir": "./dist",
     "pretty": true /* Stylize errors and messages using color and context. */,
 
     "resolveJsonModule": true /* Include modules imported with .json extension. */,
 
     "strict": true,
-    "target": "es2017",
+    "target": "es6",
     /* Debugging Options */
     "traceResolution": false /* Report module resolution log messages. */,
     "typeRoots": ["node_modules/@types", "src/types"],

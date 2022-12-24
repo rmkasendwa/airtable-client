@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "moduleResolution": "node",
+    "noEmit": false,
+    "noResolve": false,
+    "outDir": "./dist",
+    "preserveConstEnums": true
+  },
+  "exclude": ["node_modules/**", "src/migrations.ts", "src/template-files/**"],
+  "extends": "./tsconfig"
+}
