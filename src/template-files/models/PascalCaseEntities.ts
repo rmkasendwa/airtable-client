@@ -56,10 +56,7 @@ export type PascalCaseEntitiesAirtableColumn =
 // Maps Entities Table non lookup columns to Entity Label properties.
 export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
   PascalCaseEntitiesAirtableColumn,
-  AirtableColumnMapping<
-    keyof PascalCaseEntity,
-    PascalCaseEntitiesAirtableLookupColumn
-  >
+  AirtableColumnMapping<keyof PascalCaseEntity>
 > = {
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
   ['Name']: {
@@ -82,29 +79,6 @@ export type PascalCaseEntityQueryableField =
   | 'id' /* QUERYABLE_FIELD_TYPE */;
 
 /********************* Validation Schemas ***********************/
-
-// Validates Entities Table airtable response.
-export const PascalCaseEntityAirtableResponseValidationSchema =
-  getAirtableRecordResponseValidationSchema<PascalCaseEntity>(
-    z.object({
-      /* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */
-      a: z.string().nullish(),
-      /* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */
-    }),
-    PascalCaseEntityAirtableColumnToObjectPropertyMapper,
-    PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper
-  );
-
-// Entities Table table columns interface.
-export type AirtablePascalCaseEntity = z.infer<
-  typeof PascalCaseEntityAirtableResponseValidationSchema
->;
-
-// Validates airtable response to find all entities label.
-export const FindAllPascalCaseEntitiesReponseValidationSchema = z.object({
-  records: z.array(PascalCaseEntityAirtableResponseValidationSchema),
-  offset: z.string().optional(),
-});
 
 // Maps entity label properties to Entities Table columns
 export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
@@ -151,6 +125,33 @@ export const PascalCaseEntityPropertyToAirtableColumnNameMapper =
       }
     )
   );
+
+// Validates Entities Table airtable response.
+export const PascalCaseEntityAirtableResponseValidationSchema =
+  getAirtableRecordResponseValidationSchema<PascalCaseEntity>({
+    columnNameToObjectPropertyMapper:
+      PascalCaseEntityAirtableColumnToObjectPropertyMapper,
+    lookupColumnNameToObjectPropertyMapper:
+      PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper,
+    objectPropertyToAirtableColumnNameMapper:
+      PascalCaseEntityPropertyToAirtableColumnNameMapper,
+    responseFieldsValidationSchema: z.object({
+      /* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */
+      a: z.string().nullish(),
+      /* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */
+    }),
+  });
+
+// Entities Table table columns interface.
+export type AirtablePascalCaseEntity = z.infer<
+  typeof PascalCaseEntityAirtableResponseValidationSchema
+>;
+
+// Validates airtable response to find all entities label.
+export const FindAllPascalCaseEntitiesReponseValidationSchema = z.object({
+  records: z.array(PascalCaseEntityAirtableResponseValidationSchema),
+  offset: z.string().optional(),
+});
 
 // Validates requests to mutate entities label.
 export const PascalCaseEntityAirtableRequestValidationSchema = z.object({

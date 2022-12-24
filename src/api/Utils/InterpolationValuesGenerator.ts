@@ -54,7 +54,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 
     ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: nonLookupTableColumns
       .map((tableColumn) => {
-        const { id: tableColumnId, name, type } = tableColumn;
+        const { name, type } = tableColumn;
         const rootColumn = getRootAirtableColumn(
           tableColumn,
           tables,
@@ -97,21 +97,6 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 
           if (type === 'multipleRecordLinks') {
             obj.isMultipleRecordLinksField = true;
-
-            const lookups = lookupTableColumns
-              .filter(({ options, type }) => {
-                return (
-                  type === 'multipleLookupValues' &&
-                  tableColumnId === options?.recordLinkFieldId
-                );
-              })
-              .map(({ name }) => {
-                return name;
-              });
-
-            if (lookups.length > 0) {
-              obj.lookups = lookups;
-            }
           }
 
           if (Object.keys(obj).length > 1 || type === 'multipleRecordLinks') {
