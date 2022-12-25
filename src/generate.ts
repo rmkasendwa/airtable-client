@@ -1,7 +1,7 @@
 import '@infinite-debugger/rmk-js-extensions/RegExp';
 import '@infinite-debugger/rmk-js-extensions/String';
 
-import { dirname, normalize } from 'path';
+import { dirname, join, normalize } from 'path';
 
 import {
   ensureDirSync,
@@ -10,8 +10,8 @@ import {
   removeSync,
   writeFileSync,
 } from 'fs-extra';
-import globby from 'globby';
 import prettier from 'prettier';
+import walk from 'walk-sync';
 
 import {
   findAllTablesByBaseId,
@@ -27,6 +27,7 @@ import {
 } from './models';
 
 const args = process.argv;
+const currentWorkingDirectory = process.cwd();
 
 const generateAllTables = args.includes('--all');
 
@@ -73,18 +74,25 @@ const configTables = [
 
 /****************** PATHS *********************/
 const airtableAPIFolderName = 'airtable';
-const outputRootPath = `${__dirname}/__sandbox`; // TODO: Get this from command otherwise fallback to process.cwd()
+const outputRootPath = (() => {
+  if (args.includes('-o')) {
+    const argsPath = args[args.indexOf('-o') + 1];
+    if (argsPath) {
+      return normalize(join(currentWorkingDirectory, argsPath));
+    }
+  }
+  return currentWorkingDirectory;
+})(); // TODO: Get this from command otherwise fallback to process.cwd()
 const outputFolderPath = normalize(
   `${outputRootPath}/${airtableAPIFolderName}`
 );
 const templatesFolderPath = normalize(`${__dirname}/template-files`);
-const templateFilePaths = globby
-  .sync(`src/template-files`, {
-    absolute: true,
-  })
-  .map((filePath) => normalize(filePath));
+const templateFilePaths = walk(templatesFolderPath, {
+  includeBasePath: true,
+  directories: false,
+}).map((filePath) => normalize(filePath));
 
-// Constants
+/****************** CONSTANTS *********************/
 const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
   'lookup',
   'multipleLookupValues',
