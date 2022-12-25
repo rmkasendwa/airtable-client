@@ -13,7 +13,7 @@
     "doc:json": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --json build/docs/typedoc.json",
     "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d build/docs",
     "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,html,htm,json,css,scss,md}\"",
-    "start": "tsnd --inspect=9888 --ignore-watch node_modules --respawn --transpile-only src/generate.ts",
+    "start": "tsnd --inspect=9888 --ignore-watch node_modules --respawn --transpile-only src/index.ts",
     "tsc": "tsc --project tsconfig.compile.json",
     "version": "standard-version"
   },
