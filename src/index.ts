@@ -15,7 +15,15 @@ export * from './models';
 
 const currentWorkingDirectory = process.cwd();
 
-const pkg = require(`${currentWorkingDirectory}/package.json`);
+const pkg = (() => {
+  if (existsSync(`${__dirname}/package.json`)) {
+    return require(`${__dirname}/package.json`);
+  }
+  const pkgPath = join(__dirname, '..', 'package.json');
+  if (existsSync(pkgPath)) {
+    return require(pkgPath);
+  }
+})();
 
 const args = process.argv;
 

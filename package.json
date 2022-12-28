@@ -1,16 +1,16 @@
 {
   "name": "airtable-client",
-  "version": "0.1.0-alpha.5",
+  "version": "0.1.0-alpha.7",
   "description": "Description",
-  "main": "./index.js",
-  "bin": "./index.js",
-  "author": {
-    "email": "ronald.kasendwa@theoremone.co",
-    "name": "Ronald M. Kasendwa",
-    "url": "https://github.com/rmkasendwa"
-  },
   "keywords": [],
   "repository": "https://github.com/TheoremOne-Talent/airtable-api-generator",
+  "author": {
+    "name": "Ronald M. Kasendwa",
+    "email": "ronald.kasendwa@theoremone.co",
+    "url": "https://github.com/rmkasendwa"
+  },
+  "main": "./index.js",
+  "bin": "./index.js",
   "scripts": {
     "prebuild": "rm -rf ./dist",
     "build": "npm run tsc",
@@ -20,8 +20,8 @@
     "doc:json": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --json build/docs/typedoc.json",
     "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d build/docs",
     "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,html,htm,json,css,scss,md}\"",
-    "tsc": "tsc --project tsconfig.compile.json",
     "publish": "npm run build && cd ./dist && npm publish --registry http://localhost:4873",
+    "tsc": "tsc --project tsconfig.compile.json",
     "version": "standard-version"
   },
   "dependencies": {
@@ -31,9 +31,10 @@
     "base-64": "^1.0.0",
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.3",
-    "lodash": "^4.17.21",
-    "walk-sync": "^3.0.0",
     "fs-extra": "^11.1.0",
+    "lodash": "^4.17.21",
+    "prettier": "^2.8.1",
+    "walk-sync": "^3.0.0",
     "zod": "^3.20.2"
   },
   "devDependencies": {
@@ -51,7 +52,6 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-sort-keys-fix": "^1.1.2",
     "import-sort-style-module": "^6.0.0",
-    "prettier": "^2.8.1",
     "prettier-plugin-import-sort": "0.0.7",
     "prettier-plugin-sort-json": "0.0.3",
     "standard-version": "^9.5.0",
