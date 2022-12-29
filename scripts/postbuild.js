@@ -9,7 +9,7 @@ const packageFile = require(`${currentWorkingDirectory}/package.json`);
 const project = {
   ...omit(packageFile, 'devDependencies', 'jest', 'scripts'),
   main: './index.js',
-  bin: './index.js',
+  bin: './bin.js',
   types: './index.d.ts',
 };
 
