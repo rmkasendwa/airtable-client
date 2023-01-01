@@ -1,6 +1,6 @@
 {
   "name": "airtable-client",
-  "version": "0.1.0-alpha.10",
+  "version": "0.1.0-alpha.12",
   "description": "Description",
   "keywords": [],
   "repository": "https://github.com/TheoremOne-Talent/airtable-api-generator",
@@ -27,7 +27,7 @@
   "dependencies": {
     "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.5",
     "@infinite-debugger/rmk-utils": "^0.1.0-alpha.5",
-    "axios": "^1.2.1",
+    "axios": "^1.2.2",
     "base-64": "^1.0.0",
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.3",
@@ -38,12 +38,26 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
+    "@tsed/ajv": "^7.9.0",
+    "@tsed/common": "^7.9.0",
+    "@tsed/core": "^7.9.0",
+    "@tsed/di": "^7.9.0",
+    "@tsed/exceptions": "^7.9.0",
+    "@tsed/json-mapper": "^7.9.0",
+    "@tsed/platform-express": "^7.9.0",
+    "@tsed/schema": "^7.9.0",
     "@types/eslint": "^8.4.10",
     "@types/fs-extra": "^9.0.13",
     "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.17",
     "@typescript-eslint/eslint-plugin": "^5.47.0",
     "@typescript-eslint/parser": "^5.47.0",
+    "ajv": "^8.11.2",
+    "body-parser": "^1.20.1",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
@@ -51,13 +65,18 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-sort-keys-fix": "^1.1.2",
+    "express": "^4.18.2",
     "import-sort-style-module": "^6.0.0",
+    "method-override": "^3.0.0",
     "prettier-plugin-import-sort": "0.0.7",
     "prettier-plugin-sort-json": "0.0.3",
     "standard-version": "^9.5.0",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^4.9.4"
+  },
+  "publishConfig": {
+    "registry": "http://localhost:4873"
   },
   "importSort": {
     ".js, .jsx, .ts, .tsx": {

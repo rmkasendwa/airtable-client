@@ -289,13 +289,13 @@ export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
 /**
  * Deletes entities label.
  *
- * @param records The ids of the entities label to be deleted.
+ * @param recordIds The ids of the entities label to be deleted.
  * @returns Deleted records response.
  */
-export const deletePascalCaseEntities = async (records: string[]) => {
+export const deletePascalCaseEntities = async (recordIds: string[]) => {
   console.log(
     `\nDeleting entities label with the following input:\n\x1b[2m${JSON.stringify(
-      records,
+      recordIds,
       null,
       2
     )}\x1b[0m`
@@ -304,12 +304,12 @@ export const deletePascalCaseEntities = async (records: string[]) => {
     addSearchParams(
       ENTITY_DELETE_ENDPOINT_PATH,
       {
-        records,
+        records: recordIds,
       },
       { arrayParamStyle: 'append' }
     ),
     {
-      data: JSON.stringify({ records }),
+      data: JSON.stringify({ records: recordIds }),
     }
   );
   return DeleteAirtableRecordResponseValidationSchema.parse(data);
