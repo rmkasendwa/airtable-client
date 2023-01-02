@@ -1,3 +1,4 @@
+import { Description, Example, Property, Title } from '@tsed/schema';
 import { z } from 'zod';
 
 import {
@@ -14,6 +15,10 @@ export type PascalCaseEntity = {
 };
 
 export class PascalCaseEntityModel {
+  @Title('id')
+  @Description('Unique identifer for Entity Label')
+  @Example('Description example')
+  @Property()
   public id!: string;
   /* ENTITY_MODEL_FIELDS */
 }

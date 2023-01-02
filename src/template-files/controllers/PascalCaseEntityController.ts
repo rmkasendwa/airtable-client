@@ -10,6 +10,7 @@ import {
   Returns,
   Summary,
 } from '@tsed/schema';
+import { Docs } from '@tsed/swagger';
 
 import {
   createNewPascalCaseEntities,
@@ -34,8 +35,9 @@ import {
 } from '../models/PascalCaseEntities';
 
 @Controller('/kebab-case-entities')
+@Docs('api-v1')
 export class PascalCaseEntityController {
-  @Get('/page')
+  @Get('/first-page')
   @Summary('Finds the first page of entities label.')
   @Description('Return a calendar from the given id')
   @Returns(200, PascalCaseEntityModel)
