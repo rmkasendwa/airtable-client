@@ -262,7 +262,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
 
     ['/* REST_API_MODEL_EXTRAS */']: [
       ...new Set(restAPIModelExtrasCollector),
-    ].join('\n'),
+    ].join('\n\n'),
 
     ['Entities Table']: tableName,
     ['Entities Label']: labelPlural,

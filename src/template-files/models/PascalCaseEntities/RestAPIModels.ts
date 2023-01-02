@@ -21,6 +21,7 @@ export class PascalCaseEntityModel {
 export class FindAllPascalCaseEntitiesReponseModel {
   @Title('records')
   @Description('The list of Entities Label.')
+  @Example([])
   @Property()
   public records!: PascalCaseEntityModel[];
 

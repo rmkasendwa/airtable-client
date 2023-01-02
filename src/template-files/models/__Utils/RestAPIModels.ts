@@ -1,4 +1,135 @@
-import { Description, Example, Optional, Property, Title } from '@tsed/schema';
+import {
+  Default,
+  Description,
+  Example,
+  Optional,
+  Property,
+  Title,
+} from '@tsed/schema';
+
+export class AirtableSortOptionModel {
+  @Title('field')
+  @Description('The field to sort by.')
+  @Property()
+  public field!: string;
+
+  @Title('direction')
+  @Description('The sort direction')
+  @Example('asc')
+  @Property()
+  @Optional()
+  public direction?: 'asc' | 'desc';
+}
+
+export class FindAllRecordsQueryParamsModel {
+  @Title('fields')
+  @Description(`
+    Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
+
+    For example, to only return data from Name and Status, send these two query parameters:
+
+    fields%5B%5D=Name&fields%5B%5D=Status
+    You can also perform the same action with field ids (they can be found in the fields section):
+
+    fields%5B%5D=fldG9yBafL709WagC&fields%5B%5D=fldySXPDpkljy1BCq
+    Note: %5B%5D may be omitted when specifying multiple fields, but must always be included when specifying only a single field.
+  `)
+  @Property()
+  @Optional()
+  public fields?: string[];
+
+  @Title('filterByFormula')
+  @Description(`
+    A formula used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
+
+    If combined with the view parameter, only records in that view which satisfy the formula will be returned.
+    
+    The formula must be encoded first before passing it as a value. You can use this tool to not only encode the formula but also create the entire url you need. For example, to only include records where Name isn't empty, pass in NOT({Name} = '') as a parameter like this:
+    
+    filterByFormula=NOT%28%7BName%7D%20%3D%20%27%27%29
+  `)
+  @Property()
+  @Optional()
+  public filterByFormula?: string;
+
+  @Title('maxRecords')
+  @Description(
+    'The maximum total number of records that will be returned in your requests. If this value is larger than pageSize (which is 100 by default), you may have to load multiple pages to reach this total. See the Pagination section below for more.'
+  )
+  @Property()
+  @Optional()
+  public maxRecords?: number;
+
+  @Title('pageSize')
+  @Description(
+    'The number of records returned in each request. Must be less than or equal to 100. Default is 100. See the Pagination section below for more.'
+  )
+  @Default(100)
+  @Property()
+  @Optional()
+  public pageSize?: number;
+
+  @Title('sort')
+  @Description(`
+    A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
+
+    The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
+
+    For example, to sort records by Name in descending order, send these two query parameters:
+
+    sort%5B0%5D%5Bfield%5D=Name
+    sort%5B0%5D%5Bdirection%5D=desc
+  `)
+  @Example([{ field: 'Name', direction: 'desc' }])
+  @Property()
+  @Optional()
+  public sort?: AirtableSortOptionModel[];
+
+  @Title('view')
+  @Description(
+    'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
+  )
+  @Property()
+  @Optional()
+  public view?: string;
+
+  @Title('cellFormat')
+  @Description(
+    `
+    The format that should be used for cell values. Supported values are:
+
+    json: cells will be formatted as JSON, depending on the field type.
+  
+    string: cells will be formatted as user-facing strings, regardless of the field type. The timeZone and userLocale parameters are required when using string as the cellFormat.
+  `.trimIndent()
+  )
+  @Property()
+  @Optional()
+  public cellFormat?: 'string' | 'json';
+
+  @Title('timeZone')
+  @Description(
+    'The time zone that should be used to format dates when using string as the cellFormat. This parameter is required when using string as the cellFormat.'
+  )
+  @Property()
+  @Optional()
+  public timeZone?: string;
+
+  @Title('userLocale')
+  @Description(
+    'The user locale that should be used to format dates when using string as the cellFormat. This parameter is required when using string as the cellFormat.'
+  )
+  @Property()
+  @Optional()
+  public userLocale?: string;
+
+  @Title('offset')
+  @Description('The airtable offset to load the next page.')
+  @Example('itrYj9gKrZ1sa8MJi/recj4R1JsNRQ0SM4m')
+  @Property()
+  @Optional()
+  public offset?: string;
+}
 
 export class DeleteAirtableRecordResponseModel {
   @Title('id')

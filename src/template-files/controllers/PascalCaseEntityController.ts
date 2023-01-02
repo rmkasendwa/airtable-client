@@ -25,13 +25,13 @@ import {
   updatePascalCaseEntities,
   updatePascalCaseEntity,
 } from '../api/PascalCaseEntities';
-import { FindAllRecordsQueryParams } from '../models/__Utils/AirtableAPIModels';
-import { DeleteAirtableRecordResponseModel } from '../models/__Utils/RestAPIModels';
+import {
+  DeleteAirtableRecordResponseModel,
+  FindAllRecordsQueryParamsModel,
+} from '../models/__Utils/RestAPIModels';
 import {
   PascalCaseEntityCreationDetails,
-  PascalCaseEntityQueryableField,
   PascalCaseEntityUpdates,
-  PascalCaseEntityView,
 } from '../models/PascalCaseEntities';
 import {
   FindAllPascalCaseEntitiesReponseModel,
@@ -47,12 +47,9 @@ export class PascalCaseEntityController {
   @Returns(200, FindAllPascalCaseEntitiesReponseModel)
   async findPascalCaseEntitiesPage(
     @QueryParams()
-    queryParams: FindAllRecordsQueryParams<
-      PascalCaseEntityQueryableField,
-      PascalCaseEntityView
-    >
+    queryParams: FindAllRecordsQueryParamsModel
   ): Promise<FindAllPascalCaseEntitiesReponseModel> {
-    return findPascalCaseEntitiesPage(queryParams);
+    return findPascalCaseEntitiesPage(queryParams as any);
   }
 
   @Get()
@@ -61,15 +58,9 @@ export class PascalCaseEntityController {
   @Returns(200, FindAllPascalCaseEntitiesReponseModel)
   async findAllPascalCaseEntities(
     @QueryParams()
-    queryParams: Omit<
-      FindAllRecordsQueryParams<
-        PascalCaseEntityQueryableField,
-        PascalCaseEntityView
-      >,
-      'pageSize'
-    >
+    queryParams: FindAllRecordsQueryParamsModel
   ): Promise<FindAllPascalCaseEntitiesReponseModel> {
-    return findAllPascalCaseEntities(queryParams);
+    return findAllPascalCaseEntities(queryParams as any);
   }
 
   @Get('/:camelCaseEntityId')
