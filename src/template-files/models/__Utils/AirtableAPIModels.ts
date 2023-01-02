@@ -39,21 +39,21 @@ export const airtableFieldTypes = [
 
 export type AirtableFieldType = typeof airtableFieldTypes[number];
 
-export type AirtableSortOption<T extends string = string> = {
-  field: T;
+export type AirtableSortOption<Field extends string = string> = {
+  field: Field;
   direction?: 'asc' | 'desc';
 };
 
 export type FindAllRecordsQueryParams<
-  T extends string = string,
-  ViewType extends string = string
+  Field extends string = string,
+  View extends string = string
 > = {
-  fields?: T[];
+  fields?: Field[];
   filterByFormula?: string;
   maxRecords?: number;
   pageSize?: number;
-  sort?: AirtableSortOption<T>[];
-  view?: ViewType;
+  sort?: AirtableSortOption<Field>[];
+  view?: View;
   cellFormat?: 'string' | 'json';
   timeZone?: string;
   userLocale?: string;

@@ -31,7 +31,9 @@ import {
 } from '../models/__Utils/RestAPIModels';
 import {
   PascalCaseEntityCreationDetails,
+  PascalCaseEntityQueryableField,
   PascalCaseEntityUpdates,
+  PascalCaseEntityView,
 } from '../models/PascalCaseEntities';
 import {
   FindAllPascalCaseEntitiesReponseModel,
@@ -47,7 +49,10 @@ export class PascalCaseEntityController {
   @Returns(200, FindAllPascalCaseEntitiesReponseModel)
   async findPascalCaseEntitiesPage(
     @QueryParams()
-    queryParams: FindAllRecordsQueryParamsModel
+    queryParams: FindAllRecordsQueryParamsModel<
+      PascalCaseEntityQueryableField,
+      PascalCaseEntityView
+    >
   ): Promise<FindAllPascalCaseEntitiesReponseModel> {
     return findPascalCaseEntitiesPage(queryParams as any);
   }
@@ -58,7 +63,10 @@ export class PascalCaseEntityController {
   @Returns(200, FindAllPascalCaseEntitiesReponseModel)
   async findAllPascalCaseEntities(
     @QueryParams()
-    queryParams: FindAllRecordsQueryParamsModel
+    queryParams: FindAllRecordsQueryParamsModel<
+      PascalCaseEntityQueryableField,
+      PascalCaseEntityView
+    >
   ): Promise<FindAllPascalCaseEntitiesReponseModel> {
     return findAllPascalCaseEntities(queryParams as any);
   }

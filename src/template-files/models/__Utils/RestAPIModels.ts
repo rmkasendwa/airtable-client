@@ -7,11 +7,11 @@ import {
   Title,
 } from '@tsed/schema';
 
-export class AirtableSortOptionModel {
+export class AirtableSortOptionModel<Field extends string = string> {
   @Title('field')
   @Description('The field to sort by.')
   @Property()
-  public field!: string;
+  public field!: Field;
 
   @Title('direction')
   @Description('The sort direction')
@@ -21,7 +21,10 @@ export class AirtableSortOptionModel {
   public direction?: 'asc' | 'desc';
 }
 
-export class FindAllRecordsQueryParamsModel {
+export class FindAllRecordsQueryParamsModel<
+  Field extends string = string,
+  View extends string = string
+> {
   @Title('fields')
   @Description(`
     Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
@@ -36,7 +39,7 @@ export class FindAllRecordsQueryParamsModel {
   `)
   @Property()
   @Optional()
-  public fields?: string[];
+  public fields?: Field[];
 
   @Title('filterByFormula')
   @Description(`
@@ -91,7 +94,7 @@ export class FindAllRecordsQueryParamsModel {
   )
   @Property()
   @Optional()
-  public view?: string;
+  public view?: View;
 
   @Title('cellFormat')
   @Description(

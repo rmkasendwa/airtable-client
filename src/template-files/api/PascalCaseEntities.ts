@@ -90,12 +90,9 @@ export const findPascalCaseEntitiesPage = async (
  * @returns The entities label.
  */
 export const findAllPascalCaseEntities = async (
-  queryParams: Omit<
-    FindAllRecordsQueryParams<
-      PascalCaseEntityQueryableField,
-      PascalCaseEntityView
-    >,
-    'pageSize'
+  queryParams: FindAllRecordsQueryParams<
+    PascalCaseEntityQueryableField,
+    PascalCaseEntityView
   > = {}
 ) => {
   const records: AirtablePascalCaseEntity[] = [];
