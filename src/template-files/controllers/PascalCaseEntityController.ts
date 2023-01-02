@@ -29,11 +29,14 @@ import { FindAllRecordsQueryParams } from '../models/__Utils/AirtableAPIModels';
 import { DeleteAirtableRecordResponseModel } from '../models/__Utils/RestAPIModels';
 import {
   PascalCaseEntityCreationDetails,
-  PascalCaseEntityModel,
   PascalCaseEntityQueryableField,
   PascalCaseEntityUpdates,
   PascalCaseEntityView,
 } from '../models/PascalCaseEntities';
+import {
+  FindAllPascalCaseEntitiesReponseModel,
+  PascalCaseEntityModel,
+} from '../models/PascalCaseEntities/RestAPIModels';
 
 @Controller('/kebab-case-entities')
 @Docs('api-v1')
@@ -41,21 +44,21 @@ export class PascalCaseEntityController {
   @Get('/first-page')
   @Summary('Finds the first page of entities label.')
   @Description('Returns entities label first page matching query paramenters.')
-  @Returns(200, [PascalCaseEntityModel])
+  @Returns(200, FindAllPascalCaseEntitiesReponseModel)
   async findPascalCaseEntitiesPage(
     @QueryParams()
     queryParams: FindAllRecordsQueryParams<
       PascalCaseEntityQueryableField,
       PascalCaseEntityView
     >
-  ) {
+  ): Promise<FindAllPascalCaseEntitiesReponseModel> {
     return findPascalCaseEntitiesPage(queryParams);
   }
 
   @Get()
   @Summary('Finds all entities label.')
   @Description('Returns entities label matching query paramenters.')
-  @Returns(200, [PascalCaseEntityModel])
+  @Returns(200, FindAllPascalCaseEntitiesReponseModel)
   async findAllPascalCaseEntities(
     @QueryParams()
     queryParams: Omit<
@@ -65,7 +68,7 @@ export class PascalCaseEntityController {
       >,
       'pageSize'
     >
-  ) {
+  ): Promise<FindAllPascalCaseEntitiesReponseModel> {
     return findAllPascalCaseEntities(queryParams);
   }
 
@@ -78,7 +81,7 @@ export class PascalCaseEntityController {
     @Description('The id of the entity label to be found.')
     @PathParams('camelCaseEntityId')
     camelCaseEntityId: string
-  ) {
+  ): Promise<PascalCaseEntityModel> {
     return findPascalCaseEntityById(camelCaseEntityId);
   }
 
@@ -159,7 +162,7 @@ export class PascalCaseEntityController {
     return deletePascalCaseEntity(camelCaseEntityId);
   }
 
-  @Delete()
+  @Delete('/batch')
   @Summary('Deletes entities label.')
   @Description('Returns ids of the deleted entities label.')
   @Returns(200, [DeleteAirtableRecordResponseModel])

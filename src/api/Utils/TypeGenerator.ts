@@ -317,6 +317,7 @@ export const getObjectModelPropertyTypeString = (
     restAPIModelImportsCollector,
     restAPIModelExtrasCollector,
     camelCasePropertyName,
+    lookupColumnNameToObjectPropertyMapper,
   } = options;
 
   const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
@@ -391,24 +392,26 @@ export const getObjectModelPropertyTypeString = (
         @Optional()
         public id!: string;
 
-        ${lookupTableColumns
-          .filter((lookupTableColumn) => {
-            return (
-              lookupTableColumn.options?.recordLinkFieldId === tableColumn.id
-            );
-          })
-          .reduce((accumulator, lookupTableColumn) => {
-            if (
-              !accumulator.find(({ name }) => name === lookupTableColumn.name)
-            ) {
-              accumulator.push(lookupTableColumn);
-            }
-            return accumulator;
-          }, [] as typeof lookupTableColumns)
-          .map((lookupTableColumn) => {
-            return getObjectModelPropertyTypeString(lookupTableColumn, options);
-          })
-          .join(';\n\n')}
+        ${[
+          ...new Set(
+            lookupTableColumns
+              .filter((lookupTableColumn) => {
+                return (
+                  lookupTableColumn.options?.recordLinkFieldId ===
+                  tableColumn.id
+                );
+              })
+              .map((lookupTableColumn) => {
+                return getObjectModelPropertyTypeString(lookupTableColumn, {
+                  ...options,
+                  camelCasePropertyName:
+                    lookupColumnNameToObjectPropertyMapper[
+                      lookupTableColumn.name
+                    ],
+                });
+              })
+          ),
+        ].join(';\n\n')}
       }`;
 
       restAPIModelExtrasCollector.push(modelClassString);
