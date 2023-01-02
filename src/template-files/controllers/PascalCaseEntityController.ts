@@ -40,7 +40,7 @@ export class PascalCaseEntityController {
   @Get('/first-page')
   @Summary('Finds the first page of entities label.')
   @Description('Returns entities label first page matching query paramenters.')
-  @Returns(200, PascalCaseEntityModel)
+  @Returns(200, [PascalCaseEntityModel])
   async findPascalCaseEntitiesPage(
     @QueryParams()
     queryParams: FindAllRecordsQueryParams<
@@ -54,7 +54,7 @@ export class PascalCaseEntityController {
   @Get()
   @Summary('Finds all entities label.')
   @Description('Returns entities label matching query paramenters.')
-  @Returns(200, PascalCaseEntityModel)
+  @Returns(200, [PascalCaseEntityModel])
   async findAllPascalCaseEntities(
     @QueryParams()
     queryParams: Omit<
@@ -89,7 +89,7 @@ export class PascalCaseEntityController {
     return createNewPascalCaseEntity(camelCaseEntityDetails);
   }
 
-  @Post()
+  @Post('/batch')
   @Summary('Creates new entities label.')
   @Description('Returns the created entities label.')
   @Returns(200, PascalCaseEntityModel)
@@ -106,7 +106,7 @@ export class PascalCaseEntityController {
     return updatePascalCaseEntity(camelCaseEntityUpdates);
   }
 
-  @Put()
+  @Put('/batch')
   async updatePascalCaseEntities(
     @BodyParams() records: PascalCaseEntityUpdates[]
   ) {
@@ -120,7 +120,7 @@ export class PascalCaseEntityController {
     return patchPascalCaseEntity(camelCaseEntityUpdates);
   }
 
-  @Patch()
+  @Patch('/batch')
   async patchPascalCaseEntities(
     @BodyParams() records: PascalCaseEntityUpdates[]
   ) {

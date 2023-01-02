@@ -188,17 +188,17 @@ export const getObjectPropertyTypeString = (
 
     case 'multipleAttachments':
       modelImportsCollector.push(
-        `import {AirtableAttachment} from './__Utils';`
+        `import {AirtableAttachment} from '../__Utils';`
       );
       return `AirtableAttachment[]`;
 
     case 'button':
-      modelImportsCollector.push(`import {AirtableButton} from './__Utils';`);
+      modelImportsCollector.push(`import {AirtableButton} from '../__Utils';`);
       return `AirtableButton`;
 
     case 'formula':
       modelImportsCollector.push(
-        `import {AirtableFormulaColumnError} from './__Utils';`
+        `import {AirtableFormulaColumnError} from '../__Utils';`
       );
       return `${getObjectPropertyTypeString(
         {

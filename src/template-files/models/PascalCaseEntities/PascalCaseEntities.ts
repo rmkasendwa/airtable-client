@@ -1,11 +1,10 @@
-import { Description, Example, Property, Title } from '@tsed/schema';
 import { z } from 'zod';
 
 import {
   AirtableColumnMapping,
   getAirtableRecordRequestValidationSchema,
   getAirtableRecordResponseValidationSchema,
-} from './__Utils';
+} from '../__Utils';
 
 /* MODEL_IMPORTS */
 
@@ -13,15 +12,6 @@ export type PascalCaseEntity = {
   id: string;
   /* ENTITY_INTERFACE_FIELDS */
 };
-
-export class PascalCaseEntityModel {
-  @Title('id')
-  @Description('Unique identifer for Entity Label')
-  @Example('recYc1Z0M9ObmT2cF')
-  @Property()
-  public id!: string;
-  /* ENTITY_MODEL_FIELDS */
-}
 
 // All Entities Table lookup table columns
 export const camelCaseEntitiesAirtableLookupColumns = [

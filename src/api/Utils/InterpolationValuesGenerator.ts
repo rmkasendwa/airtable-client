@@ -133,17 +133,17 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         switch (rootColumn.type) {
           case 'multipleAttachments':
             modelImportsCollector.push(
-              `import {AirtableAttachmentValidationSchema} from './__Utils';`
+              `import {AirtableAttachmentValidationSchema} from '../__Utils';`
             );
             break;
           case 'button':
             modelImportsCollector.push(
-              `import {AirtableButtonValidationSchema} from './__Utils';`
+              `import {AirtableButtonValidationSchema} from '../__Utils';`
             );
             break;
           case 'formula':
             modelImportsCollector.push(
-              `import {AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
+              `import {AirtableFormulaColumnErrorValidationSchema} from '../__Utils';`
             );
         }
         return `["${name}"]: ${getAirtableResponseTypeValidationString(field, {
@@ -220,6 +220,28 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
       })
       .flat()
       .join(';\n'),
+
+    ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
+      .map((field) => {
+        const camelCasePropertyName =
+          columnNameToObjectPropertyMapper[field.name];
+        return [
+          `
+          @Title('${camelCasePropertyName}')
+          public ${camelCasePropertyName}?: ${getObjectPropertyTypeString(
+            field,
+            {
+              currentTable,
+              tables,
+              lookupColumnNameToObjectPropertyMapper,
+              lookupTableColumns,
+              modelImportsCollector,
+            }
+          )}`.trimIndent(),
+        ];
+      })
+      .flat()
+      .join(';\n\n'),
 
     ['/* QUERYABLE_FIELDS */']: [
       ...queryableNonLookupFields,
