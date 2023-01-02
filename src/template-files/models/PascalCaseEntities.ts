@@ -17,7 +17,7 @@ export type PascalCaseEntity = {
 export class PascalCaseEntityModel {
   @Title('id')
   @Description('Unique identifer for Entity Label')
-  @Example('Description example')
+  @Example('recYc1Z0M9ObmT2cF')
   @Property()
   public id!: string;
   /* ENTITY_MODEL_FIELDS */

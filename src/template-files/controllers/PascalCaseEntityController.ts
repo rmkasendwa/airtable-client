@@ -39,7 +39,7 @@ import {
 export class PascalCaseEntityController {
   @Get('/first-page')
   @Summary('Finds the first page of entities label.')
-  @Description('Return a calendar from the given id')
+  @Description('Returns entities label first page matching query paramenters.')
   @Returns(200, PascalCaseEntityModel)
   async findPascalCaseEntitiesPage(
     @QueryParams()
@@ -52,6 +52,9 @@ export class PascalCaseEntityController {
   }
 
   @Get()
+  @Summary('Finds all entities label.')
+  @Description('Returns entities label matching query paramenters.')
+  @Returns(200, PascalCaseEntityModel)
   async findAllPascalCaseEntities(
     @QueryParams()
     queryParams: Omit<
@@ -66,6 +69,10 @@ export class PascalCaseEntityController {
   }
 
   @Get('/:camelCaseEntityId')
+  @Summary('Finds entity label by id.')
+  @Description('Returns entity label matching the given id.')
+  @Returns(200, PascalCaseEntityModel)
+  @Returns(404).Description('Not found')
   async findPascalCaseEntityById(
     @PathParams('camelCaseEntityId') camelCaseEntityId: string
   ) {
@@ -73,6 +80,9 @@ export class PascalCaseEntityController {
   }
 
   @Post()
+  @Summary('Creates new entity label.')
+  @Description('Returns the created entity label.')
+  @Returns(200, PascalCaseEntityModel)
   async createNewPascalCaseEntity(
     @BodyParams() camelCaseEntityDetails: PascalCaseEntityCreationDetails
   ) {
@@ -80,6 +90,9 @@ export class PascalCaseEntityController {
   }
 
   @Post()
+  @Summary('Creates new entities label.')
+  @Description('Returns the created entities label.')
+  @Returns(200, PascalCaseEntityModel)
   async createNewPascalCaseEntities(
     @BodyParams() records: PascalCaseEntityCreationDetails[]
   ) {
