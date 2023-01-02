@@ -25,7 +25,10 @@ import {
   updatePascalCaseEntities,
   updatePascalCaseEntity,
 } from '../api/PascalCaseEntities';
-import { FindAllRecordsQueryParams } from '../models/__Utils';
+import {
+  DeleteAirtableRecordResponseModel,
+  FindAllRecordsQueryParams,
+} from '../models/__Utils';
 import {
   PascalCaseEntityCreationDetails,
   PascalCaseEntityModel,
@@ -92,7 +95,7 @@ export class PascalCaseEntityController {
   @Post('/batch')
   @Summary('Creates new entities label.')
   @Description('Returns the created entities label.')
-  @Returns(200, PascalCaseEntityModel)
+  @Returns(200, [PascalCaseEntityModel])
   async createNewPascalCaseEntities(
     @BodyParams() records: PascalCaseEntityCreationDetails[]
   ) {
@@ -100,6 +103,11 @@ export class PascalCaseEntityController {
   }
 
   @Put()
+  @Summary('Updates entity label.')
+  @Description(
+    'Returns the updated entity label. Null values will wipe database fields.'
+  )
+  @Returns(200, PascalCaseEntityModel)
   async updatePascalCaseEntity(
     @BodyParams() camelCaseEntityUpdates: PascalCaseEntityUpdates
   ) {
@@ -107,6 +115,11 @@ export class PascalCaseEntityController {
   }
 
   @Put('/batch')
+  @Summary('Updates entities label.')
+  @Description(
+    'Returns the updated entities label. Null values will wipe database fields.'
+  )
+  @Returns(200, [PascalCaseEntityModel])
   async updatePascalCaseEntities(
     @BodyParams() records: PascalCaseEntityUpdates[]
   ) {
@@ -114,6 +127,9 @@ export class PascalCaseEntityController {
   }
 
   @Patch()
+  @Summary('Patches entity label.')
+  @Description('Returns the patched entity label.')
+  @Returns(200, PascalCaseEntityModel)
   async patchPascalCaseEntity(
     @BodyParams() camelCaseEntityUpdates: PascalCaseEntityUpdates
   ) {
@@ -121,6 +137,9 @@ export class PascalCaseEntityController {
   }
 
   @Patch('/batch')
+  @Summary('Patches entities label.')
+  @Description('Returns the patched entities label.')
+  @Returns(200, [PascalCaseEntityModel])
   async patchPascalCaseEntities(
     @BodyParams() records: PascalCaseEntityUpdates[]
   ) {
@@ -128,14 +147,23 @@ export class PascalCaseEntityController {
   }
 
   @Delete('/:camelCaseEntityId')
+  @Summary('Deletes entity label by id.')
+  @Description('Returns id of the deleted entity label.')
+  @Returns(200, DeleteAirtableRecordResponseModel)
+  @Returns(404).Description('Not found')
   async deletePascalCaseEntity(
     @PathParams('camelCaseEntityId') camelCaseEntityId: string
-  ) {
+  ): Promise<DeleteAirtableRecordResponseModel> {
     return deletePascalCaseEntity(camelCaseEntityId);
   }
 
   @Delete()
-  async deletePascalCaseEntities(@BodyParams() recordIds: string[]) {
+  @Summary('Deletes entities label.')
+  @Description('Returns ids of the deleted entities label.')
+  @Returns(200, [DeleteAirtableRecordResponseModel])
+  async deletePascalCaseEntities(
+    @BodyParams() recordIds: string[]
+  ): Promise<DeleteAirtableRecordResponseModel[]> {
     return deletePascalCaseEntities(recordIds);
   }
 }

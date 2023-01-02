@@ -1,3 +1,4 @@
+import { Description, Example, Property, Title } from '@tsed/schema';
 import { omit } from 'lodash';
 import { AnyZodObject, z } from 'zod';
 
@@ -251,6 +252,8 @@ export const getAirtableRecordRequestValidationSchema = (
   });
 };
 
+/********** Deleted Entities Label Validation schemas *************/
+
 export const DeleteAirtableRecordResponseValidationSchema = z
   .object({
     records: z.array(
@@ -263,6 +266,20 @@ export const DeleteAirtableRecordResponseValidationSchema = z
   .transform(({ records }) => {
     return records;
   });
+
+export class DeleteAirtableRecordResponseModel {
+  @Title('id')
+  @Description('Unique identifer of the deleted Entity Label')
+  @Example('recYc1Z0M9ObmT2cF')
+  @Property()
+  public id!: string;
+
+  @Title('delete')
+  @Description('Whether the Entity Label was deleted or not')
+  @Example(true)
+  @Property()
+  public delete!: boolean;
+}
 
 export const AirtableThumbnailSizeValidationSchema = z.object({
   url: z.string(),
