@@ -24,6 +24,7 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   lookupColumnNameToObjectPropertyMapper: Record<string, string>;
   airtableAPIModelImportsCollector: string[];
   restAPIModelImportsCollector: string[];
+  restAPIModelExtrasCollector: string[];
   configColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
   queryableNonLookupFields: string[];
   queryableLookupFields: string[];
@@ -40,6 +41,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   lookupColumnNameToObjectPropertyMapper,
   airtableAPIModelImportsCollector,
   restAPIModelImportsCollector,
+  restAPIModelExtrasCollector,
   configColumnNameToObjectPropertyMapper = {},
   queryableLookupFields,
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
@@ -180,20 +182,15 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         const camelCasePropertyName =
           columnNameToObjectPropertyMapper[field.name];
         return [
-          `
-          @Title('${camelCasePropertyName}')
-          @Property()
-          @Optional()
-          public ${camelCasePropertyName}?: ${getObjectModelPropertyTypeString(
-            field,
-            {
-              currentTable,
-              tables,
-              lookupColumnNameToObjectPropertyMapper,
-              lookupTableColumns,
-              restAPIModelImportsCollector,
-            }
-          )}`.trimIndent(),
+          getObjectModelPropertyTypeString(field, {
+            currentTable,
+            tables,
+            lookupColumnNameToObjectPropertyMapper,
+            lookupTableColumns,
+            restAPIModelImportsCollector,
+            restAPIModelExtrasCollector,
+            camelCasePropertyName,
+          }),
         ];
       })
       .flat()
@@ -208,6 +205,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   columnNameToObjectPropertyMapper,
   airtableAPIModelImportsCollector,
   restAPIModelImportsCollector,
+  restAPIModelExtrasCollector,
   lookupColumnNameToObjectPropertyMapper,
   views,
   labelSingular,
@@ -260,6 +258,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
 
     ['/* REST_API_MODEL_IMPORTS */']: [
       ...new Set(restAPIModelImportsCollector),
+    ].join('\n'),
+
+    ['/* REST_API_MODEL_EXTRAS */']: [
+      ...new Set(restAPIModelExtrasCollector),
     ].join('\n'),
 
     ['Entities Table']: tableName,

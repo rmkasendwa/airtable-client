@@ -325,6 +325,7 @@ export const generateAirtableAPI = async ({
 
           const airtableAPIModelImportsCollector: string[] = [];
           const restAPIModelImportsCollector: string[] = [];
+          const restAPIModelExtrasCollector: string[] = [];
 
           console.log(
             `  -> Processing \x1b[34m${workingBaseName.trim()}/${tableName.trim()}\x1b[0m table...`
@@ -432,6 +433,7 @@ export const generateAirtableAPI = async ({
               configColumnNameToObjectPropertyMapper,
               queryableLookupFields,
               queryableNonLookupFields,
+              restAPIModelExtrasCollector,
             });
 
           const interpolationLabels =
@@ -450,6 +452,7 @@ export const generateAirtableAPI = async ({
               configColumnNameToObjectPropertyMapper,
               queryableLookupFields,
               queryableNonLookupFields,
+              restAPIModelExtrasCollector,
             });
 
           const getInterpolatedString = (templateFileContents: string) => {

@@ -10,6 +10,7 @@ export class PascalCaseEntityModel {
   @Example('recO0FYb1Tccm9MZ2')
   @Property()
   public id!: string;
+
   /* ENTITY_MODEL_FIELDS */
   @Property()
   @Optional()

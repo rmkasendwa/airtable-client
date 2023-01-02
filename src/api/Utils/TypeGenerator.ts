@@ -63,6 +63,7 @@ export const getAirtableResponseTypeValidationString = (
     case 'createdBy':
     case 'lastModifiedBy':
     case 'externalSyncSource':
+    case 'rollup':
       break;
 
     case 'multipleAttachments':
@@ -82,16 +83,16 @@ export const getAirtableResponseTypeValidationString = (
         }
       )}, AirtableFormulaColumnErrorValidationSchema])`;
 
-    case 'rollup':
-      return getAirtableResponseTypeValidationString(
-        {
-          ...field,
-          type: field.options?.result?.type,
-        },
-        {
-          ...options,
-        }
-      );
+    // case 'rollup':
+    //   return getAirtableResponseTypeValidationString( // This is problematic, sometimes airtable lies about the result type
+    //     {
+    //       ...field,
+    //       type: field.options?.result?.type,
+    //     },
+    //     {
+    //       ...options,
+    //     }
+    //   );
 
     // Dates
     case 'date':
@@ -305,17 +306,27 @@ export const getObjectModelPropertyTypeString = (
     lookupColumnNameToObjectPropertyMapper: Record<string, string>;
     lookupTableColumns: AirtableField[];
     restAPIModelImportsCollector: string[];
+    restAPIModelExtrasCollector: string[];
+    camelCasePropertyName: string;
   }
 ): string => {
   const {
     tables,
     currentTable,
     lookupTableColumns,
-    lookupColumnNameToObjectPropertyMapper,
     restAPIModelImportsCollector,
+    restAPIModelExtrasCollector,
+    camelCasePropertyName,
   } = options;
+
   const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
   const { type } = tableColumn;
+  const modelFieldDecorators = `
+    @Title('${camelCasePropertyName}')
+    @Property()
+    @Optional()
+  `.trimIndent();
+
   switch (type) {
     case 'multipleSelects':
     case 'singleCollaborator':
@@ -325,19 +336,26 @@ export const getObjectModelPropertyTypeString = (
     case 'createdBy':
     case 'lastModifiedBy':
     case 'externalSyncSource':
+    case 'rollup':
       break;
 
     case 'multipleAttachments':
       restAPIModelImportsCollector.push(
         `import {AirtableAttachmentModel} from '../__Utils/RestAPIModels';`
       );
-      return `AirtableAttachmentModel[]`;
+      return `
+        ${modelFieldDecorators}
+        public ${camelCasePropertyName}?: AirtableAttachmentModel[]
+      `.trimIndent();
 
     case 'button':
       restAPIModelImportsCollector.push(
         `import {AirtableButtonModel} from '../__Utils/RestAPIModels';`
       );
-      return `AirtableButtonModel`;
+      return `
+        ${modelFieldDecorators}
+        public ${camelCasePropertyName}?: AirtableButtonModel
+      `.trimIndent();
 
     case 'formula':
       restAPIModelImportsCollector.push(
@@ -351,43 +369,70 @@ export const getObjectModelPropertyTypeString = (
         options
       )} | AirtableFormulaColumnErrorModel`;
 
-    case 'rollup':
-      return getObjectModelPropertyTypeString(
-        {
-          ...tableColumn,
-          type: tableColumn.options?.result?.type,
-        },
-        options
-      );
+    // case 'rollup':
+    //   return getObjectModelPropertyTypeString( // This is problematic, sometimes airtable lies about the result type
+    //     {
+    //       ...tableColumn,
+    //       type: tableColumn.options?.result?.type,
+    //     },
+    //     options
+    //   );
 
     // Lists
     case 'multipleRecordLinks': {
-      const typeString = `{
-        id: string;
+      const modelClassName =
+        camelCasePropertyName.charAt(0).toUpperCase() +
+        camelCasePropertyName.slice(1);
+      const modelClassString = `export class ${modelClassName} {
+        @Title('id')
+        @Description('Unique identifer for ${tableColumn.name}')
+        @Example('recO0FYb1Tccm9MZ2')
+        @Property()
+        @Optional()
+        public id!: string;
+
         ${lookupTableColumns
           .filter((lookupTableColumn) => {
             return (
               lookupTableColumn.options?.recordLinkFieldId === tableColumn.id
             );
           })
+          .reduce((accumulator, lookupTableColumn) => {
+            if (
+              !accumulator.find(({ name }) => name === lookupTableColumn.name)
+            ) {
+              accumulator.push(lookupTableColumn);
+            }
+            return accumulator;
+          }, [] as typeof lookupTableColumns)
           .map((lookupTableColumn) => {
-            return `${
-              lookupColumnNameToObjectPropertyMapper[lookupTableColumn.name]
-            }: ${getObjectModelPropertyTypeString(lookupTableColumn, options)}`;
+            return getObjectModelPropertyTypeString(lookupTableColumn, options);
           })
-          .join(';')}
+          .join(';\n\n')}
       }`;
+
+      restAPIModelExtrasCollector.push(modelClassString);
+
       if (tableColumn.options?.prefersSingleRecordLink) {
-        return typeString;
+        return `
+          ${modelFieldDecorators}
+          public ${camelCasePropertyName}?: ${modelClassName}
+        `.trimIndent();
       }
-      return `${typeString}[]`;
+      return `
+        ${modelFieldDecorators}
+        public ${camelCasePropertyName}?: ${modelClassName}[]
+      `.trimIndent();
     }
     case 'lookup':
     case 'multipleLookupValues':
       const propertyTypeString = (() => {
         if (rootField !== tableColumn) {
           if (rootField.type === 'multipleRecordLinks') {
-            return `string`;
+            return `
+              ${modelFieldDecorators}
+              public ${camelCasePropertyName}?: string
+            `.trimIndent();
           }
           return getObjectModelPropertyTypeString(rootField, options);
         }
@@ -416,11 +461,17 @@ export const getObjectModelPropertyTypeString = (
     case 'count':
     case 'autoNumber':
     case 'rating':
-      return `number`;
+      return `
+        ${modelFieldDecorators}
+        public ${camelCasePropertyName}?: number
+      `.trimIndent();
 
     // Booleans
     case 'checkbox':
-      return `boolean`;
+      return `
+        ${modelFieldDecorators}
+        public ${camelCasePropertyName}?: boolean
+      `.trimIndent();
 
     // Strings
     case 'date':
@@ -435,9 +486,15 @@ export const getObjectModelPropertyTypeString = (
     case 'phoneNumber':
     case 'singleSelect':
     default:
-      return `string`;
+      return `
+        ${modelFieldDecorators}
+        public ${camelCasePropertyName}?: string
+      `.trimIndent();
   }
-  return 'any';
+  return `
+    ${modelFieldDecorators}
+    public ${camelCasePropertyName}?: any
+  `.trimIndent();
 };
 
 export const getRequestObjectValidationString = (
