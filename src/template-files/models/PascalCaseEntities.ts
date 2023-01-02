@@ -13,6 +13,11 @@ export type PascalCaseEntity = {
   /* ENTITY_INTERFACE_FIELDS */
 };
 
+export class PascalCaseEntityModel {
+  public id!: string;
+  /* ENTITY_MODEL_FIELDS */
+}
+
 // All Entities Table lookup table columns
 export const camelCaseEntitiesAirtableLookupColumns = [
   /* AIRTABLE_ENTITY_LOOKUP_COLUMNS */

@@ -1,6 +1,15 @@
 import { BodyParams, PathParams, QueryParams } from '@tsed/common';
 import { Controller } from '@tsed/di';
-import { Delete, Get, Patch, Post, Put } from '@tsed/schema';
+import {
+  Delete,
+  Description,
+  Get,
+  Patch,
+  Post,
+  Put,
+  Returns,
+  Summary,
+} from '@tsed/schema';
 
 import {
   createNewPascalCaseEntities,
@@ -18,6 +27,7 @@ import {
 import { FindAllRecordsQueryParams } from '../models/__Utils';
 import {
   PascalCaseEntityCreationDetails,
+  PascalCaseEntityModel,
   PascalCaseEntityQueryableField,
   PascalCaseEntityUpdates,
   PascalCaseEntityView,
@@ -25,7 +35,10 @@ import {
 
 @Controller('/kebab-case-entities')
 export class PascalCaseEntityController {
-  @Get('page')
+  @Get('/page')
+  @Summary('Finds the first page of entities label.')
+  @Description('Return a calendar from the given id')
+  @Returns(200, PascalCaseEntityModel)
   async findPascalCaseEntitiesPage(
     @QueryParams()
     queryParams: FindAllRecordsQueryParams<
@@ -50,7 +63,7 @@ export class PascalCaseEntityController {
     return findAllPascalCaseEntities(queryParams);
   }
 
-  @Get('{camelCaseEntityId}')
+  @Get('/:camelCaseEntityId')
   async findPascalCaseEntityById(
     @PathParams('camelCaseEntityId') camelCaseEntityId: string
   ) {
@@ -99,7 +112,7 @@ export class PascalCaseEntityController {
     return patchPascalCaseEntities(records);
   }
 
-  @Delete('{camelCaseEntityId}')
+  @Delete('/:camelCaseEntityId')
   async deletePascalCaseEntity(
     @PathParams('camelCaseEntityId') camelCaseEntityId: string
   ) {
