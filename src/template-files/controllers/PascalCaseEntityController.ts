@@ -25,10 +25,8 @@ import {
   updatePascalCaseEntities,
   updatePascalCaseEntity,
 } from '../api/PascalCaseEntities';
-import {
-  DeleteAirtableRecordResponseModel,
-  FindAllRecordsQueryParams,
-} from '../models/__Utils';
+import { FindAllRecordsQueryParams } from '../models/__Utils/AirtableAPIModels';
+import { DeleteAirtableRecordResponseModel } from '../models/__Utils/RestAPIModels';
 import {
   PascalCaseEntityCreationDetails,
   PascalCaseEntityModel,
@@ -77,7 +75,9 @@ export class PascalCaseEntityController {
   @Returns(200, PascalCaseEntityModel)
   @Returns(404).Description('Not found')
   async findPascalCaseEntityById(
-    @PathParams('camelCaseEntityId') camelCaseEntityId: string
+    @Description('The id of the entity label to be found.')
+    @PathParams('camelCaseEntityId')
+    camelCaseEntityId: string
   ) {
     return findPascalCaseEntityById(camelCaseEntityId);
   }
@@ -152,7 +152,9 @@ export class PascalCaseEntityController {
   @Returns(200, DeleteAirtableRecordResponseModel)
   @Returns(404).Description('Not found')
   async deletePascalCaseEntity(
-    @PathParams('camelCaseEntityId') camelCaseEntityId: string
+    @Description('The id of the entity label to be deleted.')
+    @PathParams('camelCaseEntityId')
+    camelCaseEntityId: string
   ): Promise<DeleteAirtableRecordResponseModel> {
     return deletePascalCaseEntity(camelCaseEntityId);
   }
@@ -162,7 +164,9 @@ export class PascalCaseEntityController {
   @Description('Returns ids of the deleted entities label.')
   @Returns(200, [DeleteAirtableRecordResponseModel])
   async deletePascalCaseEntities(
-    @BodyParams() recordIds: string[]
+    @Description('The list of ids of the entities label to be deleted.')
+    @BodyParams()
+    recordIds: string[]
   ): Promise<DeleteAirtableRecordResponseModel[]> {
     return deletePascalCaseEntities(recordIds);
   }

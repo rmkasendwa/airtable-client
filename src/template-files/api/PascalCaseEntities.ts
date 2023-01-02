@@ -9,7 +9,7 @@ import {
   DeleteAirtableRecordResponseValidationSchema,
   FindAllRecordsQueryParams,
   convertToAirtableFindAllRecordsQueryParams,
-} from '../models/__Utils';
+} from '../models/__Utils/AirtableAPIModels';
 import {
   AirtablePascalCaseEntity,
   CreatePascalCaseEntitiesRequestValidationSchema,

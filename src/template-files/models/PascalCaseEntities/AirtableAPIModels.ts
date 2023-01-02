@@ -4,7 +4,7 @@ import {
   AirtableColumnMapping,
   getAirtableRecordRequestValidationSchema,
   getAirtableRecordResponseValidationSchema,
-} from '../__Utils';
+} from '../__Utils/AirtableAPIModels';
 
 /* MODEL_IMPORTS */
 

@@ -1,2 +1,1 @@
 export * from './AirtableAPIModels';
-export * from './RestAPIModels';
