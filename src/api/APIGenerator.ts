@@ -323,7 +323,8 @@ export const generateAirtableAPI = async ({
             }
           );
 
-          const modelImportsCollector: string[] = [];
+          const airtableAPIModelImportsCollector: string[] = [];
+          const restAPIModelImportsCollector: string[] = [];
 
           console.log(
             `  -> Processing \x1b[34m${workingBaseName.trim()}/${tableName.trim()}\x1b[0m table...`
@@ -426,7 +427,8 @@ export const generateAirtableAPI = async ({
               tables,
               columnNameToObjectPropertyMapper,
               lookupColumnNameToObjectPropertyMapper,
-              modelImportsCollector,
+              airtableAPIModelImportsCollector,
+              restAPIModelImportsCollector,
               configColumnNameToObjectPropertyMapper,
               queryableLookupFields,
               queryableNonLookupFields,
@@ -440,7 +442,8 @@ export const generateAirtableAPI = async ({
               tables,
               columnNameToObjectPropertyMapper,
               lookupColumnNameToObjectPropertyMapper,
-              modelImportsCollector,
+              airtableAPIModelImportsCollector,
+              restAPIModelImportsCollector,
               views: filteredViews,
               labelPlural,
               labelSingular,

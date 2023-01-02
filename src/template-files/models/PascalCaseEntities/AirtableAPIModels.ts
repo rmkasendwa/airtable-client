@@ -6,7 +6,7 @@ import {
   getAirtableRecordResponseValidationSchema,
 } from '../__Utils/AirtableAPIModels';
 
-/* MODEL_IMPORTS */
+/* AIRTABLE_API_MODEL_IMPORTS */
 
 export type PascalCaseEntity = {
   id: string;

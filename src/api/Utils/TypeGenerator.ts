@@ -163,7 +163,7 @@ export const getObjectPropertyTypeString = (
   options: GetAirtableResponseTypeValidationStringOptions & {
     lookupColumnNameToObjectPropertyMapper: Record<string, string>;
     lookupTableColumns: AirtableField[];
-    modelImportsCollector: string[];
+    airtableAPIModelImportsCollector: string[];
   }
 ): string => {
   const {
@@ -171,7 +171,7 @@ export const getObjectPropertyTypeString = (
     currentTable,
     lookupTableColumns,
     lookupColumnNameToObjectPropertyMapper,
-    modelImportsCollector,
+    airtableAPIModelImportsCollector,
   } = options;
   const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
   const { type } = tableColumn;
@@ -187,17 +187,19 @@ export const getObjectPropertyTypeString = (
       break;
 
     case 'multipleAttachments':
-      modelImportsCollector.push(
+      airtableAPIModelImportsCollector.push(
         `import {AirtableAttachment} from '../__Utils';`
       );
       return `AirtableAttachment[]`;
 
     case 'button':
-      modelImportsCollector.push(`import {AirtableButton} from '../__Utils';`);
+      airtableAPIModelImportsCollector.push(
+        `import {AirtableButton} from '../__Utils';`
+      );
       return `AirtableButton`;
 
     case 'formula':
-      modelImportsCollector.push(
+      airtableAPIModelImportsCollector.push(
         `import {AirtableFormulaColumnError} from '../__Utils';`
       );
       return `${getObjectPropertyTypeString(
@@ -249,6 +251,147 @@ export const getObjectPropertyTypeString = (
           return getObjectPropertyTypeString(rootField, options);
         }
         return getObjectPropertyTypeString(
+          {
+            ...tableColumn,
+            type: tableColumn.options?.result?.type,
+          },
+          options
+        );
+      })();
+      const parentTableColumn = currentTable.fields.find(
+        ({ id }) => id === tableColumn.options?.recordLinkFieldId
+      );
+      return `${propertyTypeString}${
+        !propertyTypeString.match(/\[\]$/g) &&
+        !parentTableColumn?.options?.prefersSingleRecordLink
+          ? '[]'
+          : ''
+      }`;
+
+    // Numbers
+    case 'number':
+    case 'percent':
+    case 'currency':
+    case 'count':
+    case 'autoNumber':
+    case 'rating':
+      return `number`;
+
+    // Booleans
+    case 'checkbox':
+      return `boolean`;
+
+    // Strings
+    case 'date':
+    case 'dateTime':
+    case 'lastModifiedTime':
+    case 'createdTime':
+    case 'email':
+    case 'url':
+    case 'singleLineText':
+    case 'multilineText':
+    case 'richText':
+    case 'phoneNumber':
+    case 'singleSelect':
+    default:
+      return `string`;
+  }
+  return 'any';
+};
+
+export const getObjectModelPropertyTypeString = (
+  tableColumn: AirtableField,
+  options: GetAirtableResponseTypeValidationStringOptions & {
+    lookupColumnNameToObjectPropertyMapper: Record<string, string>;
+    lookupTableColumns: AirtableField[];
+    restAPIModelImportsCollector: string[];
+  }
+): string => {
+  const {
+    tables,
+    currentTable,
+    lookupTableColumns,
+    lookupColumnNameToObjectPropertyMapper,
+    restAPIModelImportsCollector,
+  } = options;
+  const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
+  const { type } = tableColumn;
+  switch (type) {
+    case 'multipleSelects':
+    case 'singleCollaborator':
+    case 'multipleCollaborators':
+    case 'barcode':
+    case 'duration':
+    case 'createdBy':
+    case 'lastModifiedBy':
+    case 'externalSyncSource':
+      break;
+
+    case 'multipleAttachments':
+      restAPIModelImportsCollector.push(
+        `import {AirtableAttachmentModel} from '../__Utils/RestAPIModels';`
+      );
+      return `AirtableAttachmentModel[]`;
+
+    case 'button':
+      restAPIModelImportsCollector.push(
+        `import {AirtableButtonModel} from '../__Utils/RestAPIModels';`
+      );
+      return `AirtableButtonModel`;
+
+    case 'formula':
+      restAPIModelImportsCollector.push(
+        `import {AirtableFormulaColumnErrorModel} from '../__Utils/RestAPIModels';`
+      );
+      return `${getObjectModelPropertyTypeString(
+        {
+          ...tableColumn,
+          type: tableColumn.options?.result?.type,
+        },
+        options
+      )} | AirtableFormulaColumnErrorModel`;
+
+    case 'rollup':
+      return getObjectModelPropertyTypeString(
+        {
+          ...tableColumn,
+          type: tableColumn.options?.result?.type,
+        },
+        options
+      );
+
+    // Lists
+    case 'multipleRecordLinks': {
+      const typeString = `{
+        id: string;
+        ${lookupTableColumns
+          .filter((lookupTableColumn) => {
+            return (
+              lookupTableColumn.options?.recordLinkFieldId === tableColumn.id
+            );
+          })
+          .map((lookupTableColumn) => {
+            return `${
+              lookupColumnNameToObjectPropertyMapper[lookupTableColumn.name]
+            }: ${getObjectModelPropertyTypeString(lookupTableColumn, options)}`;
+          })
+          .join(';')}
+      }`;
+      if (tableColumn.options?.prefersSingleRecordLink) {
+        return typeString;
+      }
+      return `${typeString}[]`;
+    }
+    case 'lookup':
+    case 'multipleLookupValues':
+      const propertyTypeString = (() => {
+        if (rootField !== tableColumn) {
+          if (rootField.type === 'multipleRecordLinks') {
+            return `string`;
+          }
+          return getObjectModelPropertyTypeString(rootField, options);
+        }
+        return getObjectModelPropertyTypeString(
           {
             ...tableColumn,
             type: tableColumn.options?.result?.type,

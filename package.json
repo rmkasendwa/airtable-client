@@ -1,6 +1,6 @@
 {
   "name": "airtable-client",
-  "version": "0.1.0-alpha.22",
+  "version": "0.1.0-alpha.24",
   "description": "Description",
   "keywords": [],
   "repository": "https://github.com/TheoremOne-Talent/airtable-api-generator",
@@ -21,6 +21,7 @@
     "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d build/docs",
     "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,html,htm,json,css,scss,md}\"",
     "publish": "npm run build && cd ./dist && npm publish --registry http://localhost:4873",
+    "start": "tsnd --ignore-watch node_modules --respawn --transpile-only src/index.ts",
     "tsc": "tsc --project tsconfig.compile.json",
     "version": "standard-version"
   },

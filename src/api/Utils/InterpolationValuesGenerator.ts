@@ -7,6 +7,7 @@ import {
 } from '../../models';
 import {
   getAirtableResponseTypeValidationString,
+  getObjectModelPropertyTypeString,
   getObjectPropertyTypeString,
   getRequestObjectValidationString,
   getRootAirtableColumn,
@@ -21,7 +22,8 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   tables: Table[];
   columnNameToObjectPropertyMapper: Record<string, string>;
   lookupColumnNameToObjectPropertyMapper: Record<string, string>;
-  modelImportsCollector: string[];
+  airtableAPIModelImportsCollector: string[];
+  restAPIModelImportsCollector: string[];
   configColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
   queryableNonLookupFields: string[];
   queryableLookupFields: string[];
@@ -36,7 +38,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   tables,
   columnNameToObjectPropertyMapper,
   lookupColumnNameToObjectPropertyMapper,
-  modelImportsCollector,
+  airtableAPIModelImportsCollector,
+  restAPIModelImportsCollector,
   configColumnNameToObjectPropertyMapper = {},
   queryableLookupFields,
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
@@ -132,17 +135,17 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         const rootColumn = getRootAirtableColumn(field, tables, currentTable);
         switch (rootColumn.type) {
           case 'multipleAttachments':
-            modelImportsCollector.push(
+            airtableAPIModelImportsCollector.push(
               `import {AirtableAttachmentValidationSchema} from '../__Utils';`
             );
             break;
           case 'button':
-            modelImportsCollector.push(
+            airtableAPIModelImportsCollector.push(
               `import {AirtableButtonValidationSchema} from '../__Utils';`
             );
             break;
           case 'formula':
-            modelImportsCollector.push(
+            airtableAPIModelImportsCollector.push(
               `import {AirtableFormulaColumnErrorValidationSchema} from '../__Utils';`
             );
         }
@@ -171,6 +174,30 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       }
       return '';
     })(),
+
+    ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
+      .map((field) => {
+        const camelCasePropertyName =
+          columnNameToObjectPropertyMapper[field.name];
+        return [
+          `
+          @Title('${camelCasePropertyName}')
+          @Property()
+          @Optional()
+          public ${camelCasePropertyName}?: ${getObjectModelPropertyTypeString(
+            field,
+            {
+              currentTable,
+              tables,
+              lookupColumnNameToObjectPropertyMapper,
+              lookupTableColumns,
+              restAPIModelImportsCollector,
+            }
+          )}`.trimIndent(),
+        ];
+      })
+      .flat()
+      .join(';\n\n'),
   } as Record<string, string>;
 };
 
@@ -179,7 +206,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   nonLookupTableColumns,
   lookupTableColumns,
   columnNameToObjectPropertyMapper,
-  modelImportsCollector,
+  airtableAPIModelImportsCollector,
+  restAPIModelImportsCollector,
   lookupColumnNameToObjectPropertyMapper,
   views,
   labelSingular,
@@ -214,41 +242,25 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
             tables,
             lookupColumnNameToObjectPropertyMapper,
             lookupTableColumns,
-            modelImportsCollector,
+            airtableAPIModelImportsCollector,
           })}`,
         ];
       })
       .flat()
       .join(';\n'),
 
-    ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
-      .map((field) => {
-        const camelCasePropertyName =
-          columnNameToObjectPropertyMapper[field.name];
-        return [
-          `
-          @Title('${camelCasePropertyName}')
-          public ${camelCasePropertyName}?: ${getObjectPropertyTypeString(
-            field,
-            {
-              currentTable,
-              tables,
-              lookupColumnNameToObjectPropertyMapper,
-              lookupTableColumns,
-              modelImportsCollector,
-            }
-          )}`.trimIndent(),
-        ];
-      })
-      .flat()
-      .join(';\n\n'),
-
     ['/* QUERYABLE_FIELDS */']: [
       ...queryableNonLookupFields,
       ...queryableLookupFields,
     ].join(', '),
 
-    ['/* MODEL_IMPORTS */']: [...new Set(modelImportsCollector)].join('\n'),
+    ['/* AIRTABLE_API_MODEL_IMPORTS */']: [
+      ...new Set(airtableAPIModelImportsCollector),
+    ].join('\n'),
+
+    ['/* REST_API_MODEL_IMPORTS */']: [
+      ...new Set(restAPIModelImportsCollector),
+    ].join('\n'),
 
     ['Entities Table']: tableName,
     ['Entities Label']: labelPlural,
