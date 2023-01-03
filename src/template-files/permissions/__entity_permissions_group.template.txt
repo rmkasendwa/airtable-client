@@ -2,7 +2,8 @@
   "category": "Entities Label",
   "code": MANAGE_ENTITIES_PERMISSION,
   "description": "A user with this permission can perform all operations on Entities Label",
-  "name": "Manage Entities Label"
+  "name": "Manage Entities Label",
+  "parentPermissionCode": "ALL_FUNCTIONS"
 },
 {
   "category": "Entities Label",
