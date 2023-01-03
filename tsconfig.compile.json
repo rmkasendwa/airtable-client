@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "declaration": false,
     "emitDeclarationOnly": false,
     "moduleResolution": "node",
     "noEmit": false,
