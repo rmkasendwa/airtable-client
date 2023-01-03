@@ -22,7 +22,7 @@
 {
   "category": "Entities Label",
   "code": VIEW_ENTITY_DETAILS_PERMISSION,
-  "description": "A user with this permission can view Entities Label details",
+  "description": "A user with this permission can view Entity Label details",
   "name": "View Entity Label Details",
   "parentPermissionCode": "MANAGE_ENTITIES"
 },
@@ -36,6 +36,7 @@
 {
   "category": "Entities Label",
   "code": DELETE_ENTITY_PERMISSION,
+  "description": "A user with this permission can delete an existing Entity Label",
   "name": "Delete Entity Label",
   "parentPermissionCode": "MANAGE_ENTITIES"
 }

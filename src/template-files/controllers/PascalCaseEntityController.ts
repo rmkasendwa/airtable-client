@@ -100,6 +100,7 @@ export class PascalCaseEntityController {
   @Summary('Creates new entities label.')
   @Description('Returns the created entities label.')
   @Returns(200, [PascalCaseEntityModel])
+  @Returns(422).Description('Unprocessable Request')
   async createNewPascalCaseEntities(
     @BodyParams() records: PascalCaseEntityCreationDetails[]
   ) {
@@ -107,7 +108,7 @@ export class PascalCaseEntityController {
   }
 
   @Put()
-  @Summary('Updates entity label.')
+  @Summary('Updates an existing entity label.')
   @Description(
     'Returns the updated entity label. Null values will wipe database fields.'
   )
@@ -119,11 +120,12 @@ export class PascalCaseEntityController {
   }
 
   @Put('/batch')
-  @Summary('Updates entities label.')
+  @Summary('Updates existing entities label.')
   @Description(
     'Returns the updated entities label. Null values will wipe database fields.'
   )
   @Returns(200, [PascalCaseEntityModel])
+  @Returns(422).Description('Unprocessable Request')
   async updatePascalCaseEntities(
     @BodyParams() records: PascalCaseEntityUpdates[]
   ) {
@@ -131,7 +133,7 @@ export class PascalCaseEntityController {
   }
 
   @Patch()
-  @Summary('Patches entity label.')
+  @Summary('Patches an existing entity label.')
   @Description('Returns the patched entity label.')
   @Returns(200, PascalCaseEntityModel)
   async patchPascalCaseEntity(
@@ -141,9 +143,10 @@ export class PascalCaseEntityController {
   }
 
   @Patch('/batch')
-  @Summary('Patches entities label.')
+  @Summary('Patches existing entities label.')
   @Description('Returns the patched entities label.')
   @Returns(200, [PascalCaseEntityModel])
+  @Returns(422).Description('Unprocessable Request')
   async patchPascalCaseEntities(
     @BodyParams() records: PascalCaseEntityUpdates[]
   ) {
@@ -151,7 +154,7 @@ export class PascalCaseEntityController {
   }
 
   @Delete('/:camelCaseEntityId')
-  @Summary('Deletes entity label by id.')
+  @Summary('Deletes an existing entity label by id.')
   @Description('Returns id of the deleted entity label.')
   @Returns(200, DeleteAirtableRecordResponseModel)
   @Returns(404).Description('Not found')
@@ -164,11 +167,14 @@ export class PascalCaseEntityController {
   }
 
   @Delete('/batch')
-  @Summary('Deletes entities label.')
+  @Summary('Deletes existing entities label.')
   @Description('Returns ids of the deleted entities label.')
   @Returns(200, [DeleteAirtableRecordResponseModel])
+  @Returns(422).Description('Unprocessable Request')
   async deletePascalCaseEntities(
-    @Description('The list of ids of the entities label to be deleted.')
+    @Description(
+      'The list of ids of the entities label to be deleted.\nNote: this list should contain at least one entity label.'
+    )
     @BodyParams()
     recordIds: string[]
   ): Promise<DeleteAirtableRecordResponseModel[]> {
