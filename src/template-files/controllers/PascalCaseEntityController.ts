@@ -4,6 +4,7 @@ import {
   Delete,
   Description,
   Get,
+  Name,
   Patch,
   Post,
   Put,
@@ -42,6 +43,7 @@ import {
 
 @Controller('/kebab-case-entities')
 @Docs('api-v1')
+@Name('Entities Label')
 export class PascalCaseEntityController {
   @Get('/first-page')
   @Summary('Finds the first page of entities label.')
