@@ -56,7 +56,7 @@ export class PascalCaseEntityController {
       PascalCaseEntityView
     >
   ): Promise<FindAllPascalCaseEntitiesReponseModel> {
-    return findPascalCaseEntitiesPage(queryParams as any);
+    return findPascalCaseEntitiesPage(queryParams as any) as any;
   }
 
   @Get()
@@ -70,7 +70,7 @@ export class PascalCaseEntityController {
       PascalCaseEntityView
     >
   ): Promise<FindAllPascalCaseEntitiesReponseModel> {
-    return findAllPascalCaseEntities(queryParams as any);
+    return findAllPascalCaseEntities(queryParams as any) as any;
   }
 
   @Get('/:camelCaseEntityId')
@@ -83,7 +83,7 @@ export class PascalCaseEntityController {
     @PathParams('camelCaseEntityId')
     camelCaseEntityId: string
   ): Promise<PascalCaseEntityModel> {
-    return findPascalCaseEntityById(camelCaseEntityId);
+    return findPascalCaseEntityById(camelCaseEntityId) as any;
   }
 
   @Post()
