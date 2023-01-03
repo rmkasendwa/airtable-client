@@ -25,6 +25,15 @@ import {
   getCamelCaseFieldPropertyName,
 } from './Utils';
 
+const prettierConfig: prettier.Options = {
+  semi: true,
+  trailingComma: 'es5',
+  singleQuote: true,
+  printWidth: 80,
+  tabWidth: 2,
+  endOfLine: 'auto',
+};
+
 const airtableAPIFolderName = 'airtable';
 
 /****************** CONSTANTS *********************/
@@ -86,7 +95,18 @@ export const generateAirtableAPI = async ({
   const templateFilePaths = walk(templatesFolderPath, {
     includeBasePath: true,
     directories: false,
-  }).map((filePath) => normalize(filePath));
+  })
+    .map((filePath) => normalize(filePath))
+    .filter((filePath) => {
+      return !filePath.match(/\.template\.\w+$/g);
+    });
+  const modulePermissionsTemplate = readFileSync(
+    join(
+      __dirname,
+      '../template-files/permissions/__entity_permissions_group.template.txt'
+    ),
+    'utf-8'
+  );
 
   const { bases } = await findAllAirtableBases();
   const workingBases = bases.filter(({ name, id }) => {
@@ -130,6 +150,10 @@ export const generateAirtableAPI = async ({
         const baseAPIOutputFolderPath = normalize(
           `${outputFolderPath}/${pascalCaseBaseName}`
         );
+
+        const permissionsImports: string[] = [];
+        const permissionsExports: string[] = [];
+        const permissionsObjectStrings: string[] = [];
 
         const moduleFiles: string[] = [];
 
@@ -490,15 +514,35 @@ export const generateAirtableAPI = async ({
               filePath,
               prettier.format(getInterpolatedString(templateFileContents), {
                 filepath: filePath,
-                semi: true,
-                trailingComma: 'es5',
-                singleQuote: true,
-                printWidth: 80,
-                tabWidth: 2,
-                endOfLine: 'auto',
+                ...prettierConfig,
               })
             );
           });
+
+          // Permissions
+          permissionsImports.push(
+            getInterpolatedString(`
+              import {
+                MANAGE_ENTITIES_PERMISSION,
+                CREATE_ENTITY_PERMISSION,
+                VIEW_ENTITIES_PERMISSION,
+                VIEW_ENTITY_DETAILS_PERMISSION,
+                UPDATE_ENTITY_PERMISSION,
+                DELETE_ENTITY_PERMISSION
+              } from './PascalCaseEntities';
+            `)
+          );
+          permissionsExports.push(
+            getInterpolatedString(`export * from './PascalCaseEntities';`)
+          );
+          permissionsObjectStrings.push(
+            getInterpolatedString(
+              `
+              // Entities Label Permissions.
+              ${modulePermissionsTemplate}
+            `.trimIndent()
+            )
+          );
         });
 
         writeFileSync(
@@ -508,6 +552,25 @@ export const generateAirtableAPI = async ({
               return `export * from '${filePath}'`;
             })
             .join('\n')
+        );
+
+        const permissionsFilePath = `${baseAPIOutputFolderPath}/permissions/index.ts`;
+        writeFileSync(
+          permissionsFilePath,
+          prettier.format(
+            `
+            ${permissionsImports.join('\n')}
+            ${permissionsExports.join('\n')}
+
+            export const allPermissions = [${permissionsObjectStrings.join(
+              ',\n\n'
+            )}];
+          `.trimIndent(),
+            {
+              filepath: permissionsFilePath,
+              ...prettierConfig,
+            }
+          )
         );
 
         console.log(

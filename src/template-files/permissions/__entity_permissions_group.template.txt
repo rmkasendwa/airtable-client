@@ -1,0 +1,40 @@
+{
+  "category": "Entities Label",
+  "code": MANAGE_ENTITIES_PERMISSION,
+  "description": "A user with this permission can perform all operations on Entities Label",
+  "name": "Manage Entities Label"
+},
+{
+  "category": "Entities Label",
+  "code": CREATE_ENTITY_PERMISSION,
+  "description": "A user with this permission can create a new Entity Label",
+  "name": "Create Entities Label",
+  "parentPermissionCode": "MANAGE_ENTITIES"
+},
+{
+  "category": "Entities Label",
+  "code": VIEW_ENTITIES_PERMISSION,
+  "description": "A user with this permission can view a list of Entities Label",
+  "name": "View Entities Label",
+  "parentPermissionCode": "MANAGE_ENTITIES"
+},
+{
+  "category": "Entities Label",
+  "code": VIEW_ENTITY_DETAILS_PERMISSION,
+  "description": "A user with this permission can view Entities Label details",
+  "name": "View Entity Label Details",
+  "parentPermissionCode": "MANAGE_ENTITIES"
+},
+{
+  "category": "Entities Label",
+  "code": UPDATE_ENTITY_PERMISSION,
+  "description": "A user with this permission can update an existing Entity Label",
+  "name": "Update Entity Label",
+  "parentPermissionCode": "MANAGE_ENTITIES"
+},
+{
+  "category": "Entities Label",
+  "code": DELETE_ENTITY_PERMISSION,
+  "name": "Delete Entity Label",
+  "parentPermissionCode": "MANAGE_ENTITIES"
+}

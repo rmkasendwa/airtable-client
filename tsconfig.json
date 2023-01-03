@@ -37,7 +37,7 @@
     "resolveJsonModule": true /* Include modules imported with .json extension. */,
 
     "strict": true,
-    "target": "es6",
+    "target": "esnext",
     /* Debugging Options */
     "traceResolution": false /* Report module resolution log messages. */,
     "typeRoots": ["node_modules/@types", "src/types"],
