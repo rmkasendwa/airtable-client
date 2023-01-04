@@ -55,8 +55,8 @@ export class PascalCaseEntityController {
       PascalCaseEntityQueryableField,
       PascalCaseEntityView
     >
-  ): Promise<FindAllPascalCaseEntitiesReponseModel> {
-    return findPascalCaseEntitiesPage(queryParams as any) as any;
+  ) {
+    return findPascalCaseEntitiesPage(queryParams as any);
   }
 
   @Get()
@@ -69,7 +69,7 @@ export class PascalCaseEntityController {
       PascalCaseEntityQueryableField,
       PascalCaseEntityView
     >
-  ): Promise<FindAllPascalCaseEntitiesReponseModel> {
+  ) {
     return findAllPascalCaseEntities(queryParams as any) as any;
   }
 
@@ -82,7 +82,7 @@ export class PascalCaseEntityController {
     @Description('The id of the entity label to be found.')
     @PathParams('camelCaseEntityId')
     camelCaseEntityId: string
-  ): Promise<PascalCaseEntityModel> {
+  ) {
     return findPascalCaseEntityById(camelCaseEntityId) as any;
   }
 
@@ -162,7 +162,7 @@ export class PascalCaseEntityController {
     @Description('The id of the entity label to be deleted.')
     @PathParams('camelCaseEntityId')
     camelCaseEntityId: string
-  ): Promise<DeleteAirtableRecordResponseModel> {
+  ) {
     return deletePascalCaseEntity(camelCaseEntityId);
   }
 
@@ -177,7 +177,7 @@ export class PascalCaseEntityController {
     )
     @BodyParams()
     recordIds: string[]
-  ): Promise<DeleteAirtableRecordResponseModel[]> {
+  ) {
     return deletePascalCaseEntities(recordIds);
   }
 }

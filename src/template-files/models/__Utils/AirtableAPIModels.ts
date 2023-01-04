@@ -74,7 +74,7 @@ export const convertToAirtableFindAllRecordsQueryParams = <
     sort?: string[];
     fields?: string[];
   } = {
-    ...omit(queryParams, 'sort', 'fields'),
+    ...omit(queryParams, 'sort', 'fields', 'filterByFormula'),
     ...(() => {
       if (queryParams.sort) {
         return {
@@ -110,6 +110,24 @@ export const convertToAirtableFindAllRecordsQueryParams = <
               }
               return objectPropertyToColumnNameMapper[field];
             }),
+        };
+      }
+    })(),
+    ...(() => {
+      if (queryParams.filterByFormula) {
+        return {
+          filterByFormula: queryParams.filterByFormula.replace(
+            /\{([\w\.]+?)\}/g,
+            (_, field) => {
+              const airtableColumnName = (() => {
+                if (field.includes('.')) {
+                  return lookupObjectPropertyToColumnNameMapper[field];
+                }
+                return objectPropertyToColumnNameMapper[field];
+              })();
+              return `{${airtableColumnName || field}}`;
+            }
+          ),
         };
       }
     })(),
