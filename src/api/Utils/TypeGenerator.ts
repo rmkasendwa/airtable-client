@@ -184,17 +184,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       };
     }
 
-    // case 'rollup':
-    //   return getTableColumnValidationSchemaTypeStrings( // This is problematic, sometimes airtable lies about the result type
-    //     {
-    //       ...field,
-    //       type: field.options?.result?.type,
-    //     },
-    //     {
-    //       ...options,
-    //     }
-    //   );
-
     // Dates
     case 'date':
     case 'dateTime':
@@ -320,7 +309,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
           }
           return getTableColumnValidationSchemaTypeStrings(rootField, {
             ...options,
-          });
+          }).airtableResponseValidationString;
         }
         return getTableColumnValidationSchemaTypeStrings(
           {
@@ -330,7 +319,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
           {
             ...options,
           }
-        );
+        ).airtableResponseValidationString;
       })();
 
       const airtableResponseValidationString: string = `z.array(${validationString}.nullish())`;
