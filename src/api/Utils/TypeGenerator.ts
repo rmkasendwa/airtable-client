@@ -426,9 +426,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
           !baseObjectPropetyTypeString.match(/\[\]$/g) &&
           !prefersSingleRecordLink
         ) {
-          return baseObjectPropetyTypeString + '[]';
+          return `(${baseObjectPropetyTypeString})[]`;
         }
-        return baseObjectPropetyTypeString;
+        return `(${baseObjectPropetyTypeString})`;
       })();
       const objectModelPropertyTypeString = (() => {
         if (
@@ -436,15 +436,21 @@ export const getTableColumnValidationSchemaTypeStrings = (
           !prefersSingleRecordLink
         ) {
           return (
-            baseObjectModelPropertyTypeString.replace(
-              /\@Example\((.+?)\)/g,
-              (_, baseExample) => {
+            baseObjectModelPropertyTypeString
+              .trim()
+              .replace(/\:\s*(.+?)$/g, (_, propertyTypeString) => {
+                return `: (${propertyTypeString})`;
+              })
+              .replace(/\@Example\((.+?)\)/g, (_, baseExample) => {
                 return `@Example([${baseExample}])`;
-              }
-            ) + '[]'
+              }) + '[]'
           );
         }
-        return baseObjectModelPropertyTypeString;
+        return baseObjectModelPropertyTypeString
+          .trim()
+          .replace(/\:\s*(.+?)$/g, (_, propertyTypeString) => {
+            return `: (${propertyTypeString})`;
+          });
       })();
 
       return {
