@@ -20,9 +20,11 @@ import {
 } from '../models';
 import { findAllAirtableBases, findAllTablesByBaseId } from './Metadata';
 import {
+  TableColumnValidationSchemaTypeStringGroup,
   getAirtableAPIGeneratorTemplateFileInterpolationBlocks,
   getAirtableAPIGeneratorTemplateFileInterpolationLabels,
   getCamelCaseFieldPropertyName,
+  getTableColumnValidationSchemaTypeStrings,
 } from './Utils';
 
 const prettierConfig: prettier.Options = {
@@ -442,6 +444,23 @@ export const generateAirtableAPI = async ({
               }.${lookupColumnNameToObjectPropertyMapper[columnName]}"`;
             });
 
+          const columnNameToValidationSchemaTypeStringGroupMapper =
+            filteredTableColumns.reduce((accumulator, tableColumn) => {
+              accumulator[tableColumn.name] =
+                getTableColumnValidationSchemaTypeStrings(tableColumn, {
+                  airtableAPIModelImportsCollector,
+                  camelCasePropertyName:
+                    columnNameToObjectPropertyMapper[tableColumn.name],
+                  currentTable: table,
+                  lookupColumnNameToObjectPropertyMapper,
+                  lookupTableColumns,
+                  restAPIModelExtrasCollector,
+                  restAPIModelImportsCollector,
+                  tables,
+                });
+              return accumulator;
+            }, {} as Record<string, TableColumnValidationSchemaTypeStringGroup>);
+
           const interpolationBlocks =
             getAirtableAPIGeneratorTemplateFileInterpolationBlocks({
               base: workingBase,
@@ -458,6 +477,7 @@ export const generateAirtableAPI = async ({
               queryableLookupFields,
               queryableNonLookupFields,
               restAPIModelExtrasCollector,
+              columnNameToValidationSchemaTypeStringGroupMapper,
             });
 
           const interpolationLabels =
@@ -477,6 +497,7 @@ export const generateAirtableAPI = async ({
               queryableLookupFields,
               queryableNonLookupFields,
               restAPIModelExtrasCollector,
+              columnNameToValidationSchemaTypeStringGroupMapper,
             });
 
           const getInterpolatedString = (templateFileContents: string) => {

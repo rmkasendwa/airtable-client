@@ -6,10 +6,7 @@ import {
   Table,
 } from '../../models';
 import {
-  getAirtableResponseTypeValidationString,
-  getObjectModelPropertyTypeString,
-  getObjectPropertyTypeString,
-  getRequestObjectValidationString,
+  TableColumnValidationSchemaTypeStringGroup,
   getRootAirtableColumn,
 } from './TypeGenerator';
 
@@ -28,6 +25,10 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   configColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
   queryableNonLookupFields: string[];
   queryableLookupFields: string[];
+  columnNameToValidationSchemaTypeStringGroupMapper: Record<
+    string,
+    TableColumnValidationSchemaTypeStringGroup
+  >;
 };
 
 export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
@@ -39,11 +40,9 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   tables,
   columnNameToObjectPropertyMapper,
   lookupColumnNameToObjectPropertyMapper,
-  airtableAPIModelImportsCollector,
-  restAPIModelImportsCollector,
-  restAPIModelExtrasCollector,
   configColumnNameToObjectPropertyMapper = {},
   queryableLookupFields,
+  columnNameToValidationSchemaTypeStringGroupMapper,
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
   const { id: baseId } = base;
   return {
@@ -133,41 +132,24 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       ...lookupTableColumns,
     ]
       .map((field) => {
-        const { name } = field;
-        const rootColumn = getRootAirtableColumn(field, tables, currentTable);
-        switch (rootColumn.type) {
-          case 'multipleAttachments':
-            airtableAPIModelImportsCollector.push(
-              `import {AirtableAttachmentValidationSchema} from '../__Utils';`
-            );
-            break;
-          case 'button':
-            airtableAPIModelImportsCollector.push(
-              `import {AirtableButtonValidationSchema} from '../__Utils';`
-            );
-            break;
-          case 'formula':
-            airtableAPIModelImportsCollector.push(
-              `import {AirtableFormulaColumnErrorValidationSchema} from '../__Utils';`
-            );
-        }
-        return `["${name}"]: ${getAirtableResponseTypeValidationString(field, {
-          currentTable,
-          tables,
-        })}.nullish()`;
+        return `["${field.name}"]: ${
+          columnNameToValidationSchemaTypeStringGroupMapper[field.name]
+            .airtableResponseValidationString
+        }.nullish()`;
       })
       .join(',\n'),
 
     ['/* REQUEST_ENTITY_PROPERTIES */']: editableTableColumns
-      .map(
-        (field) =>
-          `"${
-            columnNameToObjectPropertyMapper[field.name]
-          }": ${getRequestObjectValidationString(field, {
-            currentTable,
-            tables,
-          })}.nullish()`
-      )
+      .filter((field) => {
+        return columnNameToValidationSchemaTypeStringGroupMapper[field.name]
+          .requestObjectPropertyTypeValidationString;
+      })
+      .map((field) => {
+        return `"${columnNameToObjectPropertyMapper[field.name]}": ${
+          columnNameToValidationSchemaTypeStringGroupMapper[field.name]
+            .requestObjectPropertyTypeValidationString
+        }.nullish()`;
+      })
       .join(',\n'),
 
     ['/* QUERYABLE_FIELD_TYPE */']: (() => {
@@ -179,18 +161,9 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 
     ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
       .map((field) => {
-        const camelCasePropertyName =
-          columnNameToObjectPropertyMapper[field.name];
         return [
-          getObjectModelPropertyTypeString(field, {
-            currentTable,
-            tables,
-            lookupColumnNameToObjectPropertyMapper,
-            lookupTableColumns,
-            restAPIModelImportsCollector,
-            restAPIModelExtrasCollector,
-            camelCasePropertyName,
-          }),
+          columnNameToValidationSchemaTypeStringGroupMapper[field.name]
+            .objectModelPropertyTypeString,
         ];
       })
       .flat()
@@ -201,18 +174,16 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   currentTable,
   nonLookupTableColumns,
-  lookupTableColumns,
   columnNameToObjectPropertyMapper,
   airtableAPIModelImportsCollector,
   restAPIModelImportsCollector,
   restAPIModelExtrasCollector,
-  lookupColumnNameToObjectPropertyMapper,
   views,
   labelSingular,
   labelPlural,
   queryableNonLookupFields,
   queryableLookupFields,
-  tables,
+  columnNameToValidationSchemaTypeStringGroupMapper,
 }: Omit<
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
   'base' | 'editableTableColumns'
@@ -235,13 +206,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
         const camelCasePropertyName =
           columnNameToObjectPropertyMapper[field.name];
         return [
-          `${camelCasePropertyName}?: ${getObjectPropertyTypeString(field, {
-            currentTable,
-            tables,
-            lookupColumnNameToObjectPropertyMapper,
-            lookupTableColumns,
-            airtableAPIModelImportsCollector,
-          })}`,
+          `${camelCasePropertyName}?: ${
+            columnNameToValidationSchemaTypeStringGroupMapper[field.name]
+              .objectPropetyTypeString
+          }`,
         ];
       })
       .flat()
