@@ -17,6 +17,7 @@ import {
   AirtableFieldType,
   Config,
   ConfigColumnNameToObjectPropertyMapper,
+  DetailedColumnNameToObjectPropertyMapping,
 } from '../models';
 import { findAllAirtableBases, findAllTablesByBaseId } from './Metadata';
 import {
@@ -24,6 +25,7 @@ import {
   getAirtableAPIGeneratorTemplateFileInterpolationBlocks,
   getAirtableAPIGeneratorTemplateFileInterpolationLabels,
   getCamelCaseFieldPropertyName,
+  getExpandedAirtableLookupColumn,
   getTableColumnValidationSchemaTypeStrings,
 } from './Utils';
 
@@ -358,41 +360,72 @@ export const generateAirtableAPI = async ({
           );
 
           const columnNameToObjectPropertyMapper = nonLookupTableColumns.reduce(
-            (accumulator, field) => {
-              accumulator[field.name] = (() => {
-                if (configColumnNameToObjectPropertyMapper) {
-                  if (
-                    configColumnNameToObjectPropertyMapper[field.name] &&
-                    typeof configColumnNameToObjectPropertyMapper[
-                      field.name
-                    ] !== 'string' &&
-                    (configColumnNameToObjectPropertyMapper[field.name] as any)
-                      .propertyName
-                  ) {
-                    return (
-                      configColumnNameToObjectPropertyMapper[field.name] as any
-                    ).propertyName;
+            (accumulator, tableColumn) => {
+              accumulator[tableColumn.name] = {
+                propertyName: (() => {
+                  if (configColumnNameToObjectPropertyMapper) {
+                    if (
+                      configColumnNameToObjectPropertyMapper[
+                        tableColumn.name
+                      ] &&
+                      typeof configColumnNameToObjectPropertyMapper[
+                        tableColumn.name
+                      ] !== 'string' &&
+                      (
+                        configColumnNameToObjectPropertyMapper[
+                          tableColumn.name
+                        ] as any
+                      ).propertyName
+                    ) {
+                      return (
+                        configColumnNameToObjectPropertyMapper[
+                          tableColumn.name
+                        ] as any
+                      ).propertyName;
+                    }
+                    if (
+                      configColumnNameToObjectPropertyMapper[
+                        tableColumn.name
+                      ] &&
+                      typeof configColumnNameToObjectPropertyMapper[
+                        tableColumn.name
+                      ] === 'string'
+                    ) {
+                      return configColumnNameToObjectPropertyMapper[
+                        tableColumn.name
+                      ];
+                    }
                   }
-                  if (
-                    configColumnNameToObjectPropertyMapper[field.name] &&
-                    typeof configColumnNameToObjectPropertyMapper[
-                      field.name
-                    ] === 'string'
-                  ) {
-                    return configColumnNameToObjectPropertyMapper[field.name];
-                  }
-                }
-                return getCamelCaseFieldPropertyName(field);
-              })();
+                  return getCamelCaseFieldPropertyName(tableColumn);
+                })(),
+                prefersSingleRecordLink: Boolean(
+                  tableColumn.options?.prefersSingleRecordLink ||
+                    (configColumnNameToObjectPropertyMapper?.[
+                      tableColumn.name
+                    ] &&
+                      typeof configColumnNameToObjectPropertyMapper?.[
+                        tableColumn.name
+                      ] === 'object' &&
+                      (
+                        configColumnNameToObjectPropertyMapper?.[
+                          tableColumn.name
+                        ] as DetailedColumnNameToObjectPropertyMapping
+                      ).prefersSingleRecordLink)
+                ),
+              };
               return accumulator;
             },
-            {} as Record<string, string>
+            {} as Record<
+              string,
+              Required<DetailedColumnNameToObjectPropertyMapping>
+            >
           );
 
           const lookupColumnNameToObjectPropertyMapper =
-            lookupTableColumns.reduce((accumulator, field) => {
+            lookupTableColumns.reduce((accumulator, tableColumn) => {
               const parentField = (() => {
-                const recordLinkFieldId = field.options?.recordLinkFieldId;
+                const recordLinkFieldId =
+                  tableColumn.options?.recordLinkFieldId;
                 if (recordLinkFieldId) {
                   const recordLinkField = table.fields.find(
                     ({ id }) => id === recordLinkFieldId
@@ -401,7 +434,7 @@ export const generateAirtableAPI = async ({
                     const linkedTableId =
                       recordLinkField.options?.linkedTableId;
                     const fieldIdInLinkedTable =
-                      field.options?.fieldIdInLinkedTable;
+                      tableColumn.options?.fieldIdInLinkedTable;
                     if (linkedTableId && fieldIdInLinkedTable) {
                       const linkedTable = tables.find(
                         ({ id }) => id === linkedTableId
@@ -417,12 +450,58 @@ export const generateAirtableAPI = async ({
                     }
                   }
                 }
-                return field;
+                return tableColumn;
               })();
-              accumulator[field.name] =
-                getCamelCaseFieldPropertyName(parentField);
+
+              const shouldFlattenLookupField = (
+                lookupTableColumn: typeof tableColumn,
+                lookupTable: typeof table
+              ): boolean => {
+                const referenceTableColumn = lookupTable.fields.find(
+                  ({ id }) =>
+                    id === lookupTableColumn.options?.recordLinkFieldId
+                );
+                const tablecolumnOneLevelUp = getExpandedAirtableLookupColumn(
+                  lookupTableColumn,
+                  tables,
+                  lookupTable
+                );
+
+                if (
+                  referenceTableColumn?.options?.prefersSingleRecordLink &&
+                  tablecolumnOneLevelUp.type === 'multipleLookupValues'
+                ) {
+                  return shouldFlattenLookupField(
+                    tablecolumnOneLevelUp,
+                    tables.find(
+                      ({ id }) =>
+                        id === referenceTableColumn.options?.linkedTableId
+                    )!
+                  );
+                }
+
+                return Boolean(
+                  referenceTableColumn?.options?.prefersSingleRecordLink &&
+                    !(
+                      [
+                        'multipleLookupValues',
+                        'multipleSelects',
+                      ] as typeof tablecolumnOneLevelUp.type[]
+                    ).includes(tablecolumnOneLevelUp.type)
+                );
+              };
+
+              const flattenLookupField = shouldFlattenLookupField(
+                tableColumn,
+                table
+              );
+
+              accumulator[tableColumn.name] = {
+                propertyName: getCamelCaseFieldPropertyName(parentField),
+                prefersSingleRecordLink: flattenLookupField,
+              };
               return accumulator;
-            }, {} as Record<string, string>);
+            }, {} as Record<string, Required<DetailedColumnNameToObjectPropertyMapping>>);
 
           const queryableNonLookupFields = (focusColumnNames || [])
             .filter((columnName) => {
@@ -444,22 +523,36 @@ export const generateAirtableAPI = async ({
               }.${lookupColumnNameToObjectPropertyMapper[columnName]}"`;
             });
 
-          const columnNameToValidationSchemaTypeStringGroupMapper =
-            filteredTableColumns.reduce((accumulator, tableColumn) => {
-              accumulator[tableColumn.name] =
-                getTableColumnValidationSchemaTypeStrings(tableColumn, {
-                  airtableAPIModelImportsCollector,
-                  camelCasePropertyName:
-                    columnNameToObjectPropertyMapper[tableColumn.name],
-                  currentTable: table,
-                  lookupColumnNameToObjectPropertyMapper,
-                  lookupTableColumns,
-                  restAPIModelExtrasCollector,
-                  restAPIModelImportsCollector,
-                  tables,
-                });
-              return accumulator;
-            }, {} as Record<string, TableColumnValidationSchemaTypeStringGroup>);
+          const columnNameToValidationSchemaTypeStringGroupMapper = [
+            ...nonLookupTableColumns,
+            ...lookupTableColumns,
+          ].reduce((accumulator, tableColumn) => {
+            console.log(
+              `${tableColumn.name} | ${tableColumn.type} | ${JSON.stringify(
+                {
+                  ...columnNameToObjectPropertyMapper,
+                  ...lookupColumnNameToObjectPropertyMapper,
+                },
+                null,
+                2
+              )}`
+            );
+            accumulator[tableColumn.name] =
+              getTableColumnValidationSchemaTypeStrings(tableColumn, {
+                airtableAPIModelImportsCollector,
+                camelCasePropertyName: {
+                  ...columnNameToObjectPropertyMapper,
+                  ...lookupColumnNameToObjectPropertyMapper,
+                }[tableColumn.name].propertyName,
+                currentTable: table,
+                lookupColumnNameToObjectPropertyMapper,
+                lookupTableColumns,
+                restAPIModelExtrasCollector,
+                restAPIModelImportsCollector,
+                tables,
+              });
+            return accumulator;
+          }, {} as Record<string, TableColumnValidationSchemaTypeStringGroup>);
 
           const interpolationBlocks =
             getAirtableAPIGeneratorTemplateFileInterpolationBlocks({

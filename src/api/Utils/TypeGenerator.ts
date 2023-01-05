@@ -1,4 +1,8 @@
-import { AirtableField, Table } from '../../models';
+import {
+  AirtableField,
+  DetailedColumnNameToObjectPropertyMapping,
+  Table,
+} from '../../models';
 
 export const getExpandedAirtableLookupColumn = (
   field: AirtableField,
@@ -86,7 +90,10 @@ export type TableColumnValidationSchemaTypeStringGroup = {
 export type GetTableColumnValidationSchemaTypeStringsOptions = {
   currentTable: Table;
   tables: Table[];
-  lookupColumnNameToObjectPropertyMapper: Record<string, string>;
+  lookupColumnNameToObjectPropertyMapper: Record<
+    string,
+    Required<DetailedColumnNameToObjectPropertyMapping>
+  >;
   lookupTableColumns: AirtableField[];
   restAPIModelImportsCollector: string[];
   restAPIModelExtrasCollector: string[];
@@ -242,6 +249,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
             .map((lookupTableColumn) => {
               return `${
                 lookupColumnNameToObjectPropertyMapper[lookupTableColumn.name]
+                  .propertyName
               }: ${
                 getTableColumnValidationSchemaTypeStrings(
                   lookupTableColumn,
@@ -285,7 +293,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
                       camelCasePropertyName:
                         lookupColumnNameToObjectPropertyMapper[
                           lookupTableColumn.name
-                        ],
+                        ].propertyName,
                     }
                   ).objectModelPropertyTypeString;
                 })
