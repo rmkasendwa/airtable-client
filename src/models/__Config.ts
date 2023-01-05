@@ -2,16 +2,24 @@ import { AirtableBase, AirtableFieldOptions } from './Metadata';
 
 export type ConfigAirtableBase = Partial<Pick<AirtableBase, 'id' | 'name'>>;
 
-export type DetailedColumnNameToObjectPropertyMapping = Pick<
+export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   AirtableFieldOptions,
   'prefersSingleRecordLink'
 > & {
   propertyName?: string;
+  type?: 'boolean';
 };
+
+export type DetailedColumnNameToObjectPropertyMapping = Required<
+  Pick<UserEditableDetailedColumnNameToObjectPropertyMapping, 'propertyName'>
+> &
+  Omit<UserEditableDetailedColumnNameToObjectPropertyMapping, 'propertyName'>;
 
 export type ConfigColumnNameToObjectPropertyMapper<FocusColumn extends string> =
   Partial<{
-    [P in FocusColumn]: string | DetailedColumnNameToObjectPropertyMapping;
+    [P in FocusColumn]:
+      | string
+      | UserEditableDetailedColumnNameToObjectPropertyMapping;
   }>;
 
 export type ConfigTable<FocusColumn extends string> = {

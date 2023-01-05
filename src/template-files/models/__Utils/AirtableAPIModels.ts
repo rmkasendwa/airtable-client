@@ -140,6 +140,7 @@ export type AirtableColumnConfigMapping<ObjectPropertyName extends string> = {
   propertyName: ObjectPropertyName;
   isMultipleRecordLinksField?: boolean;
   prefersSingleRecordLink?: boolean;
+  type?: 'boolean';
 };
 
 export type AirtableColumnMapping<ObjectPropertyName extends string> =
@@ -251,8 +252,23 @@ export const getAirtableRecordResponseValidationSchema = <
                   }
                 }
               } else {
+                const { type } = noneLookupColumMapping;
                 (accumulator as any)[noneLookupColumMapping.propertyName] =
                   fields[key];
+
+                if (type) {
+                  switch (type) {
+                    case 'boolean':
+                      (accumulator as any)[
+                        noneLookupColumMapping.propertyName
+                      ] = Boolean(
+                        (accumulator as any)[
+                          noneLookupColumMapping.propertyName
+                        ]
+                      );
+                      break;
+                  }
+                }
               }
             }
             return accumulator;

@@ -92,7 +92,7 @@ export type GetTableColumnValidationSchemaTypeStringsOptions = {
   tables: Table[];
   lookupColumnNameToObjectPropertyMapper: Record<
     string,
-    Required<DetailedColumnNameToObjectPropertyMapping>
+    DetailedColumnNameToObjectPropertyMapping
   >;
   lookupTableColumns: AirtableField[];
   restAPIModelImportsCollector: string[];

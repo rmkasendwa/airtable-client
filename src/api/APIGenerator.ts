@@ -398,27 +398,49 @@ export const generateAirtableAPI = async ({
                   }
                   return getCamelCaseFieldPropertyName(tableColumn);
                 })(),
-                prefersSingleRecordLink: Boolean(
-                  tableColumn.options?.prefersSingleRecordLink ||
-                    (configColumnNameToObjectPropertyMapper?.[
-                      tableColumn.name
-                    ] &&
-                      typeof configColumnNameToObjectPropertyMapper?.[
+                ...(() => {
+                  const prefersSingleRecordLink = Boolean(
+                    tableColumn.options?.prefersSingleRecordLink ||
+                      (configColumnNameToObjectPropertyMapper?.[
                         tableColumn.name
-                      ] === 'object' &&
-                      (
-                        configColumnNameToObjectPropertyMapper?.[
+                      ] &&
+                        typeof configColumnNameToObjectPropertyMapper?.[
+                          tableColumn.name
+                        ] === 'object' &&
+                        (
+                          configColumnNameToObjectPropertyMapper?.[
+                            tableColumn.name
+                          ] as DetailedColumnNameToObjectPropertyMapping
+                        ).prefersSingleRecordLink)
+                  );
+                  if (prefersSingleRecordLink) {
+                    return { prefersSingleRecordLink };
+                  }
+                })(),
+                ...(() => {
+                  if (
+                    typeof configColumnNameToObjectPropertyMapper?.[
+                      tableColumn.name
+                    ] === 'object' &&
+                    (
+                      configColumnNameToObjectPropertyMapper![
+                        tableColumn.name
+                      ] as DetailedColumnNameToObjectPropertyMapping
+                    ).type
+                  ) {
+                    return {
+                      type: (
+                        configColumnNameToObjectPropertyMapper[
                           tableColumn.name
                         ] as DetailedColumnNameToObjectPropertyMapping
-                      ).prefersSingleRecordLink)
-                ),
+                      ).type,
+                    };
+                  }
+                })(),
               };
               return accumulator;
             },
-            {} as Record<
-              string,
-              Required<DetailedColumnNameToObjectPropertyMapping>
-            >
+            {} as Record<string, DetailedColumnNameToObjectPropertyMapping>
           );
 
           const lookupColumnNameToObjectPropertyMapper =
@@ -498,10 +520,36 @@ export const generateAirtableAPI = async ({
 
               accumulator[tableColumn.name] = {
                 propertyName: getCamelCaseFieldPropertyName(parentField),
-                prefersSingleRecordLink: flattenLookupField,
+                ...(() => {
+                  if (flattenLookupField) {
+                    return {
+                      prefersSingleRecordLink: flattenLookupField,
+                    };
+                  }
+                })(),
+                ...(() => {
+                  if (
+                    typeof configColumnNameToObjectPropertyMapper?.[
+                      tableColumn.name
+                    ] === 'object' &&
+                    (
+                      configColumnNameToObjectPropertyMapper![
+                        tableColumn.name
+                      ] as DetailedColumnNameToObjectPropertyMapping
+                    ).type
+                  ) {
+                    return {
+                      type: (
+                        configColumnNameToObjectPropertyMapper[
+                          tableColumn.name
+                        ] as DetailedColumnNameToObjectPropertyMapping
+                      ).type,
+                    };
+                  }
+                })(),
               };
               return accumulator;
-            }, {} as Record<string, Required<DetailedColumnNameToObjectPropertyMapping>>);
+            }, {} as Record<string, DetailedColumnNameToObjectPropertyMapping>);
 
           const queryableNonLookupFields = (focusColumnNames || [])
             .filter((columnName) => {

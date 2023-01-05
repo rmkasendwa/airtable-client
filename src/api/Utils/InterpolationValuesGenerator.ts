@@ -1,3 +1,5 @@
+import { pick } from 'lodash';
+
 import {
   AirtableBase,
   AirtableField,
@@ -17,11 +19,11 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   tables: Table[];
   columnNameToObjectPropertyMapper: Record<
     string,
-    Required<DetailedColumnNameToObjectPropertyMapping>
+    DetailedColumnNameToObjectPropertyMapping
   >;
   lookupColumnNameToObjectPropertyMapper: Record<
     string,
-    Required<DetailedColumnNameToObjectPropertyMapping>
+    DetailedColumnNameToObjectPropertyMapping
   >;
   airtableAPIModelImportsCollector: string[];
   restAPIModelImportsCollector: string[];
@@ -83,13 +85,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
               return camelCasePropertyName;
             })(),
             ...(() => {
-              if (
-                columnNameToObjectPropertyMapper[name].prefersSingleRecordLink
-              ) {
-                return {
-                  prefersSingleRecordLink: true,
-                };
-              }
+              return pick(
+                columnNameToObjectPropertyMapper[name],
+                'prefersSingleRecordLink',
+                'type'
+              );
             })(),
           };
           if (type === 'multipleRecordLinks') {
@@ -121,14 +121,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
                   }`;
                 })(),
                 ...(() => {
-                  if (
-                    lookupColumnNameToObjectPropertyMapper[name]
-                      .prefersSingleRecordLink
-                  ) {
-                    return {
-                      prefersSingleRecordLink: true,
-                    };
-                  }
+                  return pick(
+                    lookupColumnNameToObjectPropertyMapper[name],
+                    'prefersSingleRecordLink',
+                    'type'
+                  );
                 })(),
               };
               if (Object.keys(obj).length > 1) {
