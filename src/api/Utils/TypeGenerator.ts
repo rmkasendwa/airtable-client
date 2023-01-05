@@ -324,30 +324,15 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
     case 'lookup':
     case 'multipleLookupValues': {
-      const validationString = (() => {
-        if (rootField !== tableColumn) {
-          if (rootField.type === 'multipleRecordLinks') {
-            return `z.string()`;
-          }
-          return getTableColumnValidationSchemaTypeStrings(rootField, options)
-            .airtableResponseValidationString;
-        }
-        return getTableColumnValidationSchemaTypeStrings(
-          {
-            ...tableColumn,
-            type: tableColumn.options?.result?.type,
-          },
-          options
-        ).airtableResponseValidationString;
-      })();
-
       const {
         objectPropetyTypeString: baseObjectPropetyTypeString,
         objectModelPropertyTypeString: baseObjectModelPropertyTypeString,
+        airtableResponseValidationString: baseAirtableResponseValidationString,
       } = (() => {
         if (rootField !== tableColumn) {
           if (rootField.type === 'multipleRecordLinks') {
             return {
+              airtableResponseValidationString: `z.string()`,
               objectPropetyTypeString: `string`,
               objectModelPropertyTypeString: `
                 ${modelFieldDecorators}
@@ -407,8 +392,8 @@ export const getTableColumnValidationSchemaTypeStrings = (
         currentTable
       );
 
-      const airtableResponseValidationString: string = `z.array(${validationString}.nullish())`;
-      const objectPropetyTypeString = `${baseObjectPropetyTypeString}${
+      const airtableResponseValidationString: string = `z.array(${baseAirtableResponseValidationString}.nullish())`;
+      const objectPropetyTypeString = `(${baseObjectPropetyTypeString})${
         !baseObjectPropetyTypeString.match(/\[\]$/g) && !flattenLookupField
           ? '[]'
           : ''
