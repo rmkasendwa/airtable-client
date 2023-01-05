@@ -83,7 +83,6 @@ export class FindAllRecordsQueryParamsModel<
     sort%5B0%5D%5Bfield%5D=Name
     sort%5B0%5D%5Bdirection%5D=desc
   `)
-  @Example([{ field: 'Name', direction: 'desc' }])
   @Property()
   @Optional()
   public sort?: AirtableSortOptionModel[];
@@ -128,7 +127,6 @@ export class FindAllRecordsQueryParamsModel<
 
   @Title('offset')
   @Description('The airtable offset to load the next page.')
-  @Example('itrYj9gKrZ1sa8MJi/recj4R1JsNRQ0SM4m')
   @Property()
   @Optional()
   public offset?: string;

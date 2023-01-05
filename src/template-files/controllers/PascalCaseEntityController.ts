@@ -3,6 +3,7 @@ import { Controller } from '@tsed/di';
 import {
   Delete,
   Description,
+  Example,
   Get,
   Name,
   Patch,
@@ -175,6 +176,7 @@ export class PascalCaseEntityController {
     @Description(
       'The list of ids of the entities label to be deleted.\nNote: this list should contain at least one entity label.'
     )
+    @Example(['recO0FYb1Tccm9MZ2'])
     @BodyParams()
     recordIds: string[]
   ) {
