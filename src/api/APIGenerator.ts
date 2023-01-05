@@ -585,6 +585,7 @@ export const generateAirtableAPI = async ({
                   ...lookupColumnNameToObjectPropertyMapper,
                 }[tableColumn.name].propertyName,
                 currentTable: table,
+                columnNameToObjectPropertyMapper,
                 lookupColumnNameToObjectPropertyMapper,
                 lookupTableColumns,
                 restAPIModelExtrasCollector,
