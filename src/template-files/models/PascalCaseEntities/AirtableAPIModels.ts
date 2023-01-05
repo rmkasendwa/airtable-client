@@ -26,7 +26,7 @@ export type PascalCaseEntitiesAirtableLookupColumn =
 // Maps Entities Table lookup columns to Entity Label properties.
 export const PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper: Record<
   PascalCaseEntitiesAirtableLookupColumn,
-  string
+  AirtableColumnMapping<string>
 > = {
   /* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */
   ['Name']: 'name',

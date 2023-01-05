@@ -527,16 +527,6 @@ export const generateAirtableAPI = async ({
             ...nonLookupTableColumns,
             ...lookupTableColumns,
           ].reduce((accumulator, tableColumn) => {
-            console.log(
-              `${tableColumn.name} | ${tableColumn.type} | ${JSON.stringify(
-                {
-                  ...columnNameToObjectPropertyMapper,
-                  ...lookupColumnNameToObjectPropertyMapper,
-                },
-                null,
-                2
-              )}`
-            );
             accumulator[tableColumn.name] =
               getTableColumnValidationSchemaTypeStrings(tableColumn, {
                 airtableAPIModelImportsCollector,

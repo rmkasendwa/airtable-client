@@ -153,7 +153,10 @@ export type GetAirtableRecordResponseValidationSchemaOptions = {
     AirtableColumnMapping<string>
   >;
   objectPropertyToAirtableColumnNameMapper: Record<string, string>;
-  lookupColumnNameToObjectPropertyMapper: Record<string, string>;
+  lookupColumnNameToObjectPropertyMapper: Record<
+    string,
+    AirtableColumnMapping<string>
+  >;
 };
 
 export const getAirtableRecordResponseValidationSchema = <
@@ -186,8 +189,21 @@ export const getAirtableRecordResponseValidationSchema = <
 
               // Check if the field is a lookup column.
               if (lookupColumnNameToObjectPropertyMapper[key]) {
-                const [refPropertyName, lookupPropertyName] =
-                  lookupColumnNameToObjectPropertyMapper[key].split('.');
+                const [refPropertyName, lookupPropertyName] = (() => {
+                  if (
+                    typeof lookupColumnNameToObjectPropertyMapper[key] ===
+                    'string'
+                  ) {
+                    return lookupColumnNameToObjectPropertyMapper[
+                      key
+                    ] as string;
+                  }
+                  return (
+                    lookupColumnNameToObjectPropertyMapper[
+                      key
+                    ] as AirtableColumnConfigMapping<string>
+                  ).propertyName;
+                })().split('.');
 
                 // Find parent field and make sure it only accepts one value
                 if (
@@ -200,7 +216,18 @@ export const getAirtableRecordResponseValidationSchema = <
                   accumulator[refPropertyName] ||
                     ((accumulator as any)[refPropertyName] = {});
                   (accumulator as any)[refPropertyName][lookupPropertyName] =
-                    fields[key][0];
+                    (() => {
+                      if (
+                        (
+                          lookupColumnNameToObjectPropertyMapper[
+                            key
+                          ] as AirtableColumnConfigMapping<string>
+                        ).prefersSingleRecordLink
+                      ) {
+                        return fields[key][0];
+                      }
+                      return fields[key];
+                    })();
                 }
               } else if (typeof noneLookupColumMapping === 'string') {
                 (accumulator as any)[noneLookupColumMapping] = fields[key];

@@ -6,10 +6,7 @@ import {
   DetailedColumnNameToObjectPropertyMapping,
   Table,
 } from '../../models';
-import {
-  TableColumnValidationSchemaTypeStringGroup,
-  getRootAirtableColumn,
-} from './TypeGenerator';
+import { TableColumnValidationSchemaTypeStringGroup } from './TypeGenerator';
 
 export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   base: AirtableBase;
@@ -40,11 +37,9 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
 
 export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   base,
-  currentTable,
   nonLookupTableColumns,
   lookupTableColumns,
   editableTableColumns,
-  tables,
   columnNameToObjectPropertyMapper,
   lookupColumnNameToObjectPropertyMapper,
   configColumnNameToObjectPropertyMapper = {},
@@ -66,11 +61,6 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
     ['/* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */']: nonLookupTableColumns
       .map((tableColumn) => {
         const { name, type } = tableColumn;
-        const rootColumn = getRootAirtableColumn(
-          tableColumn,
-          tables,
-          currentTable
-        );
         const camelCasePropertyName =
           columnNameToObjectPropertyMapper[name].propertyName;
         const configColumnNameToObjectPropertyMapperConfig =
@@ -94,11 +84,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
             })(),
             ...(() => {
               if (
-                (rootColumn && rootColumn.options?.prefersSingleRecordLink) ||
-                (configColumnNameToObjectPropertyMapperConfig &&
-                  typeof configColumnNameToObjectPropertyMapperConfig !==
-                    'string' &&
-                  configColumnNameToObjectPropertyMapperConfig.prefersSingleRecordLink)
+                columnNameToObjectPropertyMapper[name].prefersSingleRecordLink
               ) {
                 return {
                   prefersSingleRecordLink: true,
@@ -106,15 +92,12 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
               }
             })(),
           };
-
           if (type === 'multipleRecordLinks') {
             obj.isMultipleRecordLinksField = true;
           }
-
           if (Object.keys(obj).length > 1 || type === 'multipleRecordLinks') {
             return JSON.stringify(obj);
           }
-
           return `"${obj.propertyName}"`;
         })()}`;
       })
@@ -127,9 +110,32 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
             ({ id }) => id === options?.recordLinkFieldId
           );
           if (parentColumn) {
-            return `["${name}"]: "${
-              columnNameToObjectPropertyMapper[parentColumn.name].propertyName
-            }.${lookupColumnNameToObjectPropertyMapper[name].propertyName}"`;
+            return `["${name}"]:  ${(() => {
+              const obj: any = {
+                propertyName: (() => {
+                  return `${
+                    columnNameToObjectPropertyMapper[parentColumn.name]
+                      .propertyName
+                  }.${
+                    lookupColumnNameToObjectPropertyMapper[name].propertyName
+                  }`;
+                })(),
+                ...(() => {
+                  if (
+                    lookupColumnNameToObjectPropertyMapper[name]
+                      .prefersSingleRecordLink
+                  ) {
+                    return {
+                      prefersSingleRecordLink: true,
+                    };
+                  }
+                })(),
+              };
+              if (Object.keys(obj).length > 1) {
+                return JSON.stringify(obj);
+              }
+              return `"${obj.propertyName}"`;
+            })()}`;
           }
         })
         .filter((lookupColumnMapping) => lookupColumnMapping)
