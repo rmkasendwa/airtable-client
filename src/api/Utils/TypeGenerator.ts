@@ -143,7 +143,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
   const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
 
   const { type } = tableColumn;
-  const { type: userDefinedType } =
+  const { type: userDefinedType, prefersSingleRecordLink } =
     {
       ...columnNameToObjectPropertyMapper,
       ...lookupColumnNameToObjectPropertyMapper,
@@ -403,6 +403,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
               objectModelPropertyTypeString: `
                 @Title('${camelCasePropertyName}')
                 @Property()
+                @Example(${getModelPropertyExampleString(baseType)})
                 @Optional()
                 public ${camelCasePropertyName}?: ${baseType}
               `.trimIndent(),
@@ -419,59 +420,32 @@ export const getTableColumnValidationSchemaTypeStrings = (
         );
       })();
 
-      const shouldFlattenLookupField = (
-        lookupTableColumn: typeof tableColumn,
-        lookupTable: typeof currentTable
-      ): boolean => {
-        const referenceTableColumn = lookupTable.fields.find(
-          ({ id }) => id === lookupTableColumn.options?.recordLinkFieldId
-        );
-        const tablecolumnOneLevelUp = getExpandedAirtableLookupColumn(
-          lookupTableColumn,
-          tables,
-          lookupTable
-        );
-
+      const airtableResponseValidationString: string = `z.array(${baseAirtableResponseValidationString}.nullish())`;
+      const objectPropetyTypeString = (() => {
         if (
-          referenceTableColumn?.options?.prefersSingleRecordLink &&
-          tablecolumnOneLevelUp.type === 'multipleLookupValues'
+          !baseObjectPropetyTypeString.match(/\[\]$/g) &&
+          !prefersSingleRecordLink
         ) {
-          return shouldFlattenLookupField(
-            tablecolumnOneLevelUp,
-            tables.find(
-              ({ id }) => id === referenceTableColumn.options?.linkedTableId
-            )!
+          return baseObjectPropetyTypeString + '[]';
+        }
+        return baseObjectPropetyTypeString;
+      })();
+      const objectModelPropertyTypeString = (() => {
+        if (
+          !baseObjectModelPropertyTypeString.match(/\[\]$/g) &&
+          !prefersSingleRecordLink
+        ) {
+          return (
+            baseObjectModelPropertyTypeString.replace(
+              /\@Example\((.+?)\)/g,
+              (_, baseExample) => {
+                return `@Example([${baseExample}])`;
+              }
+            ) + '[]'
           );
         }
-
-        return Boolean(
-          referenceTableColumn?.options?.prefersSingleRecordLink &&
-            !(
-              [
-                'multipleLookupValues',
-                'multipleSelects',
-              ] as typeof tablecolumnOneLevelUp.type[]
-            ).includes(tablecolumnOneLevelUp.type)
-        );
-      };
-
-      const flattenLookupField = shouldFlattenLookupField(
-        tableColumn,
-        currentTable
-      );
-
-      const airtableResponseValidationString: string = `z.array(${baseAirtableResponseValidationString}.nullish())`;
-      const objectPropetyTypeString = `(${baseObjectPropetyTypeString})${
-        !baseObjectPropetyTypeString.match(/\[\]$/g) && !flattenLookupField
-          ? '[]'
-          : ''
-      }`;
-      const objectModelPropertyTypeString = `${baseObjectModelPropertyTypeString}${
-        !baseObjectModelPropertyTypeString.match(/\[\]$/g) &&
-        !flattenLookupField
-          ? '[]'
-          : ''
-      }`;
+        return baseObjectModelPropertyTypeString;
+      })();
 
       return {
         airtableResponseValidationString,
