@@ -1,6 +1,6 @@
 {
   "name": "airtable-client",
-  "version": "0.1.0-alpha.82",
+  "version": "0.1.0-alpha.84",
   "description": "Airtable client",
   "keywords": [],
   "repository": "https://github.com/TheoremOne-Talent/airtable-api-generator",
@@ -28,7 +28,7 @@
     "version": "standard-version"
   },
   "dependencies": {
-    "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.10",
+    "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.11",
     "@infinite-debugger/rmk-utils": "^0.1.0-alpha.5",
     "axios": "^1.2.2",
     "base-64": "^1.0.0",

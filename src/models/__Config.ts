@@ -7,7 +7,7 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   'prefersSingleRecordLink'
 > & {
   propertyName?: string;
-  type?: 'boolean';
+  type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
 };
 
 export type DetailedColumnNameToObjectPropertyMapping = Required<

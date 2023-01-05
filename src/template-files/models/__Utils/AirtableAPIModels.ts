@@ -140,7 +140,7 @@ export type AirtableColumnConfigMapping<ObjectPropertyName extends string> = {
   propertyName: ObjectPropertyName;
   isMultipleRecordLinksField?: boolean;
   prefersSingleRecordLink?: boolean;
-  type?: 'boolean';
+  type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
 };
 
 export type AirtableColumnMapping<ObjectPropertyName extends string> =
@@ -259,13 +259,94 @@ export const getAirtableRecordResponseValidationSchema = <
                 if (type) {
                   switch (type) {
                     case 'boolean':
-                      (accumulator as any)[
-                        noneLookupColumMapping.propertyName
-                      ] = Boolean(
+                      {
                         (accumulator as any)[
                           noneLookupColumMapping.propertyName
-                        ]
-                      );
+                        ] = Boolean(
+                          (accumulator as any)[
+                            noneLookupColumMapping.propertyName
+                          ]
+                        );
+                      }
+                      break;
+                    case 'number':
+                      {
+                        const num = parseFloat(
+                          (accumulator as any)[
+                            noneLookupColumMapping.propertyName
+                          ]
+                        );
+                        if (!isNaN(num)) {
+                          (accumulator as any)[
+                            noneLookupColumMapping.propertyName
+                          ] = num;
+                        } else {
+                          delete (accumulator as any)[
+                            noneLookupColumMapping.propertyName
+                          ];
+                        }
+                      }
+                      break;
+                    case 'number[]':
+                      {
+                        if (
+                          Array.isArray(
+                            (accumulator as any)[
+                              noneLookupColumMapping.propertyName
+                            ]
+                          )
+                        ) {
+                          [
+                            ...(accumulator as any)[
+                              noneLookupColumMapping.propertyName
+                            ],
+                          ]
+                            .filter((value) => {
+                              return !isNaN(parseFloat(value));
+                            })
+                            .map((value) => {
+                              return parseFloat(value);
+                            });
+                        } else {
+                          delete (accumulator as any)[
+                            noneLookupColumMapping.propertyName
+                          ];
+                        }
+                      }
+                      break;
+                    case 'string':
+                      {
+                        (accumulator as any)[
+                          noneLookupColumMapping.propertyName
+                        ] = String(
+                          (accumulator as any)[
+                            noneLookupColumMapping.propertyName
+                          ]
+                        );
+                      }
+                      break;
+                    case 'string[]':
+                      {
+                        if (
+                          Array.isArray(
+                            (accumulator as any)[
+                              noneLookupColumMapping.propertyName
+                            ]
+                          )
+                        ) {
+                          [
+                            ...(accumulator as any)[
+                              noneLookupColumMapping.propertyName
+                            ],
+                          ].map((value) => {
+                            return String(value);
+                          });
+                        } else {
+                          delete (accumulator as any)[
+                            noneLookupColumMapping.propertyName
+                          ];
+                        }
+                      }
                       break;
                   }
                 }
