@@ -145,7 +145,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
     case 'createdBy':
     case 'lastModifiedBy':
     case 'externalSyncSource':
-    case 'rollup':
       break;
 
     case 'multipleAttachments': {
@@ -222,6 +221,30 @@ export const getTableColumnValidationSchemaTypeStrings = (
         objectModelPropertyTypeString,
       };
     }
+
+    case 'rollup':
+      {
+        if (
+          tableColumn.options?.result?.type &&
+          [
+            'number',
+            'percent',
+            'currency',
+            'count',
+            'autoNumber',
+            'rating',
+          ].includes(tableColumn.options?.result?.type)
+        ) {
+          return getTableColumnValidationSchemaTypeStrings(
+            {
+              ...tableColumn,
+              type: tableColumn.options?.result?.type,
+            },
+            options
+          );
+        }
+      }
+      break;
 
     // Dates
     case 'date':
