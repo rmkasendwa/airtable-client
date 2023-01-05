@@ -508,7 +508,7 @@ export const generateAirtableAPI = async ({
               return columnNameToObjectPropertyMapper[columnName];
             })
             .map((columnName) => {
-              return `"${columnNameToObjectPropertyMapper[columnName]}"`;
+              return `"${columnNameToObjectPropertyMapper[columnName].propertyName}"`;
             });
 
           const queryableLookupFields = (focusColumnNames || [])
@@ -519,8 +519,10 @@ export const generateAirtableAPI = async ({
               return `"${
                 columnNameToObjectPropertyMapper[
                   lookupColumnNameToParentColumnNameMap[columnName]
-                ]
-              }.${lookupColumnNameToObjectPropertyMapper[columnName]}"`;
+                ].propertyName
+              }.${
+                lookupColumnNameToObjectPropertyMapper[columnName].propertyName
+              }"`;
             });
 
           const columnNameToValidationSchemaTypeStringGroupMapper = [
