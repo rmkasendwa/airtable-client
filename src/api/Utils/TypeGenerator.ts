@@ -80,6 +80,25 @@ export const getRootAirtableColumn = (
   return field;
 };
 
+export const getModelPropertyExampleString = (type: string) => {
+  switch (type) {
+    case 'boolean':
+      return 'true';
+    case 'number':
+      return '0';
+    case 'string':
+      return '"String"';
+    case 'email':
+      return '"me@example.com"';
+    case 'url':
+      return '"https://example.com"';
+  }
+  if (type.endsWith('[]')) {
+    return '[]';
+  }
+  return '""';
+};
+
 export type TableColumnValidationSchemaTypeStringGroup = {
   airtableResponseValidationString: string;
   objectPropetyTypeString: string;
@@ -130,12 +149,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       ...lookupColumnNameToObjectPropertyMapper,
     }[tableColumn.name] || {};
 
-  const modelFieldDecorators = `
-  @Title('${camelCasePropertyName}')
-  @Property()
-  @Optional()
-`.trimIndent();
-
   switch (type) {
     case 'multipleSelects':
     case 'singleCollaborator':
@@ -158,7 +171,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = `z.array(AirtableAttachmentValidationSchema)`;
       const objectPropetyTypeString = `AirtableAttachment[]`;
       const objectModelPropertyTypeString = `
-        ${modelFieldDecorators}
+        @Title('${camelCasePropertyName}')
+        @Property()
+        @Optional()
         public ${camelCasePropertyName}?: AirtableAttachmentModel[]
       `.trimIndent();
 
@@ -180,7 +195,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = `AirtableButtonValidationSchema`;
       const objectPropetyTypeString = `AirtableButton`;
       const objectModelPropertyTypeString = `
-        ${modelFieldDecorators}
+        @Title('${camelCasePropertyName}')
+        @Property()
+        @Optional()
         public ${camelCasePropertyName}?: AirtableButtonModel
       `.trimIndent();
 
@@ -254,7 +271,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = `z.string()`;
       const objectPropetyTypeString = `string`;
       const objectModelPropertyTypeString = `
-        ${modelFieldDecorators}
+        @Title('${camelCasePropertyName}')
+        @Property()
+        @Example('2023-01-05T19:00:44.544Z')
+        @Optional()
         public ${camelCasePropertyName}?: string
       `.trimIndent();
 
@@ -338,12 +358,16 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
         if (tableColumn.options?.prefersSingleRecordLink) {
           return `
-            ${modelFieldDecorators}
+            @Title('${camelCasePropertyName}')
+            @Property()
+            @Optional()
             public ${camelCasePropertyName}?: ${modelClassName}
           `.trimIndent();
         }
         return `
-          ${modelFieldDecorators}
+          @Title('${camelCasePropertyName}')
+          @Property()
+          @Optional()
           public ${camelCasePropertyName}?: ${modelClassName}[]
         `.trimIndent();
       })();
@@ -377,7 +401,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
               airtableResponseValidationString: `z.string()`,
               objectPropetyTypeString: baseType,
               objectModelPropertyTypeString: `
-                ${modelFieldDecorators}
+                @Title('${camelCasePropertyName}')
+                @Property()
+                @Optional()
                 public ${camelCasePropertyName}?: ${baseType}
               `.trimIndent(),
             };
@@ -465,7 +491,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = `z.number()`;
       const objectPropetyTypeString = baseType;
       const objectModelPropertyTypeString = `
-        ${modelFieldDecorators}
+        @Title('${camelCasePropertyName}')
+        @Property()
+        @Example(${getModelPropertyExampleString(userDefinedType || 'number')})
+        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -484,7 +513,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = `z.boolean()`;
       const objectPropetyTypeString = baseType;
       const objectModelPropertyTypeString = `
-        ${modelFieldDecorators}
+        @Title('${camelCasePropertyName}')
+        @Property()
+        @Example(${getModelPropertyExampleString(userDefinedType || 'boolean')})
+        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -503,7 +535,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = `z.string().email()`;
       const objectPropetyTypeString = baseType;
       const objectModelPropertyTypeString = `
-        ${modelFieldDecorators}
+        @Title('${camelCasePropertyName}')
+        @Property()
+        @Example(${getModelPropertyExampleString(userDefinedType || 'email')})
+        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -521,7 +556,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = `z.string().url()`;
       const objectPropetyTypeString = baseType;
       const objectModelPropertyTypeString = `
-        ${modelFieldDecorators}
+        @Title('${camelCasePropertyName}')
+        @Property()
+        @Example(${getModelPropertyExampleString(userDefinedType || 'url')})
+        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -544,7 +582,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = `z.string()`;
       const objectPropetyTypeString = baseType;
       const objectModelPropertyTypeString = `
-        ${modelFieldDecorators}
+        @Title('${camelCasePropertyName}')
+        @Property()
+        @Example(${getModelPropertyExampleString(baseType)})
+        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -562,7 +603,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
     airtableResponseValidationString: `z.any()`,
     objectPropetyTypeString: baseType,
     objectModelPropertyTypeString: `
-      ${modelFieldDecorators}
+      @Title('${camelCasePropertyName}')
+      @Property()
+      @Optional()
       public ${camelCasePropertyName}?: ${baseType}
     `.trimIndent(),
   };
