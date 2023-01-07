@@ -102,7 +102,7 @@ export const generateAirtableAPI = async ({
   })
     .map((filePath) => normalize(filePath))
     .filter((filePath) => {
-      return !filePath.match(/\.template\.\w+$/g);
+      return !filePath.match(/\.(template|placeholder)\.\w+$/g);
     });
   const modulePermissionsTemplate = readFileSync(
     join(

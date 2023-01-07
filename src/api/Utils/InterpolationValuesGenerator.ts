@@ -182,6 +182,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       })
       .flat()
       .join(';\n\n'),
+
+    ['/* AUTH_IMPORTS */']: `import { Authenticate, Authorize } from '../../../../decorators';`,
   } as Record<string, string>;
 };
 

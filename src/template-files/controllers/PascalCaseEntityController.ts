@@ -27,6 +27,10 @@ import {
   updatePascalCaseEntities,
   updatePascalCaseEntity,
 } from '../api/PascalCaseEntities';
+/* AUTH_IMPORTS */
+import { Authenticate } from '../decorators/Authenticate.placeholder';
+import { Authorize } from '../decorators/Authorize.placeholder';
+/* AUTH_IMPORTS */
 import {
   DeleteAirtableRecordResponseModel,
   FindAllRecordsQueryParamsModel,
@@ -41,12 +45,21 @@ import {
   FindAllPascalCaseEntitiesReponseModel,
   PascalCaseEntityModel,
 } from '../models/PascalCaseEntities/RestAPIModels';
+import {
+  CREATE_ENTITY_PERMISSION,
+  DELETE_ENTITY_PERMISSION,
+  UPDATE_ENTITY_PERMISSION,
+  VIEW_ENTITIES_PERMISSION,
+  VIEW_ENTITY_DETAILS_PERMISSION,
+} from '../permissions/PascalCaseEntities';
 
 @Controller('/kebab-case-entities')
 @Docs('api-v1')
 @Name('Entities Label')
+@Authenticate()
 export class PascalCaseEntityController {
   @Get('/first-page')
+  @Authorize(VIEW_ENTITIES_PERMISSION)
   @Summary('Finds the first page of entities label.')
   @Description('Returns entities label first page matching query paramenters.')
   @Returns(200, FindAllPascalCaseEntitiesReponseModel)
@@ -61,6 +74,7 @@ export class PascalCaseEntityController {
   }
 
   @Get()
+  @Authorize(VIEW_ENTITIES_PERMISSION)
   @Summary('Finds all entities label.')
   @Description('Returns entities label matching query paramenters.')
   @Returns(200, FindAllPascalCaseEntitiesReponseModel)
@@ -75,6 +89,7 @@ export class PascalCaseEntityController {
   }
 
   @Get('/:camelCaseEntityId')
+  @Authorize(VIEW_ENTITY_DETAILS_PERMISSION)
   @Summary('Finds entity label by id.')
   @Description('Returns entity label matching the given id.')
   @Returns(200, PascalCaseEntityModel)
@@ -88,6 +103,7 @@ export class PascalCaseEntityController {
   }
 
   @Post()
+  @Authorize(CREATE_ENTITY_PERMISSION)
   @Summary('Creates new entity label.')
   @Description('Returns the created entity label.')
   @Returns(200, PascalCaseEntityModel)
@@ -98,6 +114,7 @@ export class PascalCaseEntityController {
   }
 
   @Post('/batch')
+  @Authorize(CREATE_ENTITY_PERMISSION)
   @Summary('Creates new entities label.')
   @Description('Returns the created entities label.')
   @Returns(200, [PascalCaseEntityModel])
@@ -109,6 +126,7 @@ export class PascalCaseEntityController {
   }
 
   @Put()
+  @Authorize(UPDATE_ENTITY_PERMISSION)
   @Summary('Updates an existing entity label.')
   @Description(
     'Returns the updated entity label. Null values will wipe database fields.'
@@ -121,6 +139,7 @@ export class PascalCaseEntityController {
   }
 
   @Put('/batch')
+  @Authorize(UPDATE_ENTITY_PERMISSION)
   @Summary('Updates existing entities label.')
   @Description(
     'Returns the updated entities label. Null values will wipe database fields.'
@@ -134,6 +153,7 @@ export class PascalCaseEntityController {
   }
 
   @Patch()
+  @Authorize(UPDATE_ENTITY_PERMISSION)
   @Summary('Patches an existing entity label.')
   @Description('Returns the patched entity label.')
   @Returns(200, PascalCaseEntityModel)
@@ -144,6 +164,7 @@ export class PascalCaseEntityController {
   }
 
   @Patch('/batch')
+  @Authorize(UPDATE_ENTITY_PERMISSION)
   @Summary('Patches existing entities label.')
   @Description('Returns the patched entities label.')
   @Returns(200, [PascalCaseEntityModel])
@@ -155,6 +176,7 @@ export class PascalCaseEntityController {
   }
 
   @Delete('/:camelCaseEntityId')
+  @Authorize(DELETE_ENTITY_PERMISSION)
   @Summary('Deletes an existing entity label by id.')
   @Description('Returns id of the deleted entity label.')
   @Returns(200, DeleteAirtableRecordResponseModel)
@@ -168,6 +190,7 @@ export class PascalCaseEntityController {
   }
 
   @Delete('/batch')
+  @Authorize(DELETE_ENTITY_PERMISSION)
   @Summary('Deletes existing entities label.')
   @Description('Returns ids of the deleted entities label.')
   @Returns(200, [DeleteAirtableRecordResponseModel])
