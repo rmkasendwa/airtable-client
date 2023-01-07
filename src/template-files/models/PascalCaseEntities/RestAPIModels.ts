@@ -1,11 +1,10 @@
-import { Description, Example, Optional, Property, Title } from '@tsed/schema';
+import { Description, Example, Optional, Property } from '@tsed/schema';
 
 /* REST_API_MODEL_IMPORTS */
 
 /* REST_API_MODEL_EXTRAS */
 
 export class PascalCaseEntityModel {
-  @Title('id')
   @Description('Unique identifer for Entity Label.')
   @Example('recO0FYb1Tccm9MZ2')
   @Property()
@@ -19,13 +18,11 @@ export class PascalCaseEntityModel {
 }
 
 export class FindAllPascalCaseEntitiesReponseModel {
-  @Title('records')
   @Description('The list of Entities Label.')
   @Example([])
   @Property()
   public records!: PascalCaseEntityModel[];
 
-  @Title('offset')
   @Description(
     'The airtable offset identifier in case there are more records to fetch.'
   )
