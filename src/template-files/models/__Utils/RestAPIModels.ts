@@ -26,7 +26,8 @@ export class FindAllRecordsQueryParamsModel<
   View extends string = string
 > {
   @Title('fields')
-  @Description(`
+  @Description(
+    `
     Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
 
     For example, to only return data from Name and Status, send these two query parameters:
@@ -36,13 +37,17 @@ export class FindAllRecordsQueryParamsModel<
 
     fields%5B%5D=fldG9yBafL709WagC&fields%5B%5D=fldySXPDpkljy1BCq
     Note: %5B%5D may be omitted when specifying multiple fields, but must always be included when specifying only a single field.
-  `)
+  `
+      .trimIndent()
+      .trim()
+  )
   @Property()
   @Optional()
   public fields?: Field[];
 
   @Title('filterByFormula')
-  @Description(`
+  @Description(
+    `
     A formula used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
 
     If combined with the view parameter, only records in that view which satisfy the formula will be returned.
@@ -50,7 +55,10 @@ export class FindAllRecordsQueryParamsModel<
     The formula must be encoded first before passing it as a value. You can use this tool to not only encode the formula but also create the entire url you need. For example, to only include records where Name isn't empty, pass in NOT({Name} = '') as a parameter like this:
     
     filterByFormula=NOT%28%7BName%7D%20%3D%20%27%27%29
-  `)
+  `
+      .trimIndent()
+      .trim()
+  )
   @Property()
   @Optional()
   public filterByFormula?: string;
@@ -73,16 +81,20 @@ export class FindAllRecordsQueryParamsModel<
   public pageSize?: number;
 
   @Title('sort')
-  @Description(`
+  @Description(
+    `
     A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
 
     The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
 
-    For example, to sort records by Name in descending order, send these two query parameters:
+    For example, to sort records by name in descending order, send these two query parameters:
 
-    sort%5B0%5D%5Bfield%5D=Name
+    sort%5B0%5D%5Bfield%5D=name
     sort%5B0%5D%5Bdirection%5D=desc
-  `)
+  `
+      .trimIndent()
+      .trim()
+  )
   @Property()
   @Optional()
   public sort?: AirtableSortOptionModel[];
@@ -103,7 +115,9 @@ export class FindAllRecordsQueryParamsModel<
     json: cells will be formatted as JSON, depending on the field type.
   
     string: cells will be formatted as user-facing strings, regardless of the field type. The timeZone and userLocale parameters are required when using string as the cellFormat.
-  `.trimIndent()
+  `
+      .trimIndent()
+      .trim()
   )
   @Property()
   @Optional()
