@@ -45,7 +45,7 @@ const DEFAULT_ENTITY_QUERYABLE_FIELDS: PascalCaseEntityQueryableField[] = [
  * @param queryParams The query params.
  * @returns The entities label.
  */
-export const findPascalCaseEntitiesPage = async (
+export const findPascalCaseEntitiesFirstPage = async (
   queryParams: FindAllRecordsQueryParams<
     PascalCaseEntityQueryableField,
     PascalCaseEntityView
@@ -99,7 +99,7 @@ export const findAllPascalCaseEntities = async (
 
   const findPages = async (offset?: string) => {
     const { records: responseRecords, offset: responseOffset } =
-      await findPascalCaseEntitiesPage({ ...queryParams, offset });
+      await findPascalCaseEntitiesFirstPage({ ...queryParams, offset });
 
     records.push(...responseRecords);
     if (responseOffset) {
