@@ -7,7 +7,6 @@ test
 src/**.js
 coverage
 *.log
-yarn.lock
 .env
 sandbox
 __sandbox

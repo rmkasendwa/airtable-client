@@ -38,7 +38,7 @@ const prettierConfig: prettier.Options = {
   endOfLine: 'auto',
 };
 
-const airtableAPIFolderName = 'airtable';
+const airtableAPIFolderName = 'Airtable';
 
 /****************** CONSTANTS *********************/
 const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
