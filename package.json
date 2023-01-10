@@ -1,6 +1,6 @@
 {
   "name": "@theoremone-talent/airtable-client",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "Airtable client",
   "keywords": [
     "airtable",
@@ -17,7 +17,9 @@
     "url": "https://github.com/rmkasendwa"
   },
   "main": "./index.js",
-  "bin": "./run.js",
+  "bin": {
+    "airtable-client": "./run.js"
+  },
   "scripts": {
     "prebuild": "rm -rf ./dist",
     "build": "npm run tsc",
