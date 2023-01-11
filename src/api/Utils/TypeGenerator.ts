@@ -122,6 +122,7 @@ export type GetTableColumnValidationSchemaTypeStringsOptions = {
   restAPIModelExtrasCollector: string[];
   camelCasePropertyName: string;
   airtableAPIModelImportsCollector: string[];
+  tableLabelSingular: string;
 };
 
 export const getTableColumnValidationSchemaTypeStrings = (
@@ -138,6 +139,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
     restAPIModelImportsCollector,
     restAPIModelExtrasCollector,
     camelCasePropertyName,
+    tableLabelSingular,
   } = options;
 
   const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
@@ -165,7 +167,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
         `import {AirtableAttachmentValidationSchema, AirtableAttachment} from '../__Utils';`
       );
       restAPIModelImportsCollector.push(
-        `import {AirtableAttachmentModel} from '../__Utils/RestAPIModels';`
+        `import {AirtableAttachment} from '../__Utils/RestAPIModels';`
       );
 
       const airtableResponseValidationString = `z.array(AirtableAttachmentValidationSchema)`;
@@ -173,7 +175,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectModelPropertyTypeString = `
         @Property()
         @Optional()
-        public ${camelCasePropertyName}?: AirtableAttachmentModel[]
+        public ${camelCasePropertyName}?: AirtableAttachment[]
       `.trimIndent();
 
       return {
@@ -188,7 +190,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
         `import {AirtableButton, AirtableButtonValidationSchema} from '../__Utils';`
       );
       restAPIModelImportsCollector.push(
-        `import {AirtableButtonModel} from '../__Utils/RestAPIModels';`
+        `import {AirtableButton} from '../__Utils/RestAPIModels';`
       );
 
       const airtableResponseValidationString = `AirtableButtonValidationSchema`;
@@ -196,7 +198,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectModelPropertyTypeString = `
         @Property()
         @Optional()
-        public ${camelCasePropertyName}?: AirtableButtonModel
+        public ${camelCasePropertyName}?: AirtableButton
       `.trimIndent();
 
       return {
@@ -211,7 +213,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
         `import {AirtableFormulaColumnError, AirtableFormulaColumnErrorValidationSchema} from '../__Utils';`
       );
       restAPIModelImportsCollector.push(
-        `import {AirtableFormulaColumnErrorModel} from '../__Utils/RestAPIModels';`
+        `import {AirtableFormulaColumnError} from '../__Utils/RestAPIModels';`
       );
 
       const {
@@ -228,7 +230,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
       const airtableResponseValidationString: string = `z.union([${baseAirtableResponseValidationString}, AirtableFormulaColumnErrorValidationSchema])`;
       const objectPropetyTypeString: string = `${baseObjectPropetyTypeString} | AirtableFormulaColumnError`;
-      const objectModelPropertyTypeString = `${baseObjectModelPropertyTypeString} | AirtableFormulaColumnErrorModel`;
+      const objectModelPropertyTypeString = `${baseObjectModelPropertyTypeString} | AirtableFormulaColumnError`;
 
       return {
         airtableResponseValidationString,
@@ -316,6 +318,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
       })();
       const objectModelPropertyTypeString = (() => {
         const modelClassName =
+          tableLabelSingular.toPascalCase() +
           camelCasePropertyName.charAt(0).toUpperCase() +
           camelCasePropertyName.slice(1);
         const modelClassString = `export class ${modelClassName} {

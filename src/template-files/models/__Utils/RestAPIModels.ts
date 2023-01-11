@@ -7,7 +7,7 @@ import {
   Title,
 } from '@tsed/schema';
 
-export class AirtableSortOptionModel<Field extends string = string> {
+export class AirtableSortOption<Field extends string = string> {
   @Title('field')
   @Description('The field to sort by.')
   @Property()
@@ -21,7 +21,7 @@ export class AirtableSortOptionModel<Field extends string = string> {
   public direction?: 'asc' | 'desc';
 }
 
-export class FindAllRecordsQueryParamsModel<
+export class FindAllRecordsQueryParams<
   Field extends string = string,
   View extends string = string
 > {
@@ -97,7 +97,7 @@ export class FindAllRecordsQueryParamsModel<
   )
   @Property()
   @Optional()
-  public sort?: AirtableSortOptionModel[];
+  public sort?: AirtableSortOption[];
 
   @Title('view')
   @Description(
@@ -146,7 +146,7 @@ export class FindAllRecordsQueryParamsModel<
   public offset?: string;
 }
 
-export class DeleteAirtableRecordResponseModel {
+export class DeleteAirtableRecordResponse {
   @Title('id')
   @Description('Unique identifer of the deleted Entity Label')
   @Example('recM9m1bZOccF2TY0')
@@ -160,7 +160,7 @@ export class DeleteAirtableRecordResponseModel {
   public delete!: boolean;
 }
 
-export class AirtableAttachmentThumbnailModel {
+export class AirtableAttachmentThumbnail {
   @Title('url')
   @Description('The thumbnail URL.')
   @Example('https://www.filepicker.io/api/file/ULCoXHhx0ivaSyDg5SIg')
@@ -180,7 +180,7 @@ export class AirtableAttachmentThumbnailModel {
   public height!: number;
 }
 
-export class AirtableAttachmentThumbnailGroupModel {
+export class AirtableAttachmentThumbnailGroup {
   @Title('small')
   @Description('The small thumbnail.')
   @Example({
@@ -190,7 +190,7 @@ export class AirtableAttachmentThumbnailGroupModel {
   })
   @Property()
   @Optional()
-  public small?: AirtableAttachmentThumbnailModel;
+  public small?: AirtableAttachmentThumbnail;
 
   @Title('large')
   @Description('The large thumbnail.')
@@ -201,7 +201,7 @@ export class AirtableAttachmentThumbnailGroupModel {
   })
   @Property()
   @Optional()
-  public large?: AirtableAttachmentThumbnailModel;
+  public large?: AirtableAttachmentThumbnail;
 
   @Title('full')
   @Description('The large thumbnail.')
@@ -212,10 +212,10 @@ export class AirtableAttachmentThumbnailGroupModel {
   })
   @Property()
   @Optional()
-  public full?: AirtableAttachmentThumbnailModel;
+  public full?: AirtableAttachmentThumbnail;
 }
 
-export class AirtableAttachmentModel {
+export class AirtableAttachment {
   @Title('id')
   @Description('The id of the attachment.')
   @Example('attL8HyJ4HiaudbBJ')
@@ -281,10 +281,10 @@ export class AirtableAttachmentModel {
   })
   @Property()
   @Optional()
-  public thumbnails?: AirtableAttachmentThumbnailGroupModel;
+  public thumbnails?: AirtableAttachmentThumbnailGroup;
 }
 
-export class AirtableFormulaColumnErrorModel {
+export class AirtableFormulaColumnError {
   @Title('specialValue')
   @Description('Invalid output of a formula.')
   @Example('NaN')
@@ -300,7 +300,7 @@ export class AirtableFormulaColumnErrorModel {
   public error?: string;
 }
 
-export class AirtableButtonModel {
+export class AirtableButton {
   @Title('label')
   @Description('The button label')
   @Example('Make Document')

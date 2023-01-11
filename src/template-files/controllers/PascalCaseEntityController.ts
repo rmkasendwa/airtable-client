@@ -32,8 +32,8 @@ import { Authenticate } from '../decorators/Authenticate.placeholder';
 import { Authorize } from '../decorators/Authorize.placeholder';
 /* AUTH_IMPORTS */
 import {
-  DeleteAirtableRecordResponseModel,
-  FindAllRecordsQueryParamsModel,
+  DeleteAirtableRecordResponse,
+  FindAllRecordsQueryParams,
 } from '../models/__Utils/RestAPIModels';
 import {
   PascalCaseEntityCreationDetails,
@@ -42,8 +42,8 @@ import {
   PascalCaseEntityView,
 } from '../models/PascalCaseEntities';
 import {
-  FindAllPascalCaseEntitiesReponseModel,
-  PascalCaseEntityModel,
+  FindAllPascalCaseEntitiesReponse,
+  PascalCaseEntity,
 } from '../models/PascalCaseEntities/RestAPIModels';
 import {
   CREATE_ENTITY_PERMISSION,
@@ -64,12 +64,12 @@ export class PascalCaseEntityController {
   @Description(
     'Finds the first page of entities label. Returns entities label first page matching query paramenters.'
   )
-  @Returns(200, FindAllPascalCaseEntitiesReponseModel).Description(
+  @Returns(200, FindAllPascalCaseEntitiesReponse).Description(
     'The existing entities label on the first page'
   )
   async findPascalCaseEntitiesFirstPage(
     @QueryParams()
-    queryParams: FindAllRecordsQueryParamsModel<
+    queryParams: FindAllRecordsQueryParams<
       PascalCaseEntityQueryableField,
       PascalCaseEntityView
     >
@@ -83,12 +83,12 @@ export class PascalCaseEntityController {
   @Description(
     'Finds all entities label. Returns entities label matching query paramenters.'
   )
-  @Returns(200, FindAllPascalCaseEntitiesReponseModel).Description(
+  @Returns(200, FindAllPascalCaseEntitiesReponse).Description(
     'The existing entities label'
   )
   async findAllPascalCaseEntities(
     @QueryParams()
-    queryParams: FindAllRecordsQueryParamsModel<
+    queryParams: FindAllRecordsQueryParams<
       PascalCaseEntityQueryableField,
       PascalCaseEntityView
     >
@@ -102,7 +102,7 @@ export class PascalCaseEntityController {
   @Description(
     'Finds entity label by id. Returns entity label matching the given id.'
   )
-  @Returns(200, PascalCaseEntityModel).Description('The existing entity label')
+  @Returns(200, PascalCaseEntity).Description('The existing entity label')
   @Returns(404).Description('Not found')
   async findPascalCaseEntityById(
     @Description('The id of the entity label to be found.')
@@ -116,7 +116,7 @@ export class PascalCaseEntityController {
   @Authorize(CREATE_ENTITY_PERMISSION)
   @Summary('Create new entity label')
   @Description('Creates new entity label. Returns the created entity label.')
-  @Returns(200, PascalCaseEntityModel).Description('The created entity label')
+  @Returns(200, PascalCaseEntity).Description('The created entity label')
   async createNewPascalCaseEntity(
     @BodyParams() camelCaseEntityDetails: PascalCaseEntityCreationDetails
   ) {
@@ -129,9 +129,7 @@ export class PascalCaseEntityController {
   @Description(
     'Creates new entities label. Returns the created entities label.'
   )
-  @Returns(200, [PascalCaseEntityModel]).Description(
-    'The created entities label'
-  )
+  @Returns(200, [PascalCaseEntity]).Description('The created entities label')
   @Returns(422).Description('Unprocessable Request')
   async createNewPascalCaseEntities(
     @BodyParams() records: PascalCaseEntityCreationDetails[]
@@ -145,7 +143,7 @@ export class PascalCaseEntityController {
   @Description(
     'Updates an existing entity label. Returns the updated entity label. Null values will wipe database fields.'
   )
-  @Returns(200, PascalCaseEntityModel).Description('The updated entity label')
+  @Returns(200, PascalCaseEntity).Description('The updated entity label')
   async updatePascalCaseEntity(
     @BodyParams() camelCaseEntityUpdates: PascalCaseEntityUpdates
   ) {
@@ -158,9 +156,7 @@ export class PascalCaseEntityController {
   @Description(
     'Updates existing entities label. Returns the updated entities label. Null values will wipe database table fields.'
   )
-  @Returns(200, [PascalCaseEntityModel]).Description(
-    'The updated entities label'
-  )
+  @Returns(200, [PascalCaseEntity]).Description('The updated entities label')
   @Returns(422).Description('Unprocessable Request')
   async updatePascalCaseEntities(
     @BodyParams() records: PascalCaseEntityUpdates[]
@@ -174,7 +170,7 @@ export class PascalCaseEntityController {
   @Description(
     'Patches an existing entity label. Returns the patched entity label.'
   )
-  @Returns(200, PascalCaseEntityModel).Description('The patched entity label')
+  @Returns(200, PascalCaseEntity).Description('The patched entity label')
   async patchPascalCaseEntity(
     @BodyParams() camelCaseEntityUpdates: PascalCaseEntityUpdates
   ) {
@@ -187,9 +183,7 @@ export class PascalCaseEntityController {
   @Description(
     'Patches existing entities label. Returns the patched entities label.'
   )
-  @Returns(200, [PascalCaseEntityModel]).Description(
-    'The patched entities label'
-  )
+  @Returns(200, [PascalCaseEntity]).Description('The patched entities label')
   @Returns(422).Description('Unprocessable Request')
   async patchPascalCaseEntities(
     @BodyParams() records: PascalCaseEntityUpdates[]
@@ -203,7 +197,7 @@ export class PascalCaseEntityController {
   @Description(
     'Deletes an existing entity label by id. Returns id of the deleted entity label.'
   )
-  @Returns(200, DeleteAirtableRecordResponseModel).Description(
+  @Returns(200, DeleteAirtableRecordResponse).Description(
     'The deleted entity label response'
   )
   @Returns(404).Description('Not found')
@@ -221,7 +215,7 @@ export class PascalCaseEntityController {
   @Description(
     'Deletes existing entities label. Returns ids of the deleted entities label.'
   )
-  @Returns(200, [DeleteAirtableRecordResponseModel]).Description(
+  @Returns(200, [DeleteAirtableRecordResponse]).Description(
     'The deleted entities label response'
   )
   @Returns(422).Description('Unprocessable Request')
