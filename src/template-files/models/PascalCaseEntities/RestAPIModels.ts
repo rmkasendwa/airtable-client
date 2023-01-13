@@ -1,4 +1,10 @@
-import { Description, Example, Optional, Property } from '@tsed/schema';
+import {
+  ArrayOf,
+  Description,
+  Example,
+  Optional,
+  Property,
+} from '@tsed/schema';
 
 /* REST_API_MODEL_IMPORTS */
 
@@ -14,6 +20,11 @@ export class PascalCaseEntity {
   @Property()
   @Optional()
   public name?: string;
+
+  @Property()
+  @ArrayOf(String)
+  @Optional()
+  public list?: string[];
   /* ENTITY_MODEL_FIELDS */
 }
 

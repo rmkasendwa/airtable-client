@@ -87,7 +87,7 @@ export const getModelPropertyExampleString = (type: string) => {
     case 'number':
       return '0';
     case 'string':
-      return '"String"';
+      return '"string"';
     case 'email':
       return '"me@example.com"';
     case 'url':
@@ -365,6 +365,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
         return `
           @Property()
           @Optional()
+          @ArrayOf(${modelClassName})
           public ${camelCasePropertyName}?: ${modelClassName}[]
         `.trimIndent();
       })();
@@ -438,7 +439,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
                 return `: (${propertyTypeString})`;
               })
               .replace(/\@Example\((.+?)\)/g, (_, baseExample) => {
-                return `@Example([${baseExample}])`;
+                return `@ArrayOf(String)\n@Example([${baseExample}])`;
               }) + '[]'
           );
         }
