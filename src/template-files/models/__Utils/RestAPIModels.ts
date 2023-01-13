@@ -1,4 +1,5 @@
 import {
+  ArrayOf,
   Default,
   Description,
   Example,
@@ -148,16 +149,23 @@ export class FindAllRecordsQueryParams<
 
 export class DeleteAirtableRecordResponse {
   @Title('id')
-  @Description('Unique identifer of the deleted Entity Label')
+  @Description('Unique identifer of the deleted item.')
   @Example('recM9m1bZOccF2TY0')
   @Property()
   public id!: string;
 
   @Title('delete')
-  @Description('Whether the Entity Label was deleted or not')
+  @Description('Whether the item was deleted or not.')
   @Example(true)
   @Property()
   public delete!: boolean;
+}
+
+export class DeleteAirtableRecordsResponse {
+  @Property()
+  @ArrayOf(DeleteAirtableRecordResponse)
+  @Description('The list of deleted items.')
+  public records!: DeleteAirtableRecordResponse[];
 }
 
 export class AirtableAttachmentThumbnail {

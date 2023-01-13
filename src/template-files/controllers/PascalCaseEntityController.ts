@@ -34,20 +34,19 @@ import { Authorize } from '../decorators/Authorize.placeholder';
 /* AUTH_IMPORTS */
 import {
   DeleteAirtableRecordResponse,
+  DeleteAirtableRecordsResponse,
   FindAllRecordsQueryParams,
 } from '../models/__Utils/RestAPIModels';
-import {
-  PascalCaseEntityQueryableField,
-  PascalCaseEntityView,
-} from '../models/PascalCaseEntities';
 import {
   CreateNewPascalCaseEntitiesReponse,
   FindAllPascalCaseEntitiesReponse,
   PascalCaseEntity,
   PascalCaseEntityCreationDetails,
+  PascalCaseEntityQueryableField,
   PascalCaseEntityUpdates,
+  PascalCaseEntityView,
   UpdatePascalCaseEntitiesReponse,
-} from '../models/PascalCaseEntities/RestAPIModels';
+} from '../models/PascalCaseEntities';
 import {
   CREATE_ENTITY_PERMISSION,
   DELETE_ENTITY_PERMISSION,
@@ -230,7 +229,7 @@ export class PascalCaseEntityController {
   @Description(
     'Deletes existing entities label. Returns ids of the deleted entities label.'
   )
-  @Returns(200, [DeleteAirtableRecordResponse]).Description(
+  @Returns(200, DeleteAirtableRecordsResponse).Description(
     'The deleted entities label response'
   )
   @Returns(422).Description('Unprocessable Request')

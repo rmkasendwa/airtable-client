@@ -1,17 +1,41 @@
+import {
+  ArrayOf,
+  Description,
+  Example,
+  Optional,
+  Property,
+} from '@tsed/schema';
 import { z } from 'zod';
 
 import {
   AirtableColumnMapping,
   getAirtableRecordRequestValidationSchema,
   getAirtableRecordResponseValidationSchema,
-} from '../__Utils/AirtableAPIModels';
+} from './__Utils';
 
 /* AIRTABLE_API_MODEL_IMPORTS */
 
-export type PascalCaseEntity = {
-  id: string;
-  /* ENTITY_INTERFACE_FIELDS */
-};
+/* REST_API_MODEL_IMPORTS */
+
+/* REST_API_MODEL_EXTRAS */
+
+export class PascalCaseEntity {
+  @Description('Unique identifer for Entity Label.')
+  @Example('recO0FYb1Tccm9MZ2')
+  @Property()
+  public id!: string;
+
+  /* ENTITY_MODEL_FIELDS */
+  @Property()
+  @Optional()
+  public name?: string;
+
+  @Property()
+  @ArrayOf(String)
+  @Optional()
+  public list?: string[];
+  /* ENTITY_MODEL_FIELDS */
+}
 
 // All Entities Table lookup table columns
 export const camelCaseEntitiesAirtableLookupColumns = [
@@ -168,11 +192,6 @@ export const CreatePascalCaseEntityRequestValidationSchema =
     PascalCaseEntityPropertyToAirtableColumnConfigMapper
   );
 
-// Entity Label editable fields.
-export type PascalCaseEntityCreationDetails = z.infer<
-  typeof PascalCaseEntityAirtableRequestValidationSchema
->;
-
 // Validates request to create entities label.
 export const CreatePascalCaseEntitiesRequestValidationSchema = z.array(
   CreatePascalCaseEntityRequestValidationSchema
@@ -187,10 +206,51 @@ export const UpdatePascalCaseEntityRequestValidationSchema =
     PascalCaseEntityPropertyToAirtableColumnConfigMapper
   );
 
-export type PascalCaseEntityUpdates = PascalCaseEntityCreationDetails &
-  Pick<PascalCaseEntity, 'id'>;
-
 // Validates request to update entities label.
 export const UpdatePascalCaseEntitiesRequestValidationSchema = z.array(
   UpdatePascalCaseEntityRequestValidationSchema
 );
+
+export class FindAllPascalCaseEntitiesReponse {
+  @Property()
+  @ArrayOf(PascalCaseEntity)
+  @Description('The list of Entities Label.')
+  public records!: PascalCaseEntity[];
+
+  @Description(
+    'The airtable offset identifier in case there are more records to fetch.'
+  )
+  @Property()
+  @Optional()
+  public offset?: string;
+}
+
+// Entity Label editable fields.
+export class PascalCaseEntityCreationDetails {
+  /* ENTITY_MODEL_EDITABLE_FIELDS */
+  @Property()
+  @Optional()
+  public name?: string;
+
+  @Property()
+  @ArrayOf(String)
+  @Optional()
+  public list?: string[];
+  /* ENTITY_MODEL_EDITABLE_FIELDS */
+}
+
+export class CreateNewPascalCaseEntitiesReponse {
+  @Property()
+  @ArrayOf(PascalCaseEntity)
+  @Description('The list of Entities Label.')
+  public records!: PascalCaseEntity[];
+}
+
+export class PascalCaseEntityUpdates extends PascalCaseEntityCreationDetails {
+  @Description('Unique identifer for Entity Label.')
+  @Example('recO0FYb1Tccm9MZ2')
+  @Property()
+  public id!: string;
+}
+
+export class UpdatePascalCaseEntitiesReponse extends CreateNewPascalCaseEntitiesReponse {}

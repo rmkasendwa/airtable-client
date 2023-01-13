@@ -164,10 +164,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
     case 'multipleAttachments': {
       airtableAPIModelImportsCollector.push(
-        `import {AirtableAttachmentValidationSchema, AirtableAttachment} from '../__Utils';`
+        `import {AirtableAttachmentValidationSchema, AirtableAttachment} from './__Utils';`
       );
       restAPIModelImportsCollector.push(
-        `import {AirtableAttachment} from '../__Utils/RestAPIModels';`
+        `import {AirtableAttachment} from './__Utils/RestAPIModels';`
       );
 
       const airtableResponseValidationString = `z.array(AirtableAttachmentValidationSchema)`;
@@ -187,10 +187,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
     case 'button': {
       airtableAPIModelImportsCollector.push(
-        `import {AirtableButton, AirtableButtonValidationSchema} from '../__Utils';`
+        `import {AirtableButton, AirtableButtonValidationSchema} from './__Utils';`
       );
       restAPIModelImportsCollector.push(
-        `import {AirtableButton} from '../__Utils/RestAPIModels';`
+        `import {AirtableButton} from './__Utils/RestAPIModels';`
       );
 
       const airtableResponseValidationString = `AirtableButtonValidationSchema`;
@@ -210,10 +210,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
     case 'formula': {
       airtableAPIModelImportsCollector.push(
-        `import {AirtableFormulaColumnError, AirtableFormulaColumnErrorValidationSchema} from '../__Utils';`
+        `import {AirtableFormulaColumnError, AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
       );
       restAPIModelImportsCollector.push(
-        `import {AirtableFormulaColumnError} from '../__Utils/RestAPIModels';`
+        `import {AirtableFormulaColumnError} from './__Utils/RestAPIModels';`
       );
 
       const {
