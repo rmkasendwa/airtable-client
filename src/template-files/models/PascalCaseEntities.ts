@@ -4,6 +4,7 @@ import {
   Example,
   Optional,
   Property,
+  Required,
 } from '@tsed/schema';
 import { z } from 'zod';
 
@@ -20,9 +21,10 @@ import {
 /* REST_API_MODEL_EXTRAS */
 
 export class PascalCaseEntity {
+  @Property()
+  @Required()
   @Description('Unique identifer for Entity Label.')
   @Example('recO0FYb1Tccm9MZ2')
-  @Property()
   public id!: string;
 
   /* ENTITY_MODEL_FIELDS */
@@ -217,11 +219,10 @@ export class FindAllPascalCaseEntitiesReponse {
   @Description('The list of Entities Label.')
   public records!: PascalCaseEntity[];
 
+  @Property()
   @Description(
     'The airtable offset identifier in case there are more records to fetch.'
   )
-  @Property()
-  @Optional()
   public offset?: string;
 }
 
@@ -247,9 +248,10 @@ export class CreateNewPascalCaseEntitiesReponse {
 }
 
 export class PascalCaseEntityUpdates extends PascalCaseEntityCreationDetails {
+  @Property()
+  @Required()
   @Description('Unique identifer for Entity Label.')
   @Example('recO0FYb1Tccm9MZ2')
-  @Property()
   public id!: string;
 }
 

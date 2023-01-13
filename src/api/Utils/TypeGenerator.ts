@@ -136,7 +136,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
     columnNameToObjectPropertyMapper,
     lookupColumnNameToObjectPropertyMapper,
     airtableAPIModelImportsCollector,
-    restAPIModelImportsCollector,
     restAPIModelExtrasCollector,
     camelCasePropertyName,
     tableLabelSingular,
@@ -166,9 +165,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       airtableAPIModelImportsCollector.push(
         `import {AirtableAttachmentValidationSchema, AirtableAttachment} from './__Utils';`
       );
-      restAPIModelImportsCollector.push(
-        `import {AirtableAttachment} from './__Utils/RestAPIModels';`
-      );
 
       const airtableResponseValidationString = `z.array(AirtableAttachmentValidationSchema)`;
       const objectPropetyTypeString = `AirtableAttachment[]`;
@@ -189,9 +185,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       airtableAPIModelImportsCollector.push(
         `import {AirtableButton, AirtableButtonValidationSchema} from './__Utils';`
       );
-      restAPIModelImportsCollector.push(
-        `import {AirtableButton} from './__Utils/RestAPIModels';`
-      );
 
       const airtableResponseValidationString = `AirtableButtonValidationSchema`;
       const objectPropetyTypeString = `AirtableButton`;
@@ -211,9 +204,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
     case 'formula': {
       airtableAPIModelImportsCollector.push(
         `import {AirtableFormulaColumnError, AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
-      );
-      restAPIModelImportsCollector.push(
-        `import {AirtableFormulaColumnError} from './__Utils/RestAPIModels';`
       );
 
       const {

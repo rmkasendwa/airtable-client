@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Put,
+  Required,
   Returns,
   Summary,
 } from '@tsed/schema';
@@ -36,7 +37,7 @@ import {
   DeleteAirtableRecordResponse,
   DeleteAirtableRecordsResponse,
   FindAllRecordsQueryParams,
-} from '../models/__Utils/RestAPIModels';
+} from '../models/__Utils';
 import {
   CreateNewPascalCaseEntitiesReponse,
   FindAllPascalCaseEntitiesReponse,
@@ -120,7 +121,9 @@ export class PascalCaseEntityController {
   @Description('Creates new entity label. Returns the created entity label.')
   @Returns(200, PascalCaseEntity).Description('The created entity label')
   async createNewPascalCaseEntity(
-    @BodyParams() camelCaseEntityDetails: PascalCaseEntityCreationDetails
+    @BodyParams()
+    @Required()
+    camelCaseEntityDetails: PascalCaseEntityCreationDetails
   ) {
     return createNewPascalCaseEntity(camelCaseEntityDetails);
   }
@@ -138,6 +141,7 @@ export class PascalCaseEntityController {
   async createNewPascalCaseEntities(
     @BodyParams()
     @ArrayOf(PascalCaseEntityCreationDetails)
+    @Required()
     records: PascalCaseEntityCreationDetails[]
   ) {
     return createNewPascalCaseEntities(records);
@@ -151,7 +155,9 @@ export class PascalCaseEntityController {
   )
   @Returns(200, PascalCaseEntity).Description('The updated entity label')
   async updatePascalCaseEntity(
-    @BodyParams() camelCaseEntityUpdates: PascalCaseEntityUpdates
+    @BodyParams()
+    @Required()
+    camelCaseEntityUpdates: PascalCaseEntityUpdates
   ) {
     return updatePascalCaseEntity(camelCaseEntityUpdates);
   }
@@ -169,6 +175,7 @@ export class PascalCaseEntityController {
   async updatePascalCaseEntities(
     @BodyParams()
     @ArrayOf(PascalCaseEntityUpdates)
+    @Required()
     records: PascalCaseEntityUpdates[]
   ) {
     return updatePascalCaseEntities(records);
@@ -182,7 +189,9 @@ export class PascalCaseEntityController {
   )
   @Returns(200, PascalCaseEntity).Description('The patched entity label')
   async patchPascalCaseEntity(
-    @BodyParams() camelCaseEntityUpdates: PascalCaseEntityUpdates
+    @BodyParams()
+    @Required()
+    camelCaseEntityUpdates: PascalCaseEntityUpdates
   ) {
     return patchPascalCaseEntity(camelCaseEntityUpdates);
   }
@@ -200,6 +209,7 @@ export class PascalCaseEntityController {
   async patchPascalCaseEntities(
     @BodyParams()
     @ArrayOf(PascalCaseEntityUpdates)
+    @Required()
     records: PascalCaseEntityUpdates[]
   ) {
     return patchPascalCaseEntities(records);
@@ -235,10 +245,12 @@ export class PascalCaseEntityController {
   @Returns(422).Description('Unprocessable Request')
   async deletePascalCaseEntities(
     @Description(
-      'The list of ids of the entities label to be deleted.\nNote: this list should contain at least one entity label.'
+      'The list of ids of the entities label to be deleted. Note: this list should contain at least one entity label.'
     )
     @Example(['recO0FYb1Tccm9MZ2'])
     @BodyParams()
+    @ArrayOf(String)
+    @Required()
     recordIds: string[]
   ) {
     return deletePascalCaseEntities(recordIds);
