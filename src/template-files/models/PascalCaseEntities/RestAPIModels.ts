@@ -29,9 +29,9 @@ export class PascalCaseEntity {
 }
 
 export class FindAllPascalCaseEntitiesReponse {
-  @Description('The list of Entities Label.')
-  @Example([])
   @Property()
+  @ArrayOf(PascalCaseEntity)
+  @Description('The list of Entities Label.')
   public records!: PascalCaseEntity[];
 
   @Description(
