@@ -1,6 +1,7 @@
 import { BodyParams, PathParams, QueryParams } from '@tsed/common';
 import { Controller } from '@tsed/di';
 import {
+  ArrayOf,
   Delete,
   Description,
   Example,
@@ -36,14 +37,16 @@ import {
   FindAllRecordsQueryParams,
 } from '../models/__Utils/RestAPIModels';
 import {
-  PascalCaseEntityCreationDetails,
   PascalCaseEntityQueryableField,
-  PascalCaseEntityUpdates,
   PascalCaseEntityView,
 } from '../models/PascalCaseEntities';
 import {
+  CreateNewPascalCaseEntitiesReponse,
   FindAllPascalCaseEntitiesReponse,
   PascalCaseEntity,
+  PascalCaseEntityCreationDetails,
+  PascalCaseEntityUpdates,
+  UpdatePascalCaseEntitiesReponse,
 } from '../models/PascalCaseEntities/RestAPIModels';
 import {
   CREATE_ENTITY_PERMISSION,
@@ -129,10 +132,14 @@ export class PascalCaseEntityController {
   @Description(
     'Creates new entities label. Returns the created entities label.'
   )
-  @Returns(200, [PascalCaseEntity]).Description('The created entities label')
+  @Returns(200, CreateNewPascalCaseEntitiesReponse).Description(
+    'The created entities label'
+  )
   @Returns(422).Description('Unprocessable Request')
   async createNewPascalCaseEntities(
-    @BodyParams() records: PascalCaseEntityCreationDetails[]
+    @BodyParams()
+    @ArrayOf(PascalCaseEntityCreationDetails)
+    records: PascalCaseEntityCreationDetails[]
   ) {
     return createNewPascalCaseEntities(records);
   }
@@ -156,10 +163,14 @@ export class PascalCaseEntityController {
   @Description(
     'Updates existing entities label. Returns the updated entities label. Null values will wipe database table fields.'
   )
-  @Returns(200, [PascalCaseEntity]).Description('The updated entities label')
+  @Returns(200, UpdatePascalCaseEntitiesReponse).Description(
+    'The updated entities label'
+  )
   @Returns(422).Description('Unprocessable Request')
   async updatePascalCaseEntities(
-    @BodyParams() records: PascalCaseEntityUpdates[]
+    @BodyParams()
+    @ArrayOf(PascalCaseEntityUpdates)
+    records: PascalCaseEntityUpdates[]
   ) {
     return updatePascalCaseEntities(records);
   }
@@ -183,10 +194,14 @@ export class PascalCaseEntityController {
   @Description(
     'Patches existing entities label. Returns the patched entities label.'
   )
-  @Returns(200, [PascalCaseEntity]).Description('The patched entities label')
+  @Returns(200, UpdatePascalCaseEntitiesReponse).Description(
+    'The patched entities label'
+  )
   @Returns(422).Description('Unprocessable Request')
   async patchPascalCaseEntities(
-    @BodyParams() records: PascalCaseEntityUpdates[]
+    @BodyParams()
+    @ArrayOf(PascalCaseEntityUpdates)
+    records: PascalCaseEntityUpdates[]
   ) {
     return patchPascalCaseEntities(records);
   }

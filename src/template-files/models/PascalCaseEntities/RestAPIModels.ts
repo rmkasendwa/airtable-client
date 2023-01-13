@@ -41,3 +41,33 @@ export class FindAllPascalCaseEntitiesReponse {
   @Optional()
   public offset?: string;
 }
+
+// Entity Label editable fields.
+export class PascalCaseEntityCreationDetails {
+  /* ENTITY_MODEL_EDITABLE_FIELDS */
+  @Property()
+  @Optional()
+  public name?: string;
+
+  @Property()
+  @ArrayOf(String)
+  @Optional()
+  public list?: string[];
+  /* ENTITY_MODEL_EDITABLE_FIELDS */
+}
+
+export class CreateNewPascalCaseEntitiesReponse {
+  @Property()
+  @ArrayOf(PascalCaseEntity)
+  @Description('The list of Entities Label.')
+  public records!: PascalCaseEntity[];
+}
+
+export class PascalCaseEntityUpdates extends PascalCaseEntityCreationDetails {
+  @Description('Unique identifer for Entity Label.')
+  @Example('recO0FYb1Tccm9MZ2')
+  @Property()
+  public id!: string;
+}
+
+export class UpdatePascalCaseEntitiesReponse extends CreateNewPascalCaseEntitiesReponse {}

@@ -15,14 +15,16 @@ import {
   CreatePascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesReponseValidationSchema,
   PascalCaseEntityAirtableResponseValidationSchema,
-  PascalCaseEntityCreationDetails,
   PascalCaseEntityPropertyToAirtableColumnNameMapper,
   PascalCaseEntityPropertyToAirtableLookupColumnNameMapper,
   PascalCaseEntityQueryableField,
-  PascalCaseEntityUpdates,
   PascalCaseEntityView,
   UpdatePascalCaseEntitiesRequestValidationSchema,
 } from '../models/PascalCaseEntities';
+import {
+  PascalCaseEntityCreationDetails,
+  PascalCaseEntityUpdates,
+} from '../models/PascalCaseEntities/RestAPIModels';
 import Adapter from './Adapter';
 
 /**************************** ENDPOINT PATHS *****************************/

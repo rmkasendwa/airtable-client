@@ -49,6 +49,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   columnNameToValidationSchemaTypeStringGroupMapper,
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
   const { id: baseId } = base;
+  const editableFieldsTypes = editableTableColumns.filter((tableColumn) => {
+    return columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name]
+      .requestObjectPropertyTypeValidationString;
+  });
+
   return {
     ['/* AIRTABLE_BASE_ID */']: `"${baseId}"`,
 
@@ -150,12 +155,22 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       })
       .join(',\n'),
 
-    ['/* REQUEST_ENTITY_PROPERTIES */']: editableTableColumns
-      .filter((tableColumn) => {
+    ['/* QUERYABLE_FIELD_TYPE */']: (() => {
+      if (queryableLookupFields.length > 0) {
+        return `| ${queryableLookupFields.join(' | ')}`;
+      }
+      return '';
+    })(),
+
+    ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
+      .map((tableColumn) => {
         return columnNameToValidationSchemaTypeStringGroupMapper[
           tableColumn.name
-        ].requestObjectPropertyTypeValidationString;
+        ].objectModelPropertyTypeString;
       })
+      .join(';\n\n'),
+
+    ['/* REQUEST_ENTITY_PROPERTIES */']: editableFieldsTypes
       .map((tableColumn) => {
         return `"${
           columnNameToObjectPropertyMapper[tableColumn.name].propertyName
@@ -166,21 +181,12 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       })
       .join(',\n'),
 
-    ['/* QUERYABLE_FIELD_TYPE */']: (() => {
-      if (queryableLookupFields.length > 0) {
-        return `| ${queryableLookupFields.join(' | ')}`;
-      }
-      return '';
-    })(),
-
-    ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
-      .map((field) => {
-        return [
-          columnNameToValidationSchemaTypeStringGroupMapper[field.name]
-            .objectModelPropertyTypeString,
-        ];
+    ['/* ENTITY_MODEL_EDITABLE_FIELDS */']: editableFieldsTypes
+      .map((tableColumn) => {
+        return columnNameToValidationSchemaTypeStringGroupMapper[
+          tableColumn.name
+        ].objectModelPropertyTypeString;
       })
-      .flat()
       .join(';\n\n'),
 
     ['/* AUTH_IMPORTS */']: `import { Authenticate, Authorize } from '../../../../decorators';`,
