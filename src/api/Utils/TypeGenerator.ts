@@ -309,11 +309,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
           camelCasePropertyName.charAt(0).toUpperCase() +
           camelCasePropertyName.slice(1);
         const modelClassString = `export class ${modelClassName} {
+          @Property()
           @Description('Unique identifer for ${tableColumn.name}')
           @Example('recO0FYb1Tccm9MZ2')
-          @Property()
-            public id!: string;
-  
+          public id!: string;
           ${[
             ...new Set(
               lookupTableColumns
@@ -344,12 +343,12 @@ export const getTableColumnValidationSchemaTypeStrings = (
         if (tableColumn.options?.prefersSingleRecordLink) {
           return `
             @Property()
-                public ${camelCasePropertyName}?: ${modelClassName}
+            public ${camelCasePropertyName}?: ${modelClassName}
           `.trimIndent();
         }
         return `
           @Property()
-            @ArrayOf(${modelClassName})
+          @ArrayOf(${modelClassName})
           public ${camelCasePropertyName}?: ${modelClassName}[]
         `.trimIndent();
       })();
@@ -488,7 +487,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
     // Special text
     case 'email': {
       const baseType = userDefinedType || 'string';
-      const airtableResponseValidationString = `z.string().email()`;
+      const airtableResponseValidationString = `z.string().trim().email()`;
       const objectPropetyTypeString = baseType;
       const objectModelPropertyTypeString = `
         @Property()
@@ -507,7 +506,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
     case 'url': {
       const baseType = userDefinedType || 'string';
-      const airtableResponseValidationString = `z.string().url()`;
+      const airtableResponseValidationString = `z.string().trim().url()`;
       const objectPropetyTypeString = baseType;
       const objectModelPropertyTypeString = `
         @Property()
