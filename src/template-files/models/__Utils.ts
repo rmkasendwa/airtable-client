@@ -2,8 +2,8 @@ import {
   ArrayOf,
   Default,
   Description,
+  Enum,
   Example,
-  Optional,
   Property,
 } from '@tsed/schema';
 import { omit } from 'lodash';
@@ -48,14 +48,14 @@ export const airtableFieldTypes = [
 export type AirtableFieldType = typeof airtableFieldTypes[number];
 
 export class AirtableSortOption<Field extends string = string> {
-  @Description('The field to sort by.')
   @Property()
+  @Description('The field to sort by.')
   public field!: Field;
 
+  @Property()
+  @Enum(['asc', 'desc'] as const)
   @Description('The sort direction')
   @Example('asc')
-  @Property()
-  @Optional()
   public direction?: 'asc' | 'desc';
 }
 
@@ -63,6 +63,7 @@ export class FindAllRecordsQueryParams<
   Field extends string = string,
   View extends string = string
 > {
+  @Property()
   @Description(
     `
     Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
@@ -78,10 +79,9 @@ export class FindAllRecordsQueryParams<
       .trimIndent()
       .trim()
   )
-  @Property()
-  @Optional()
   public fields?: Field[];
 
+  @Property()
   @Description(
     `
     A formula used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
@@ -95,25 +95,23 @@ export class FindAllRecordsQueryParams<
       .trimIndent()
       .trim()
   )
-  @Property()
-  @Optional()
   public filterByFormula?: string;
 
+  @Property()
   @Description(
     'The maximum total number of records that will be returned in your requests. If this value is larger than pageSize (which is 100 by default), you may have to load multiple pages to reach this total. See the Pagination section below for more.'
   )
-  @Property()
-  @Optional()
   public maxRecords?: number;
 
+  @Property()
   @Description(
     'The number of records returned in each request. Must be less than or equal to 100. Default is 100. See the Pagination section below for more.'
   )
   @Default(100)
-  @Property()
-  @Optional()
   public pageSize?: number;
 
+  @Property()
+  @ArrayOf(AirtableSortOption)
   @Description(
     `
     A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
@@ -128,17 +126,15 @@ export class FindAllRecordsQueryParams<
       .trimIndent()
       .trim()
   )
-  @Property()
-  @Optional()
   public sort?: AirtableSortOption[];
 
+  @Property()
   @Description(
     'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
   )
-  @Property()
-  @Optional()
   public view?: View;
 
+  @Property()
   @Description(
     `
     The format that should be used for cell values. Supported values are:
@@ -150,27 +146,22 @@ export class FindAllRecordsQueryParams<
       .trimIndent()
       .trim()
   )
-  @Property()
-  @Optional()
   public cellFormat?: 'string' | 'json';
 
+  @Property()
   @Description(
     'The time zone that should be used to format dates when using string as the cellFormat. This parameter is required when using string as the cellFormat.'
   )
-  @Property()
-  @Optional()
   public timeZone?: string;
 
+  @Property()
   @Description(
     'The user locale that should be used to format dates when using string as the cellFormat. This parameter is required when using string as the cellFormat.'
   )
-  @Property()
-  @Optional()
   public userLocale?: string;
 
-  @Description('The airtable offset to load the next page.')
   @Property()
-  @Optional()
+  @Description('The airtable offset to load the next page.')
   public offset?: string;
 }
 
@@ -544,80 +535,77 @@ export const AirtableAttachmentValidationSchema = z.object({
 });
 
 export class AirtableAttachmentThumbnail {
+  @Property()
   @Description('The thumbnail URL.')
   @Example('https://www.filepicker.io/api/file/ULCoXHhx0ivaSyDg5SIg')
-  @Property()
   public url!: string;
 
+  @Property()
   @Description('The width of the thumbnail.')
   @Example(64)
-  @Property()
   public width!: number;
 
+  @Property()
   @Description('The height of the thumbnail.')
   @Example(64)
-  @Property()
   public height!: number;
 }
 
 export class AirtableAttachmentThumbnailGroup {
+  @Property()
   @Description('The small thumbnail.')
   @Example({
     url: 'https://www.filepicker.io/api/file/vCgLXiayH5UgDSxShoI0',
     width: 54,
     height: 36,
   })
-  @Property()
-  @Optional()
   public small?: AirtableAttachmentThumbnail;
 
+  @Property()
   @Description('The large thumbnail.')
   @Example({
     url: 'https://www.filepicker.io/api/file/ui0ARnU2yuUZ4ehY0qi0',
     width: 197,
     height: 131,
   })
-  @Property()
-  @Optional()
   public large?: AirtableAttachmentThumbnail;
 
+  @Property()
   @Description('The large thumbnail.')
   @Example({
     url: 'https://v5.airtableusercontent.com/v1/13/13/7206610005207/bIbbgi0VoLUe42zY4tn-sg/6zLDXJ2fZ5zZvSoHimlxSzbjTSQ4QIcpAN98fVW/-pWboVONLE10-mbhlXk7sYpuTjqtv7mSY2O2SsYTE_Tg4ZIM8h253PdM3A7U9FRZS_68iFxygr-rQGvzZbtubeGes6',
     width: 3000,
     height: 3000,
   })
-  @Property()
-  @Optional()
   public full?: AirtableAttachmentThumbnail;
 }
 
 export class AirtableAttachment {
+  @Property()
   @Description('The id of the attachment.')
   @Example('attL8HyJ4HiaudbBJ')
-  @Property()
   public id!: string;
 
+  @Property()
   @Description('The attachment width.')
   @Example(144)
-  @Property()
   public width!: number;
 
+  @Property()
   @Description('The attachment height.')
   @Example(144)
-  @Property()
   public height!: number;
 
+  @Property()
   @Description('The attachment URL.')
   @Example(
     'https://v5.airtableusercontent.com/v1/13/13/2610752006007/RI51n3urgmQT8QKzLwlhnU/f1EqI4fPTACz8osywCFfw--kAv717Z6EGx8MOZnX3OGjqYpsGqdhlXUbSyYnOCOs-pQd_5eHNjbGprAnrDkRan/MYGj8OggA5ZRKdjUUDxyQLR5IZA33oucbyxvmfFkTIg'
   )
-  @Property()
   public url!: string;
 
+  @Property()
   @Description('The name of the attachment file.')
   @Example('dog.png')
-  @Property()
   public filename!: string;
 
   @Description('The size of the attachment file in bytes.')
@@ -625,11 +613,12 @@ export class AirtableAttachment {
   @Property()
   public size!: number;
 
+  @Property()
   @Description('The mime type of the attachment file.')
   @Example('image/png')
-  @Property()
   public type!: string;
 
+  @Property()
   @Description('The attachment thumbnails.')
   @Example({
     small: {
@@ -648,8 +637,6 @@ export class AirtableAttachment {
       height: 3000,
     },
   })
-  @Property()
-  @Optional()
   public thumbnails?: AirtableAttachmentThumbnailGroup;
 }
 
@@ -660,16 +647,14 @@ export const AirtableFormulaColumnErrorValidationSchema = z.object({
 });
 
 export class AirtableFormulaColumnError {
+  @Property()
   @Description('Invalid output of a formula.')
   @Example('NaN')
-  @Property()
-  @Optional()
   public specialValue?: 'NaN';
 
+  @Property()
   @Description('The error message')
   @Example('#Error!')
-  @Property()
-  @Optional()
   public error?: string;
 }
 
@@ -679,28 +664,28 @@ export const AirtableButtonValidationSchema = z.object({
 });
 
 export class AirtableButton {
+  @Property()
   @Description('The button label')
   @Example('Make Document')
-  @Property()
   public label!: string;
 
+  @Property()
   @Description('The URL that should be opened when the button is clicked')
   @Example(
     'https://airtable.com/tbljnMFy6nqsFHFR7/recIXIpWdiuZd9VYg?blocks=blxYtqVDViGvyu90b'
   )
-  @Property()
   public url!: string;
 }
 
 export class DeleteAirtableRecordResponse {
+  @Property()
   @Description('Unique identifer of the deleted item.')
   @Example('recM9m1bZOccF2TY0')
-  @Property()
   public id!: string;
 
+  @Property()
   @Description('Whether the item was deleted or not.')
   @Example(true)
-  @Property()
   public delete!: boolean;
 }
 

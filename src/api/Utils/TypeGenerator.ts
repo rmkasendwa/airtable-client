@@ -170,7 +170,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectPropetyTypeString = `AirtableAttachment[]`;
       const objectModelPropertyTypeString = `
         @Property()
-        @Optional()
         public ${camelCasePropertyName}?: AirtableAttachment[]
       `.trimIndent();
 
@@ -190,7 +189,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectPropetyTypeString = `AirtableButton`;
       const objectModelPropertyTypeString = `
         @Property()
-        @Optional()
         public ${camelCasePropertyName}?: AirtableButton
       `.trimIndent();
 
@@ -263,7 +261,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectModelPropertyTypeString = `
         @Property()
         @Example('2023-01-05T19:00:44.544Z')
-        @Optional()
         public ${camelCasePropertyName}?: string
       `.trimIndent();
 
@@ -315,8 +312,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
           @Description('Unique identifer for ${tableColumn.name}')
           @Example('recO0FYb1Tccm9MZ2')
           @Property()
-          @Optional()
-          public id!: string;
+            public id!: string;
   
           ${[
             ...new Set(
@@ -348,14 +344,12 @@ export const getTableColumnValidationSchemaTypeStrings = (
         if (tableColumn.options?.prefersSingleRecordLink) {
           return `
             @Property()
-            @Optional()
-            public ${camelCasePropertyName}?: ${modelClassName}
+                public ${camelCasePropertyName}?: ${modelClassName}
           `.trimIndent();
         }
         return `
           @Property()
-          @Optional()
-          @ArrayOf(${modelClassName})
+            @ArrayOf(${modelClassName})
           public ${camelCasePropertyName}?: ${modelClassName}[]
         `.trimIndent();
       })();
@@ -391,8 +385,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
               objectModelPropertyTypeString: `
                 @Property()
                 @Example(${getModelPropertyExampleString(baseType)})
-                @Optional()
-                public ${camelCasePropertyName}?: ${baseType}
+                        public ${camelCasePropertyName}?: ${baseType}
               `.trimIndent(),
             };
           }
@@ -460,7 +453,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectModelPropertyTypeString = `
         @Property()
         @Example(${getModelPropertyExampleString(userDefinedType || 'number')})
-        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -481,7 +473,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectModelPropertyTypeString = `
         @Property()
         @Example(${getModelPropertyExampleString(userDefinedType || 'boolean')})
-        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -502,7 +493,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectModelPropertyTypeString = `
         @Property()
         @Example(${getModelPropertyExampleString(userDefinedType || 'email')})
-        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -522,7 +512,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectModelPropertyTypeString = `
         @Property()
         @Example(${getModelPropertyExampleString(userDefinedType || 'url')})
-        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -547,7 +536,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const objectModelPropertyTypeString = `
         @Property()
         @Example(${getModelPropertyExampleString(baseType)})
-        @Optional()
         public ${camelCasePropertyName}?: ${baseType}
       `.trimIndent();
 
@@ -566,7 +554,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
     objectPropetyTypeString: baseType,
     objectModelPropertyTypeString: `
       @Property()
-      @Optional()
       public ${camelCasePropertyName}?: ${baseType}
     `.trimIndent(),
   };

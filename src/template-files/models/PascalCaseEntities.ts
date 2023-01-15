@@ -2,7 +2,6 @@ import {
   ArrayOf,
   Description,
   Example,
-  Optional,
   Property,
   Required,
 } from '@tsed/schema';
@@ -29,12 +28,10 @@ export class PascalCaseEntity {
 
   /* ENTITY_MODEL_FIELDS */
   @Property()
-  @Optional()
   public name?: string;
 
   @Property()
   @ArrayOf(String)
-  @Optional()
   public list?: string[];
   /* ENTITY_MODEL_FIELDS */
 }
@@ -230,12 +227,10 @@ export class FindAllPascalCaseEntitiesReponse {
 export class PascalCaseEntityCreationDetails {
   /* ENTITY_MODEL_EDITABLE_FIELDS */
   @Property()
-  @Optional()
   public name?: string;
 
   @Property()
   @ArrayOf(String)
-  @Optional()
   public list?: string[];
   /* ENTITY_MODEL_EDITABLE_FIELDS */
 }
