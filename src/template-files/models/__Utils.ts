@@ -53,7 +53,7 @@ export class AirtableSortOption<Field extends string = string> {
   public field!: Field;
 
   @Property()
-  @Enum(['asc', 'desc'] as const)
+  @Enum('asc', 'desc')
   @Description('The sort direction')
   @Example('asc')
   public direction?: 'asc' | 'desc';
@@ -135,6 +135,7 @@ export class FindAllRecordsQueryParams<
   public view?: View;
 
   @Property()
+  @Enum('string', 'json')
   @Description(
     `
     The format that should be used for cell values. Supported values are:
