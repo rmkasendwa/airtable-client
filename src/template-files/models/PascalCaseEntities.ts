@@ -131,6 +131,16 @@ export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
                 };
               }
             })(),
+            ...(() => {
+              if (
+                typeof value !== 'string' &&
+                value.isMultipleRecordLinksField
+              ) {
+                return {
+                  isMultipleRecordLinksField: true,
+                };
+              }
+            })(),
           },
         ];
       }
