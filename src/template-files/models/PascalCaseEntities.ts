@@ -57,14 +57,19 @@ export const PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper: Rec
 };
 
 // Maps entity label properties to Entities Table lookup column names
-export const PascalCaseEntityPropertyToAirtableLookupColumnNameMapper =
-  Object.fromEntries(
-    Object.entries(
-      PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper
-    ).map(([key, value]) => {
-      return [value, key];
-    })
-  );
+export const PascalCaseEntityPropertyToAirtableLookupColumnNameMapper: Record<
+  string,
+  string
+> = Object.fromEntries(
+  Object.entries(
+    PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper
+  ).map(([key, value]) => {
+    if (typeof value === 'object' && 'propertyName' in value) {
+      return [value.propertyName, key];
+    }
+    return [value, key];
+  })
+);
 
 // All Entities Table non lookup table columns
 export const camelCaseEntitiesAirtableColumns = [
