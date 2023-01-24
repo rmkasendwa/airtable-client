@@ -109,7 +109,7 @@ export type TableColumnValidationSchemaTypeStringGroup = {
 export type GetTableColumnValidationSchemaTypeStringsOptions = {
   currentTable: Table;
   tables: Table[];
-  columnNameToObjectPropertyMapper: Record<
+  nonLookupColumnNameToObjectPropertyMapper: Record<
     string,
     DetailedColumnNameToObjectPropertyMapping
   >;
@@ -133,7 +133,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
     tables,
     currentTable,
     lookupTableColumns,
-    columnNameToObjectPropertyMapper,
+    nonLookupColumnNameToObjectPropertyMapper,
     lookupColumnNameToObjectPropertyMapper,
     airtableAPIModelImportsCollector,
     restAPIModelExtrasCollector,
@@ -146,7 +146,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
   const { type } = tableColumn;
   const { type: userDefinedType, prefersSingleRecordLink } =
     {
-      ...columnNameToObjectPropertyMapper,
+      ...nonLookupColumnNameToObjectPropertyMapper,
       ...lookupColumnNameToObjectPropertyMapper,
     }[tableColumn.name] || {};
 

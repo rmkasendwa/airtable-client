@@ -95,6 +95,8 @@ export const generateAirtableAPI = async ({
   const outputFolderPath = normalize(
     `${outputRootPath}/${airtableAPIFolderName}`
   );
+
+  // Template files
   const templatesFolderPath = normalize(join(__dirname, '../template-files'));
   const templateFilePaths = walk(templatesFolderPath, {
     includeBasePath: true,
@@ -112,7 +114,9 @@ export const generateAirtableAPI = async ({
     'utf-8'
   );
 
-  const { bases } = await findAllAirtableBases();
+  const { bases } = await findAllAirtableBases(); // Loading all airtable bases accessible by the API key
+
+  // Filtering focus airtable base (Bases defined in user config)
   const workingBases = bases.filter(({ name, id }) => {
     return configBases.some(({ id: configBaseId, name: configBaseName }) => {
       return (
@@ -121,15 +125,20 @@ export const generateAirtableAPI = async ({
       );
     });
   });
+
   if (workingBases.length > 0) {
+    // Cleaning up output directory
     if (existsSync(outputFolderPath)) {
       removeSync(outputFolderPath);
     }
     ensureDirSync(outputFolderPath);
 
+    // Processing each focus airtable base
     workingBases.forEach(async (workingBase) => {
       const { id: workingBaseId, name: workingBaseName } = workingBase;
-      const { tables } = await findAllTablesByBaseId(workingBaseId);
+
+      const { tables } = await findAllTablesByBaseId(workingBaseId); // Loading table in airtable base.
+
       const filteredTables = tables.filter(({ name }) => {
         return (
           generateAllTables ||
@@ -145,6 +154,7 @@ export const generateAirtableAPI = async ({
         );
       });
 
+      // Filtering focus tables (tables defined in user config)
       if (filteredTables.length > 0) {
         console.log(
           `\nProcessing \x1b[34m${workingBaseName.trim()}\x1b[0m base...`
@@ -155,12 +165,14 @@ export const generateAirtableAPI = async ({
           `${outputFolderPath}/${pascalCaseBaseName}`
         );
 
+        // Permissions exports
         const permissionsImports: string[] = [];
         const permissionsExports: string[] = [];
         const permissionsObjectStrings: string[] = [];
 
         const moduleFiles: string[] = [];
 
+        // Processing each focus table.
         filteredTables.forEach((table) => {
           const { name: tableName, fields: columns, views } = table;
 
@@ -193,7 +205,7 @@ export const generateAirtableAPI = async ({
                 alias: configTableAlias,
                 name: configTableName,
                 focusColumns,
-                columnNameToObjectPropertyMapper:
+                nonLookupColumnNameToObjectPropertyMapper:
                   configColumnNameToObjectPropertyMapper,
                 views,
               } = configTable;
@@ -254,6 +266,7 @@ export const generateAirtableAPI = async ({
               return !configViews || configViews.includes(name);
             });
 
+          // Filtering table columns with names with invalid characters
           const filteredTableColumns = columns
             .sort((a, b) => {
               return a.name.localeCompare(b.name);
@@ -280,6 +293,7 @@ export const generateAirtableAPI = async ({
 
           const lookupTableColumns = filteredTableColumns
             .filter(({ type, options }) => {
+              // Making sure the lookup column has a parent field on the table.
               return (
                 type === 'multipleLookupValues' &&
                 options?.recordLinkFieldId &&
@@ -309,6 +323,7 @@ export const generateAirtableAPI = async ({
               return accumulator;
             }, [] as typeof columns);
 
+          // Lookup column name to parent column name map
           const lookupColumnNameToParentColumnNameMap =
             lookupTableColumns.reduce((accumulator, { name, options }) => {
               const parentColumn = columns.find(
@@ -317,11 +332,12 @@ export const generateAirtableAPI = async ({
               if (parentColumn) {
                 accumulator[name] = parentColumn.name;
               } else {
-                console.log(`No column found for ${name}`);
+                console.log(`No parent column found for ${name}`);
               }
               return accumulator;
             }, {} as Record<string, string>);
 
+          // Finding editable table columns
           const editableTableColumns = nonLookupTableColumns.filter(
             ({ type }) => {
               switch (type) {
@@ -351,6 +367,7 @@ export const generateAirtableAPI = async ({
             }
           );
 
+          // TODO: Make imports objects with setting keys as paths and values as a list of import objects.
           const airtableAPIModelImportsCollector: string[] = [];
           const restAPIModelImportsCollector: string[] = [];
           const restAPIModelExtrasCollector: string[] = [];
@@ -359,10 +376,11 @@ export const generateAirtableAPI = async ({
             `  -> Processing \x1b[34m${workingBaseName.trim()}/${tableName.trim()}\x1b[0m table...`
           );
 
-          const columnNameToObjectPropertyMapper = nonLookupTableColumns.reduce(
-            (accumulator, tableColumn) => {
+          const nonLookupColumnNameToObjectPropertyMapper =
+            nonLookupTableColumns.reduce((accumulator, tableColumn) => {
               accumulator[tableColumn.name] = {
                 propertyName: (() => {
+                  // Extracting column object property name from user config.
                   if (configColumnNameToObjectPropertyMapper) {
                     if (
                       configColumnNameToObjectPropertyMapper[
@@ -396,9 +414,11 @@ export const generateAirtableAPI = async ({
                       ];
                     }
                   }
-                  return getCamelCaseFieldPropertyName(tableColumn);
+
+                  return getCamelCaseFieldPropertyName(tableColumn); // Automatically converting table column name to camel case object property name
                 })(),
                 ...(() => {
+                  // Extracting prefer single record link
                   const prefersSingleRecordLink = Boolean(
                     tableColumn.options?.prefersSingleRecordLink ||
                       (configColumnNameToObjectPropertyMapper?.[
@@ -418,6 +438,7 @@ export const generateAirtableAPI = async ({
                   }
                 })(),
                 ...(() => {
+                  // Extracting user defined object data type
                   if (
                     typeof configColumnNameToObjectPropertyMapper?.[
                       tableColumn.name
@@ -439,9 +460,7 @@ export const generateAirtableAPI = async ({
                 })(),
               };
               return accumulator;
-            },
-            {} as Record<string, DetailedColumnNameToObjectPropertyMapping>
-          );
+            }, {} as Record<string, DetailedColumnNameToObjectPropertyMapping>);
 
           const lookupColumnNameToObjectPropertyMapper =
             lookupTableColumns.reduce((accumulator, tableColumn) => {
@@ -519,7 +538,53 @@ export const generateAirtableAPI = async ({
               );
 
               accumulator[tableColumn.name] = {
-                propertyName: getCamelCaseFieldPropertyName(parentField),
+                propertyName: (() => {
+                  // Extracting column object property name from user config.
+                  const propertyName: string | undefined = (() => {
+                    if (configColumnNameToObjectPropertyMapper) {
+                      if (
+                        configColumnNameToObjectPropertyMapper[
+                          tableColumn.name
+                        ] &&
+                        typeof configColumnNameToObjectPropertyMapper[
+                          tableColumn.name
+                        ] !== 'string' &&
+                        (
+                          configColumnNameToObjectPropertyMapper[
+                            tableColumn.name
+                          ] as any
+                        ).propertyName
+                      ) {
+                        return (
+                          configColumnNameToObjectPropertyMapper[
+                            tableColumn.name
+                          ] as any
+                        ).propertyName;
+                      }
+                      if (
+                        configColumnNameToObjectPropertyMapper[
+                          tableColumn.name
+                        ] &&
+                        typeof configColumnNameToObjectPropertyMapper[
+                          tableColumn.name
+                        ] === 'string'
+                      ) {
+                        return configColumnNameToObjectPropertyMapper[
+                          tableColumn.name
+                        ];
+                      }
+                    }
+                  })();
+
+                  if (propertyName) {
+                    if (propertyName.match(/\./g)) {
+                      return propertyName.split('.').slice(-1)[0];
+                    }
+                    return propertyName;
+                  }
+
+                  return getCamelCaseFieldPropertyName(parentField); // Automatically converting parent table column name to camel case object property name
+                })(),
                 ...(() => {
                   if (flattenLookupField) {
                     return {
@@ -528,6 +593,7 @@ export const generateAirtableAPI = async ({
                   }
                 })(),
                 ...(() => {
+                  // Extracting user defined object data type
                   if (
                     typeof configColumnNameToObjectPropertyMapper?.[
                       tableColumn.name
@@ -551,21 +617,23 @@ export const generateAirtableAPI = async ({
               return accumulator;
             }, {} as Record<string, DetailedColumnNameToObjectPropertyMapping>);
 
+          // Finding user defined queryable focus columns
           const queryableNonLookupFields = (focusColumnNames || [])
             .filter((columnName) => {
-              return columnNameToObjectPropertyMapper[columnName];
+              return nonLookupColumnNameToObjectPropertyMapper[columnName];
             })
             .map((columnName) => {
-              return `"${columnNameToObjectPropertyMapper[columnName].propertyName}"`;
+              return `"${nonLookupColumnNameToObjectPropertyMapper[columnName].propertyName}"`;
             });
 
+          // Finding user defined queryable focus columns
           const queryableLookupFields = (focusColumnNames || [])
             .filter((columnName) => {
               return lookupColumnNameToObjectPropertyMapper[columnName];
             })
             .map((columnName) => {
               return `"${
-                columnNameToObjectPropertyMapper[
+                nonLookupColumnNameToObjectPropertyMapper[
                   lookupColumnNameToParentColumnNameMap[columnName]
                 ].propertyName
               }.${
@@ -573,6 +641,7 @@ export const generateAirtableAPI = async ({
               }"`;
             });
 
+          // TODO: Merge all schema generation calls
           const columnNameToValidationSchemaTypeStringGroupMapper = [
             ...nonLookupTableColumns,
             ...lookupTableColumns,
@@ -581,12 +650,12 @@ export const generateAirtableAPI = async ({
               getTableColumnValidationSchemaTypeStrings(tableColumn, {
                 airtableAPIModelImportsCollector,
                 camelCasePropertyName: {
-                  ...columnNameToObjectPropertyMapper,
+                  ...nonLookupColumnNameToObjectPropertyMapper,
                   ...lookupColumnNameToObjectPropertyMapper,
                 }[tableColumn.name].propertyName,
                 currentTable: table,
                 tableLabelSingular: labelSingular,
-                columnNameToObjectPropertyMapper,
+                nonLookupColumnNameToObjectPropertyMapper,
                 lookupColumnNameToObjectPropertyMapper,
                 lookupTableColumns,
                 restAPIModelExtrasCollector,
@@ -596,6 +665,7 @@ export const generateAirtableAPI = async ({
             return accumulator;
           }, {} as Record<string, TableColumnValidationSchemaTypeStringGroup>);
 
+          // Getting interpolation block replacement map
           const interpolationBlocks =
             getAirtableAPIGeneratorTemplateFileInterpolationBlocks({
               base: workingBase,
@@ -604,7 +674,7 @@ export const generateAirtableAPI = async ({
               lookupTableColumns,
               editableTableColumns,
               tables,
-              columnNameToObjectPropertyMapper,
+              nonLookupColumnNameToObjectPropertyMapper,
               lookupColumnNameToObjectPropertyMapper,
               airtableAPIModelImportsCollector,
               restAPIModelImportsCollector,
@@ -615,13 +685,14 @@ export const generateAirtableAPI = async ({
               columnNameToValidationSchemaTypeStringGroupMapper,
             });
 
+          // Getting interpolation string replacement map
           const interpolationLabels =
             getAirtableAPIGeneratorTemplateFileInterpolationLabels({
               currentTable: table,
               nonLookupTableColumns,
               lookupTableColumns,
               tables,
-              columnNameToObjectPropertyMapper,
+              nonLookupColumnNameToObjectPropertyMapper,
               lookupColumnNameToObjectPropertyMapper,
               airtableAPIModelImportsCollector,
               restAPIModelImportsCollector,
@@ -635,6 +706,7 @@ export const generateAirtableAPI = async ({
               columnNameToValidationSchemaTypeStringGroupMapper,
             });
 
+          // Replacing interpolation templates in template file contents
           const getInterpolatedString = (templateFileContents: string) => {
             return Object.keys(interpolationLabels).reduce(
               (fileContents, key) => {
@@ -650,7 +722,7 @@ export const generateAirtableAPI = async ({
             );
           };
 
-          moduleFiles.push(`./api/${labelPlural.toPascalCase()}`);
+          moduleFiles.push(`./api/${labelPlural.toPascalCase()}`); // Adding api file to exportable files
 
           templateFilePaths.forEach((templateFilePath) => {
             const templateFileContents = readFileSync(
@@ -676,6 +748,7 @@ export const generateAirtableAPI = async ({
           });
 
           // Permissions
+          // Accumulating all focus table permissions
           permissionsImports.push(
             getInterpolatedString(`
               import {

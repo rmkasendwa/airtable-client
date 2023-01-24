@@ -17,7 +17,7 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   lookupTableColumns: AirtableField[];
   editableTableColumns: AirtableField[];
   tables: Table[];
-  columnNameToObjectPropertyMapper: Record<
+  nonLookupColumnNameToObjectPropertyMapper: Record<
     string,
     DetailedColumnNameToObjectPropertyMapping
   >;
@@ -42,7 +42,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   nonLookupTableColumns,
   lookupTableColumns,
   editableTableColumns,
-  columnNameToObjectPropertyMapper,
+  nonLookupColumnNameToObjectPropertyMapper,
   lookupColumnNameToObjectPropertyMapper,
   configColumnNameToObjectPropertyMapper = {},
   queryableLookupFields,
@@ -69,7 +69,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       .map((tableColumn) => {
         const { name, type } = tableColumn;
         const camelCasePropertyName =
-          columnNameToObjectPropertyMapper[name].propertyName;
+          nonLookupColumnNameToObjectPropertyMapper[name].propertyName;
         const configColumnNameToObjectPropertyMapperConfig =
           configColumnNameToObjectPropertyMapper[name];
 
@@ -91,7 +91,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
             })(),
             ...(() => {
               return pick(
-                columnNameToObjectPropertyMapper[name],
+                nonLookupColumnNameToObjectPropertyMapper[name],
                 'prefersSingleRecordLink',
                 'type'
               );
@@ -119,7 +119,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
               const obj: any = {
                 propertyName: (() => {
                   return `${
-                    columnNameToObjectPropertyMapper[parentColumn.name]
+                    nonLookupColumnNameToObjectPropertyMapper[parentColumn.name]
                       .propertyName
                   }.${
                     lookupColumnNameToObjectPropertyMapper[name].propertyName
@@ -173,7 +173,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
     ['/* REQUEST_ENTITY_PROPERTIES */']: editableFieldsTypes
       .map((tableColumn) => {
         return `"${
-          columnNameToObjectPropertyMapper[tableColumn.name].propertyName
+          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+            .propertyName
         }": ${
           columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name]
             .requestObjectPropertyTypeValidationString

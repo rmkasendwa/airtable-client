@@ -255,7 +255,7 @@ export type AirtableColumnMapping<ObjectPropertyName extends string> =
 
 export type GetAirtableRecordResponseValidationSchemaOptions = {
   responseFieldsValidationSchema: AnyZodObject;
-  columnNameToObjectPropertyMapper: Record<
+  nonLookupColumnNameToObjectPropertyMapper: Record<
     string,
     AirtableColumnMapping<string>
   >;
@@ -270,7 +270,7 @@ export const getAirtableRecordResponseValidationSchema = <
   T extends Record<string, any>
 >({
   responseFieldsValidationSchema,
-  columnNameToObjectPropertyMapper,
+  nonLookupColumnNameToObjectPropertyMapper,
   objectPropertyToAirtableColumnNameMapper,
   lookupColumnNameToObjectPropertyMapper,
 }: GetAirtableRecordResponseValidationSchemaOptions) => {
@@ -292,7 +292,7 @@ export const getAirtableRecordResponseValidationSchema = <
           .reduce((accumulator, key) => {
             if (fields[key] != null) {
               const noneLookupColumMapping =
-                columnNameToObjectPropertyMapper[key];
+                nonLookupColumnNameToObjectPropertyMapper[key];
 
               // Check if the field is a lookup column.
               if (lookupColumnNameToObjectPropertyMapper[key]) {
@@ -315,7 +315,7 @@ export const getAirtableRecordResponseValidationSchema = <
                 // Find parent field and make sure it only accepts one value
                 if (
                   (
-                    columnNameToObjectPropertyMapper[
+                    nonLookupColumnNameToObjectPropertyMapper[
                       objectPropertyToAirtableColumnNameMapper[refPropertyName]
                     ] as any
                   )?.prefersSingleRecordLink

@@ -168,7 +168,7 @@ export const PascalCaseEntityPropertyToAirtableColumnNameMapper =
 // Validates Entities Table airtable response.
 export const PascalCaseEntityAirtableResponseValidationSchema =
   getAirtableRecordResponseValidationSchema<PascalCaseEntity>({
-    columnNameToObjectPropertyMapper:
+    nonLookupColumnNameToObjectPropertyMapper:
       PascalCaseEntityAirtableColumnToObjectPropertyMapper,
     lookupColumnNameToObjectPropertyMapper:
       PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper,
