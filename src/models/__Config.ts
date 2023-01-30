@@ -29,7 +29,7 @@ export type ConfigTable<FocusColumn extends string> = {
   labelPlural?: string;
   labelSingular?: string;
   focusColumns?: FocusColumn[];
-  nonLookupColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<FocusColumn>;
+  columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<FocusColumn>;
   views?: string[];
 };
 

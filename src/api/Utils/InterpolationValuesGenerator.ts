@@ -4,7 +4,6 @@ import {
   AirtableBase,
   AirtableField,
   AirtableView,
-  ConfigColumnNameToObjectPropertyMapper,
   DetailedColumnNameToObjectPropertyMapping,
   Table,
 } from '../../models';
@@ -28,7 +27,6 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   airtableAPIModelImportsCollector: string[];
   restAPIModelImportsCollector: string[];
   restAPIModelExtrasCollector: string[];
-  configColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
   queryableNonLookupFields: string[];
   queryableLookupFields: string[];
   columnNameToValidationSchemaTypeStringGroupMapper: Record<
@@ -44,7 +42,6 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   editableTableColumns,
   nonLookupColumnNameToObjectPropertyMapper,
   lookupColumnNameToObjectPropertyMapper,
-  configColumnNameToObjectPropertyMapper = {},
   queryableLookupFields,
   columnNameToValidationSchemaTypeStringGroupMapper,
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
@@ -70,25 +67,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         const { name, type } = tableColumn;
         const camelCasePropertyName =
           nonLookupColumnNameToObjectPropertyMapper[name].propertyName;
-        const configColumnNameToObjectPropertyMapperConfig =
-          configColumnNameToObjectPropertyMapper[name];
 
         return `["${name}"]: ${(() => {
           const obj: any = {
-            propertyName: (() => {
-              if (configColumnNameToObjectPropertyMapperConfig) {
-                if (
-                  typeof configColumnNameToObjectPropertyMapperConfig ===
-                  'string'
-                ) {
-                  return configColumnNameToObjectPropertyMapperConfig;
-                }
-                if (configColumnNameToObjectPropertyMapperConfig.propertyName) {
-                  return configColumnNameToObjectPropertyMapperConfig.propertyName;
-                }
-              }
-              return camelCasePropertyName;
-            })(),
+            propertyName: camelCasePropertyName,
             ...(() => {
               return pick(
                 nonLookupColumnNameToObjectPropertyMapper[name],

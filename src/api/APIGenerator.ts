@@ -192,6 +192,7 @@ export const generateAirtableAPI = async ({
               configViews?: string[];
             } = { labelPlural: '', labelSingular: '' };
 
+            // Finding table definition in user config
             const configTable = configTables.find(({ name, base }) => {
               return (
                 name.trim() === tableName.trim() &&
@@ -205,7 +206,7 @@ export const generateAirtableAPI = async ({
                 alias: configTableAlias,
                 name: configTableName,
                 focusColumns,
-                nonLookupColumnNameToObjectPropertyMapper:
+                columnNameToObjectPropertyMapper:
                   configColumnNameToObjectPropertyMapper,
                 views,
               } = configTable;
@@ -649,10 +650,6 @@ export const generateAirtableAPI = async ({
             accumulator[tableColumn.name] =
               getTableColumnValidationSchemaTypeStrings(tableColumn, {
                 airtableAPIModelImportsCollector,
-                camelCasePropertyName: {
-                  ...nonLookupColumnNameToObjectPropertyMapper,
-                  ...lookupColumnNameToObjectPropertyMapper,
-                }[tableColumn.name].propertyName,
                 currentTable: table,
                 tableLabelSingular: labelSingular,
                 nonLookupColumnNameToObjectPropertyMapper,
@@ -678,7 +675,6 @@ export const generateAirtableAPI = async ({
               lookupColumnNameToObjectPropertyMapper,
               airtableAPIModelImportsCollector,
               restAPIModelImportsCollector,
-              configColumnNameToObjectPropertyMapper,
               queryableLookupFields,
               queryableNonLookupFields,
               restAPIModelExtrasCollector,
@@ -699,7 +695,6 @@ export const generateAirtableAPI = async ({
               views: filteredViews,
               labelPlural,
               labelSingular,
-              configColumnNameToObjectPropertyMapper,
               queryableLookupFields,
               queryableNonLookupFields,
               restAPIModelExtrasCollector,
