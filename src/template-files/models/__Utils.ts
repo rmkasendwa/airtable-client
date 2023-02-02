@@ -516,7 +516,7 @@ export const DeleteAirtableRecordResponseValidationSchema = z
     records: z.array(
       z.object({
         id: z.string(),
-        delete: z.boolean(),
+        deleted: z.boolean(),
       })
     ),
   })

@@ -267,22 +267,22 @@ export const generateAirtableAPI = async ({
               return !configViews || configViews.includes(name);
             });
 
-          // Filtering table columns with names with invalid characters
           const filteredTableColumns = columns
             .sort((a, b) => {
               return a.name.localeCompare(b.name);
             })
             .filter(({ name }) => {
               return (
-                name.replace(/[^\w\s]/g, '').length > 0 &&
+                (name.replace(/[^\w\s]/g, '').length > 0 || // Filtering table columns with names with invalid characters
+                  configColumnNameToObjectPropertyMapper?.[name]) &&
                 (!focusColumnNames || focusColumnNames.includes(name))
               );
             })
             .filter(({ name }) => {
               return (
-                !name.match(/^id$/gi) ||
+                !name.match(/^id$/gi) || // Filtering columns that match the id field to avoid overwriting the id
                 configColumnNameToObjectPropertyMapper?.[name]
-              ); // Filtering columns that match the id field to avoid overwriting the id
+              );
             });
 
           const nonLookupTableColumns = filteredTableColumns
