@@ -274,10 +274,15 @@ export const generateAirtableAPI = async ({
             })
             .filter(({ name }) => {
               return (
-                !name.match(/^id$/gi) &&
                 name.replace(/[^\w\s]/g, '').length > 0 &&
                 (!focusColumnNames || focusColumnNames.includes(name))
               );
+            })
+            .filter(({ name }) => {
+              return (
+                !name.match(/^id$/gi) ||
+                configColumnNameToObjectPropertyMapper?.[name]
+              ); // Filtering columns that match the id field to avoid overwriting the id
             });
 
           const nonLookupTableColumns = filteredTableColumns
