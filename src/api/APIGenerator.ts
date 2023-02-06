@@ -1,7 +1,7 @@
 import '@infinite-debugger/rmk-js-extensions/RegExp';
 import '@infinite-debugger/rmk-js-extensions/String';
 
-import { dirname, join, normalize } from 'path';
+import { dirname, join, normalize, relative } from 'path';
 
 import {
   ensureDirSync,
@@ -49,13 +49,13 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
 export interface GenerateAirtableAPIConfig {
   userConfig: Config<string>;
   outputRootPath: string;
-  generateAllTables: boolean;
+  generateAllTables?: boolean;
 }
 
 export const generateAirtableAPI = async ({
   userConfig,
   outputRootPath,
-  generateAllTables,
+  generateAllTables = false,
 }: GenerateAirtableAPIConfig) => {
   console.log('Generating airtable API...');
 
@@ -801,6 +801,27 @@ export const generateAirtableAPI = async ({
             }
           )
         );
+
+        // Generate api client config file
+        const clientTemplateDirectory = `${baseAPIOutputFolderPath}/__client_template`;
+        if (existsSync(clientTemplateDirectory)) {
+          const clientConfigFileContents = walk(clientTemplateDirectory, {
+            includeBasePath: true,
+            directories: false,
+          }).reduce((accumulator, filePath) => {
+            const relativeFilePath = relative(
+              clientTemplateDirectory,
+              filePath
+            );
+            accumulator[relativeFilePath] = readFileSync(filePath, 'utf-8');
+            return accumulator;
+          }, {} as Record<string, string>);
+          writeFileSync(
+            `${baseAPIOutputFolderPath}/api-client.config.json`,
+            JSON.stringify(clientConfigFileContents, null, 2)
+          );
+          // removeSync(clientTemplateDirectory);
+        }
 
         console.log(
           `\n\x1b[32mAirtable [${workingBaseName.trim()}] base API generated here: ${baseAPIOutputFolderPath}\x1b[0m`

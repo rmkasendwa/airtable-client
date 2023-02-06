@@ -33,13 +33,13 @@
     "prepare": "husky install",
     "publish": "npm run build && cd ./dist && npm publish --registry https://npm.pkg.github.com",
     "publish:dev": "npm run build && cd ./dist && npm publish --registry http://localhost:4873",
-    "start": "tsnd --ignore-watch node_modules --respawn --transpile-only src/index.ts",
+    "start": "tsnd --ignore-watch node_modules --respawn --transpile-only src/__tests__/run.test.ts",
     "tsc": "tsc --project tsconfig.compile.json",
     "version": "standard-version"
   },
   "dependencies": {
     "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.11",
-    "@infinite-debugger/rmk-utils": "^0.1.0-alpha.5",
+    "@infinite-debugger/rmk-utils": "^0.1.0-alpha.9",
     "axios": "^1.2.2",
     "base-64": "^1.0.0",
     "date-fns": "^2.29.3",
@@ -50,6 +50,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
+    "@infinite-debugger/axios-api-adapter": "^0.1.0-alpha.3",
     "@tsed/ajv": "^7.9.0",
     "@tsed/common": "^7.9.0",
     "@tsed/core": "^7.9.0",
