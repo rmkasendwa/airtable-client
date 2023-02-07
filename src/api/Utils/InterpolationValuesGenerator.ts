@@ -47,6 +47,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   lookupColumnNameToObjectPropertyMapper,
   queryableLookupFields,
   columnNameToValidationSchemaTypeStringGroupMapper,
+  restAPIModelExtrasCollector,
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
   const { id: baseId } = base;
   const editableFieldsTypes = editableTableColumns.filter((tableColumn) => {
@@ -174,13 +175,33 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         const {
           objectModelPropertyType: { propertyName, propertyType, required },
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+
+        const modelExtra = restAPIModelExtrasCollector.find(({ modelName }) => {
+          return modelName === propertyType;
+        });
+
+        if (modelExtra) {
+          const modelPropertiesString = modelExtra.modelProperties
+            .map(({ propertyName, propertyType, required }) => {
+              return `${propertyName}${required ? '' : '?'}: ${propertyType}`;
+            })
+            .join(';\n');
+          return `
+              ${propertyName}${
+            required ? '' : '?'
+          }: {\n${modelPropertiesString}\n}
+            `
+            .trimIndent()
+            .trim();
+        }
+
         return `
             ${propertyName}${required ? '' : '?'}: ${propertyType}
           `
           .trimIndent()
           .trim();
       })
-      .join(';\n\n'),
+      .join(';\n'),
 
     ['/* REQUEST_ENTITY_PROPERTIES */']: editableFieldsTypes
       .map((tableColumn) => {

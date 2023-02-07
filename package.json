@@ -1,6 +1,6 @@
 {
   "name": "@theoremone-talent/airtable-client",
-  "version": "1.0.0-alpha.29",
+  "version": "1.0.0-alpha.30",
   "description": "Airtable client",
   "keywords": [
     "airtable",
@@ -33,7 +33,7 @@
     "prepare": "husky install",
     "publish": "npm run build && cd ./dist && npm publish --registry https://npm.pkg.github.com",
     "publish:dev": "npm run build && cd ./dist && npm publish --registry http://localhost:4873",
-    "start": "tsnd --ignore-watch node_modules --respawn --transpile-only src/__tests__/run.test.ts",
+    "start": "tsnd --inspect=9892 --ignore-watch node_modules --respawn --transpile-only src/__tests__/run.test.ts",
     "tsc": "tsc --project tsconfig.compile.json",
     "version": "standard-version"
   },

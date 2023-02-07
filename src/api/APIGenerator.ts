@@ -51,12 +51,14 @@ export interface GenerateAirtableAPIConfig {
   userConfig: Config<string>;
   outputRootPath: string;
   generateAllTables?: boolean;
+  generateAPIClientConfig?: boolean;
 }
 
 export const generateAirtableAPI = async ({
   userConfig,
   outputRootPath,
   generateAllTables = false,
+  generateAPIClientConfig = false,
 }: GenerateAirtableAPIConfig) => {
   console.log('Generating airtable API...');
 
@@ -318,7 +320,7 @@ export const generateAirtableAPI = async ({
                     options?.fieldIdInLinkedTable &&
                     field.options?.recordLinkFieldId &&
                     field.options?.fieldIdInLinkedTable &&
-                    field.options.recordLinkFieldId ===
+                    options.recordLinkFieldId ===
                       field.options.recordLinkFieldId &&
                     options.fieldIdInLinkedTable ===
                       field.options.fieldIdInLinkedTable
@@ -806,22 +808,24 @@ export const generateAirtableAPI = async ({
         // Generate api client config file
         const clientTemplateDirectory = `${baseAPIOutputFolderPath}/__client_template`;
         if (existsSync(clientTemplateDirectory)) {
-          const clientConfigFileContents = walk(clientTemplateDirectory, {
-            includeBasePath: true,
-            directories: false,
-          }).reduce((accumulator, filePath) => {
-            const relativeFilePath = relative(
-              clientTemplateDirectory,
-              filePath
+          if (generateAPIClientConfig) {
+            const clientConfigFileContents = walk(clientTemplateDirectory, {
+              includeBasePath: true,
+              directories: false,
+            }).reduce((accumulator, filePath) => {
+              const relativeFilePath = relative(
+                clientTemplateDirectory,
+                filePath
+              );
+              accumulator[relativeFilePath] = readFileSync(filePath, 'utf-8');
+              return accumulator;
+            }, {} as Record<string, string>);
+            writeFileSync(
+              `${baseAPIOutputFolderPath}/api-client.config.json`,
+              JSON.stringify(clientConfigFileContents, null, 2)
             );
-            accumulator[relativeFilePath] = readFileSync(filePath, 'utf-8');
-            return accumulator;
-          }, {} as Record<string, string>);
-          writeFileSync(
-            `${baseAPIOutputFolderPath}/api-client.config.json`,
-            JSON.stringify(clientConfigFileContents, null, 2)
-          );
-          // removeSync(clientTemplateDirectory);
+          }
+          removeSync(clientTemplateDirectory);
         }
 
         console.log(

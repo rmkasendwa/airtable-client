@@ -7,6 +7,6 @@
     "outDir": "./dist",
     "preserveConstEnums": true
   },
-  "exclude": ["node_modules/**", "src/template-files/**"],
+  "exclude": ["node_modules/**", "src/template-files/**", "src/__tests__/**"],
   "extends": "./tsconfig"
 }

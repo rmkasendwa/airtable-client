@@ -64,7 +64,7 @@ export const PascalCaseEntityPropertyToAirtableLookupColumnNameMapper: Record<
   Object.entries(
     PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper
   ).map(([key, value]) => {
-    if (typeof value === 'object' && 'propertyName' in value) {
+    if (value != null && typeof value === 'object' && 'propertyName' in value) {
       return [value.propertyName, key];
     }
     return [value, key];
