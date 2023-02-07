@@ -2,10 +2,10 @@ import { DefaultRequestQueryParams } from './Utils';
 
 export type PascalCaseEntity = {
   id: string;
-  /* ENTITY_MODEL_FIELDS */
+  /* ENTITY_INTERFACE_FIELDS */
   name?: string;
   list?: string[];
-  /* ENTITY_MODEL_FIELDS */
+  /* ENTITY_INTERFACE_FIELDS */
 };
 
 // Entities Table table focus views.

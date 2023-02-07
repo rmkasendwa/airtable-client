@@ -7,7 +7,10 @@ import {
   DetailedColumnNameToObjectPropertyMapping,
   Table,
 } from '../../models';
-import { TableColumnValidationSchemaTypeStringGroup } from './TypeGenerator';
+import {
+  ModelClass,
+  TableColumnValidationSchemaTypeStringGroup,
+} from './TypeGenerator';
 
 export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   base: AirtableBase;
@@ -26,7 +29,7 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   >;
   airtableAPIModelImportsCollector: string[];
   restAPIModelImportsCollector: string[];
-  restAPIModelExtrasCollector: string[];
+  restAPIModelExtrasCollector: ModelClass[];
   queryableNonLookupFields: string[];
   queryableLookupFields: string[];
   columnNameToValidationSchemaTypeStringGroupMapper: Record<
@@ -146,9 +149,36 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 
     ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
       .map((tableColumn) => {
-        return columnNameToValidationSchemaTypeStringGroupMapper[
-          tableColumn.name
-        ].objectModelPropertyTypeString;
+        const {
+          objectModelPropertyType: {
+            accessModifier,
+            decorators,
+            propertyName,
+            propertyType,
+            required,
+          },
+        } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        return `
+          ${decorators.join('\n')}
+          ${accessModifier} ${propertyName}${
+          required ? '!' : '?'
+        }: ${propertyType}
+        `
+          .trimIndent()
+          .trim();
+      })
+      .join(';\n\n'),
+
+    ['/* ENTITY_INTERFACE_FIELDS */']: nonLookupTableColumns
+      .map((tableColumn) => {
+        const {
+          objectModelPropertyType: { propertyName, propertyType, required },
+        } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        return `
+            ${propertyName}${required ? '' : '?'}: ${propertyType}
+          `
+          .trimIndent()
+          .trim();
       })
       .join(';\n\n'),
 
@@ -166,9 +196,23 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 
     ['/* ENTITY_MODEL_EDITABLE_FIELDS */']: editableFieldsTypes
       .map((tableColumn) => {
-        return columnNameToValidationSchemaTypeStringGroupMapper[
-          tableColumn.name
-        ].objectModelPropertyTypeString;
+        const {
+          objectModelPropertyType: {
+            accessModifier,
+            decorators,
+            propertyName,
+            propertyType,
+            required,
+          },
+        } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        return `
+        ${decorators.join('\n')}
+        ${accessModifier} ${propertyName}${
+          required ? '!' : '?'
+        }: ${propertyType}
+      `
+          .trimIndent()
+          .trim();
       })
       .join(';\n\n'),
 
@@ -217,7 +261,34 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
     ].join('\n'),
 
     ['/* REST_API_MODEL_EXTRAS */']: [
-      ...new Set(restAPIModelExtrasCollector),
+      ...new Set(
+        restAPIModelExtrasCollector.map(({ modelName, modelProperties }) => {
+          const modelPropertiesString = modelProperties
+            .map(
+              ({
+                accessModifier,
+                decorators,
+                propertyName,
+                propertyType,
+                required,
+              }) => {
+                return `
+                  ${decorators.join('\n')}
+                  ${accessModifier} ${propertyName}${
+                  required ? '!' : '?'
+                }: ${propertyType}
+                `
+                  .trimIndent()
+                  .trim();
+              }
+            )
+            .join(';\n\n');
+
+          return `export class ${modelName} {
+            ${modelPropertiesString}
+          }`;
+        })
+      ),
     ].join('\n\n'),
 
     ['Entities Table']: tableName,

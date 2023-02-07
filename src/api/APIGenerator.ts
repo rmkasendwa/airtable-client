@@ -21,6 +21,7 @@ import {
 } from '../models';
 import { findAllAirtableBases, findAllTablesByBaseId } from './Metadata';
 import {
+  ModelClass,
   TableColumnValidationSchemaTypeStringGroup,
   getAirtableAPIGeneratorTemplateFileInterpolationBlocks,
   getAirtableAPIGeneratorTemplateFileInterpolationLabels,
@@ -376,7 +377,7 @@ export const generateAirtableAPI = async ({
           // TODO: Make imports objects with setting keys as paths and values as a list of import objects.
           const airtableAPIModelImportsCollector: string[] = [];
           const restAPIModelImportsCollector: string[] = [];
-          const restAPIModelExtrasCollector: string[] = [];
+          const restAPIModelExtrasCollector: ModelClass[] = [];
 
           console.log(
             `  -> Processing \x1b[34m${workingBaseName.trim()}/${tableName.trim()}\x1b[0m table...`
