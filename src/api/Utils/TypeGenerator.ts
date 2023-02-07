@@ -339,7 +339,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
         restAPIModelExtrasCollector.push(modelClass);
 
-        if (tableColumn.options?.prefersSingleRecordLink) {
+        if (
+          prefersSingleRecordLink ||
+          tableColumn.options?.prefersSingleRecordLink
+        ) {
           return {
             propertyName: camelCasePropertyName,
             propertyType: modelClassName,
@@ -356,7 +359,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       })();
       const requestObjectPropertyTypeValidationString = (() => {
         const validationString = `z.object({\nid: z.string()\n})`;
-        if (tableColumn.options?.prefersSingleRecordLink) {
+        if (
+          prefersSingleRecordLink ||
+          tableColumn.options?.prefersSingleRecordLink
+        ) {
           return validationString;
         }
         return `z.array(${validationString})`;
@@ -406,26 +412,26 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
       const airtableResponseValidationString: string = `z.array(${baseAirtableResponseValidationString}.nullish())`;
       const objectModelPropertyType = ((): ObjectModelProperty => {
-        if (
-          !baseObjectModelPropertyType.propertyName.match(/\[\]$/g) &&
-          !prefersSingleRecordLink
-        ) {
-          baseObjectModelPropertyType.decorators.push(`@ArrayOf(String)`);
-          baseObjectModelPropertyType.decorators.forEach((decorator, index) => {
-            if (decorator.match(/\@Example\((.+?)\)/g)) {
-              baseObjectModelPropertyType.decorators[index] = decorator.replace(
-                /\@Example\((.+?)\)/g,
-                (_, baseExample) => {
-                  return `@Example([${baseExample}])`;
-                }
-              );
-            }
-          });
-          return {
-            ...baseObjectModelPropertyType,
-            propertyType: `(${baseObjectModelPropertyType.propertyType})[]`,
-          };
-        }
+        // if (
+        //   !baseObjectModelPropertyType.propertyName.match(/\[\]$/g) &&
+        //   !prefersSingleRecordLink
+        // ) {
+        //   baseObjectModelPropertyType.decorators.push(`@ArrayOf(String)`);
+        //   baseObjectModelPropertyType.decorators.forEach((decorator, index) => {
+        //     if (decorator.match(/\@Example\((.+?)\)/g)) {
+        //       baseObjectModelPropertyType.decorators[index] = decorator.replace(
+        //         /\@Example\((.+?)\)/g,
+        //         (_, baseExample) => {
+        //           return `@Example([${baseExample}])`;
+        //         }
+        //       );
+        //     }
+        //   });
+        //   return {
+        //     ...baseObjectModelPropertyType,
+        //     propertyType: `(${baseObjectModelPropertyType.propertyType})[]`,
+        //   };
+        // } // Generating array lookup fields is a bit problematice
         return {
           ...baseObjectModelPropertyType,
           propertyType: `(${baseObjectModelPropertyType.propertyType})`,
