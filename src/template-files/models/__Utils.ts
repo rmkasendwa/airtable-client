@@ -313,36 +313,67 @@ export const getAirtableRecordResponseValidationSchema = <
                   ).propertyName;
                 })().split('.');
 
-                // Find parent field and make sure it only accepts one value
-                if (
-                  (
-                    nonLookupColumnNameToObjectPropertyMapper[
-                      objectPropertyToAirtableColumnNameMapper[refPropertyName]
-                    ] as any
-                  )?.prefersSingleRecordLink
-                ) {
-                  accumulator[refPropertyName] ||
-                    ((accumulator as any)[refPropertyName] = {});
-                  (accumulator as any)[refPropertyName][lookupPropertyName] =
-                    (() => {
-                      if (
-                        (
-                          lookupColumnNameToObjectPropertyMapper[
-                            key
-                          ] as AirtableColumnConfigMapping<string>
-                        ).isLookupWithListOfValues
-                      ) {
-                        if (!Array.isArray(fields[key])) {
-                          return [fields[key]];
+                // Find parent field
+                const nonLookupFieldMap =
+                  nonLookupColumnNameToObjectPropertyMapper[
+                    objectPropertyToAirtableColumnNameMapper[refPropertyName]
+                  ] as any;
+                if (nonLookupFieldMap) {
+                  if (nonLookupFieldMap.prefersSingleRecordLink) {
+                    accumulator[refPropertyName] ||
+                      ((accumulator as any)[refPropertyName] = {});
+                    (accumulator as any)[refPropertyName][lookupPropertyName] =
+                      (() => {
+                        if (
+                          (
+                            lookupColumnNameToObjectPropertyMapper[
+                              key
+                            ] as AirtableColumnConfigMapping<string>
+                          ).isLookupWithListOfValues
+                        ) {
+                          if (!Array.isArray(fields[key])) {
+                            return [fields[key]];
+                          }
+                          return fields[key];
                         }
-                        return fields[key];
-                      }
-                      return fields[key][0];
-                    })();
+                        return fields[key][0];
+                      })();
+                  } else {
+                    accumulator[refPropertyName] ||
+                      ((accumulator as any)[refPropertyName] = []);
+                    if (Array.isArray(fields[key])) {
+                      (fields[key] as any[]).forEach(
+                        (lookupFieldValue, index) => {
+                          (accumulator as any)[refPropertyName][index] ||
+                            ((accumulator as any)[refPropertyName][index] = {});
+                          (accumulator as any)[refPropertyName][index][
+                            lookupPropertyName
+                          ] = lookupFieldValue;
+                        }
+                      );
+                    }
+                    (accumulator as any)[refPropertyName][lookupPropertyName] =
+                      (() => {
+                        if (
+                          (
+                            lookupColumnNameToObjectPropertyMapper[
+                              key
+                            ] as AirtableColumnConfigMapping<string>
+                          ).isLookupWithListOfValues
+                        ) {
+                          if (!Array.isArray(fields[key])) {
+                            return [fields[key]];
+                          }
+                          return fields[key];
+                        }
+                        return fields[key][0];
+                      })();
+                  }
                 }
               } else if (typeof nonLookupColumMapping === 'string') {
                 (accumulator as any)[nonLookupColumMapping] = fields[key];
               } else if (nonLookupColumMapping.isMultipleRecordLinksField) {
+                // Check if reference field
                 if (fields[key] != null && Array.isArray(fields[key])) {
                   const linkFieldValue = fields[key] as string[];
                   const { propertyName, prefersSingleRecordLink } =
