@@ -355,7 +355,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
         }
         return {
           propertyName: camelCasePropertyName,
-          propertyType: modelClassName,
+          propertyType: `${modelClassName}[]`,
           accessModifier: 'public',
           decorators: ['@Property()', `@ArrayOf(${modelClassName})`],
         };

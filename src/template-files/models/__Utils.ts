@@ -330,7 +330,7 @@ export const getAirtableRecordResponseValidationSchema = <
                           lookupColumnNameToObjectPropertyMapper[
                             key
                           ] as AirtableColumnConfigMapping<string>
-                        ).isMultipleRecordLinksField
+                        ).isLookupWithListOfValues
                       ) {
                         if (!Array.isArray(fields[key])) {
                           return [fields[key]];
