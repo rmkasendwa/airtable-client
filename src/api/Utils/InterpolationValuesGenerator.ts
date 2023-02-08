@@ -115,6 +115,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
                   return pick(
                     lookupColumnNameToObjectPropertyMapper[name],
                     'prefersSingleRecordLink',
+                    'isLookupWithListOfValues',
                     'type'
                   );
                 })(),

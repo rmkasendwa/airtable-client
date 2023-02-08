@@ -166,11 +166,14 @@ export const getTableColumnValidationSchemaTypeStrings = (
   const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
 
   const { type } = tableColumn;
-  const { type: userDefinedType, prefersSingleRecordLink } =
-    {
-      ...nonLookupColumnNameToObjectPropertyMapper,
-      ...lookupColumnNameToObjectPropertyMapper,
-    }[tableColumn.name] || {};
+  const {
+    type: userDefinedType,
+    prefersSingleRecordLink,
+    isLookupWithListOfValues,
+  } = {
+    ...nonLookupColumnNameToObjectPropertyMapper,
+    ...lookupColumnNameToObjectPropertyMapper,
+  }[tableColumn.name] || {};
 
   switch (type) {
     case 'multipleSelects':
@@ -412,26 +415,26 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
       const airtableResponseValidationString: string = `z.array(${baseAirtableResponseValidationString}.nullish())`;
       const objectModelPropertyType = ((): ObjectModelProperty => {
-        // if (
-        //   !baseObjectModelPropertyType.propertyName.match(/\[\]$/g) &&
-        //   !prefersSingleRecordLink
-        // ) {
-        //   baseObjectModelPropertyType.decorators.push(`@ArrayOf(String)`);
-        //   baseObjectModelPropertyType.decorators.forEach((decorator, index) => {
-        //     if (decorator.match(/\@Example\((.+?)\)/g)) {
-        //       baseObjectModelPropertyType.decorators[index] = decorator.replace(
-        //         /\@Example\((.+?)\)/g,
-        //         (_, baseExample) => {
-        //           return `@Example([${baseExample}])`;
-        //         }
-        //       );
-        //     }
-        //   });
-        //   return {
-        //     ...baseObjectModelPropertyType,
-        //     propertyType: `(${baseObjectModelPropertyType.propertyType})[]`,
-        //   };
-        // } // Generating array lookup fields is a bit problematice
+        if (
+          !baseObjectModelPropertyType.propertyName.match(/\[\]$/g) &&
+          isLookupWithListOfValues
+        ) {
+          baseObjectModelPropertyType.decorators.push(`@ArrayOf(String)`);
+          baseObjectModelPropertyType.decorators.forEach((decorator, index) => {
+            if (decorator.match(/\@Example\((.+?)\)/g)) {
+              baseObjectModelPropertyType.decorators[index] = decorator.replace(
+                /\@Example\((.+?)\)/g,
+                (_, baseExample) => {
+                  return `@Example([${baseExample}])`;
+                }
+              );
+            }
+          });
+          return {
+            ...baseObjectModelPropertyType,
+            propertyType: `(${baseObjectModelPropertyType.propertyType})[]`,
+          };
+        }
         return {
           ...baseObjectModelPropertyType,
           propertyType: `(${baseObjectModelPropertyType.propertyType})`,

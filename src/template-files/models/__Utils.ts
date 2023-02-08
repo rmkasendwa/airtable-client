@@ -246,6 +246,7 @@ export type AirtableColumnConfigMapping<ObjectPropertyName extends string> = {
   propertyName: ObjectPropertyName;
   isMultipleRecordLinksField?: boolean;
   prefersSingleRecordLink?: boolean;
+  isLookupWithListOfValues?: boolean;
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
 };
 
@@ -291,7 +292,7 @@ export const getAirtableRecordResponseValidationSchema = <
           .sort()
           .reduce((accumulator, key) => {
             if (fields[key] != null) {
-              const noneLookupColumMapping =
+              const nonLookupColumMapping =
                 nonLookupColumnNameToObjectPropertyMapper[key];
 
               // Check if the field is a lookup column.
@@ -329,20 +330,23 @@ export const getAirtableRecordResponseValidationSchema = <
                           lookupColumnNameToObjectPropertyMapper[
                             key
                           ] as AirtableColumnConfigMapping<string>
-                        ).prefersSingleRecordLink
+                        ).isMultipleRecordLinksField
                       ) {
-                        return fields[key][0];
+                        if (!Array.isArray(fields[key])) {
+                          return [fields[key]];
+                        }
+                        return fields[key];
                       }
-                      return fields[key];
+                      return fields[key][0];
                     })();
                 }
-              } else if (typeof noneLookupColumMapping === 'string') {
-                (accumulator as any)[noneLookupColumMapping] = fields[key];
-              } else if (noneLookupColumMapping.isMultipleRecordLinksField) {
+              } else if (typeof nonLookupColumMapping === 'string') {
+                (accumulator as any)[nonLookupColumMapping] = fields[key];
+              } else if (nonLookupColumMapping.isMultipleRecordLinksField) {
                 if (fields[key] != null && Array.isArray(fields[key])) {
                   const linkFieldValue = fields[key] as string[];
                   const { propertyName, prefersSingleRecordLink } =
-                    noneLookupColumMapping;
+                    nonLookupColumMapping;
                   if (prefersSingleRecordLink) {
                     accumulator[propertyName] ||
                       ((accumulator as any)[propertyName] = {});
@@ -358,8 +362,8 @@ export const getAirtableRecordResponseValidationSchema = <
                   }
                 }
               } else {
-                const { type } = noneLookupColumMapping;
-                (accumulator as any)[noneLookupColumMapping.propertyName] =
+                const { type } = nonLookupColumMapping;
+                (accumulator as any)[nonLookupColumMapping.propertyName] =
                   fields[key];
 
                 if (type) {
@@ -367,10 +371,10 @@ export const getAirtableRecordResponseValidationSchema = <
                     case 'boolean':
                       {
                         (accumulator as any)[
-                          noneLookupColumMapping.propertyName
+                          nonLookupColumMapping.propertyName
                         ] = Boolean(
                           (accumulator as any)[
-                            noneLookupColumMapping.propertyName
+                            nonLookupColumMapping.propertyName
                           ]
                         );
                       }
@@ -379,16 +383,16 @@ export const getAirtableRecordResponseValidationSchema = <
                       {
                         const num = parseFloat(
                           (accumulator as any)[
-                            noneLookupColumMapping.propertyName
+                            nonLookupColumMapping.propertyName
                           ]
                         );
                         if (!isNaN(num)) {
                           (accumulator as any)[
-                            noneLookupColumMapping.propertyName
+                            nonLookupColumMapping.propertyName
                           ] = num;
                         } else {
                           delete (accumulator as any)[
-                            noneLookupColumMapping.propertyName
+                            nonLookupColumMapping.propertyName
                           ];
                         }
                       }
@@ -398,13 +402,13 @@ export const getAirtableRecordResponseValidationSchema = <
                         if (
                           Array.isArray(
                             (accumulator as any)[
-                              noneLookupColumMapping.propertyName
+                              nonLookupColumMapping.propertyName
                             ]
                           )
                         ) {
                           [
                             ...(accumulator as any)[
-                              noneLookupColumMapping.propertyName
+                              nonLookupColumMapping.propertyName
                             ],
                           ]
                             .filter((value) => {
@@ -415,7 +419,7 @@ export const getAirtableRecordResponseValidationSchema = <
                             });
                         } else {
                           delete (accumulator as any)[
-                            noneLookupColumMapping.propertyName
+                            nonLookupColumMapping.propertyName
                           ];
                         }
                       }
@@ -423,10 +427,10 @@ export const getAirtableRecordResponseValidationSchema = <
                     case 'string':
                       {
                         (accumulator as any)[
-                          noneLookupColumMapping.propertyName
+                          nonLookupColumMapping.propertyName
                         ] = String(
                           (accumulator as any)[
-                            noneLookupColumMapping.propertyName
+                            nonLookupColumMapping.propertyName
                           ]
                         );
                       }
@@ -436,20 +440,20 @@ export const getAirtableRecordResponseValidationSchema = <
                         if (
                           Array.isArray(
                             (accumulator as any)[
-                              noneLookupColumMapping.propertyName
+                              nonLookupColumMapping.propertyName
                             ]
                           )
                         ) {
                           [
                             ...(accumulator as any)[
-                              noneLookupColumMapping.propertyName
+                              nonLookupColumMapping.propertyName
                             ],
                           ].map((value) => {
                             return String(value);
                           });
                         } else {
                           delete (accumulator as any)[
-                            noneLookupColumMapping.propertyName
+                            nonLookupColumMapping.propertyName
                           ];
                         }
                       }

@@ -602,6 +602,23 @@ export const generateAirtableAPI = async ({
                   }
                 })(),
                 ...(() => {
+                  if (
+                    configColumnNameToObjectPropertyMapper?.[
+                      tableColumn.name
+                    ] &&
+                    typeof configColumnNameToObjectPropertyMapper?.[
+                      tableColumn.name
+                    ] === 'object' &&
+                    (
+                      configColumnNameToObjectPropertyMapper?.[
+                        tableColumn.name
+                      ] as DetailedColumnNameToObjectPropertyMapping
+                    ).isLookupWithListOfValues
+                  ) {
+                    return { isLookupWithListOfValues: true };
+                  }
+                })(),
+                ...(() => {
                   // Extracting user defined object data type
                   if (
                     typeof configColumnNameToObjectPropertyMapper?.[

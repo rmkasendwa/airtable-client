@@ -103,6 +103,12 @@ export default defineConfig({
           prefersSingleRecordLink: true,
         },
         'State/province': 'state',
+        'Topology Permission Codes': {
+          isLookupWithListOfValues: true,
+        },
+        'Topology Permission Exclude Codes': {
+          isLookupWithListOfValues: true,
+        },
       },
       views: ['Current Team', 'All Team Members', 'Alumni', 'Bench'],
     },

@@ -8,6 +8,7 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
 > & {
   propertyName?: string;
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
+  isLookupWithListOfValues?: boolean;
 };
 
 export type DetailedColumnNameToObjectPropertyMapping = Required<
