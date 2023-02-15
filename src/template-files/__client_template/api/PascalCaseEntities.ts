@@ -17,6 +17,10 @@ import {
   UPDATE_EXISTING_ENTITY_ENDPOINT_PATH,
 } from '../endpoint-paths/PascalCaseEntities';
 import {
+  DeleteRecordResponse,
+  DeleteRecordsResponse,
+} from '../interfaces/_Utils';
+import {
   CreateNewPascalCaseEntitiesReponse,
   FindAllPascalCaseEntitiesReponse,
   PascalCaseEntity,
@@ -28,10 +32,6 @@ import {
   FindAllPascalCaseEntitiesQueryParams,
   FindFirstPagePascalCaseEntitiesQueryParams,
 } from '../interfaces/PascalCaseEntities';
-import {
-  DeleteRecordResponse,
-  DeleteRecordsResponse,
-} from '../interfaces/Utils';
 import { RequestOptions, _delete, get, patch, post, put } from './Adapter';
 
 /**

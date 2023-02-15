@@ -1,4 +1,5 @@
-import { DefaultRequestQueryParams } from './Utils';
+import { DefaultRequestQueryParams } from './_Utils';
+/* REST_API_MODEL_IMPORTS */
 
 export type PascalCaseEntity = {
   id: string;
