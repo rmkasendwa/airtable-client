@@ -106,6 +106,7 @@ export const airtableViewTypes = [
   'kanban',
   'timeline',
   'block',
+  'levels',
 ] as const;
 
 export type AirtableViewType = typeof airtableViewTypes[number];
