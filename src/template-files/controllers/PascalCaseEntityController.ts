@@ -36,16 +36,14 @@ import { Authorize } from '../decorators/Authorize.placeholder';
 import {
   DeleteAirtableRecordResponse,
   DeleteAirtableRecordsResponse,
-  FindAllRecordsQueryParams,
 } from '../models/__Utils';
 import {
   CreateNewPascalCaseEntitiesReponse,
+  FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponse,
   PascalCaseEntity,
   PascalCaseEntityCreationDetails,
-  PascalCaseEntityQueryableField,
   PascalCaseEntityUpdates,
-  PascalCaseEntityView,
   UpdatePascalCaseEntitiesReponse,
 } from '../models/PascalCaseEntities';
 import {
@@ -72,10 +70,7 @@ export class PascalCaseEntityController {
   )
   async findPascalCaseEntitiesFirstPage(
     @QueryParams()
-    queryParams: FindAllRecordsQueryParams<
-      PascalCaseEntityQueryableField,
-      PascalCaseEntityView
-    >
+    queryParams: FindAllPascalCaseEntitiesQueryParams
   ) {
     return findPascalCaseEntitiesFirstPage(queryParams as any);
   }
@@ -91,10 +86,7 @@ export class PascalCaseEntityController {
   )
   async findAllPascalCaseEntities(
     @QueryParams()
-    queryParams: FindAllRecordsQueryParams<
-      PascalCaseEntityQueryableField,
-      PascalCaseEntityView
-    >
+    queryParams: FindAllPascalCaseEntitiesQueryParams
   ) {
     return findAllPascalCaseEntities(queryParams as any) as any;
   }

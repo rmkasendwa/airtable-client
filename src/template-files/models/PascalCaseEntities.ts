@@ -1,6 +1,7 @@
 import {
   ArrayOf,
   Description,
+  Enum,
   Example,
   Property,
   Required,
@@ -9,6 +10,8 @@ import { z } from 'zod';
 
 import {
   AirtableColumnMapping,
+  AirtableSortOption,
+  FindAllRecordsQueryParams,
   getAirtableRecordRequestValidationSchema,
   getAirtableRecordResponseValidationSchema,
 } from './__Utils';
@@ -93,6 +96,15 @@ export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 };
 
+export const camelCaseEntityQueryableFields = [
+  /* QUERYABLE_FIELDS */
+  'name',
+  /* QUERYABLE_FIELDS */
+] as const;
+
+export type PascalCaseEntityQueryableField =
+  typeof camelCaseEntityQueryableFields[number];
+
 /********************* Airtable Entities Table views ***********************/
 
 // Entities Table table focus views.
@@ -102,10 +114,6 @@ export const camelCaseEntityViews = [
 
 // Entities Table table view type.
 export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
-
-export type PascalCaseEntityQueryableField =
-  | keyof PascalCaseEntity /* QUERYABLE_FIELD_TYPE */
-  | 'id' /* QUERYABLE_FIELD_TYPE */;
 
 /********************* Validation Schemas ***********************/
 
@@ -266,3 +274,49 @@ export class PascalCaseEntityUpdates extends PascalCaseEntityCreationDetails {
 }
 
 export class UpdatePascalCaseEntitiesReponse extends CreateNewPascalCaseEntitiesReponse {}
+
+export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryParams {
+  @Property()
+  @Enum(...camelCaseEntityQueryableFields)
+  @Description(
+    `
+    Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
+
+    For example, to only return data from Name and Status, send these two query parameters:
+
+    fields%5B%5D=Name&fields%5B%5D=Status
+    You can also perform the same action with field ids (they can be found in the fields section):
+
+    fields%5B%5D=fldG9yBafL709WagC&fields%5B%5D=fldySXPDpkljy1BCq
+    Note: %5B%5D may be omitted when specifying multiple fields, but must always be included when specifying only a single field.
+  `
+      .trimIndent()
+      .trim()
+  )
+  public declare fields?: PascalCaseEntityQueryableField[];
+
+  @Property()
+  @ArrayOf(AirtableSortOption)
+  @Description(
+    `
+    A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
+
+    The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
+
+    For example, to sort records by name in descending order, send these two query parameters:
+
+    sort%5B0%5D%5Bfield%5D=name
+    sort%5B0%5D%5Bdirection%5D=desc
+  `
+      .trimIndent()
+      .trim()
+  )
+  public declare sort?: AirtableSortOption[];
+
+  @Property()
+  @Enum(...camelCaseEntityViews)
+  @Description(
+    'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
+  )
+  public declare view?: PascalCaseEntityView;
+}

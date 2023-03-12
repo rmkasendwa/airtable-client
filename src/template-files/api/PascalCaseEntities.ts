@@ -7,21 +7,20 @@ import {
 import { AIRTABLE_BASE_ID } from '../config';
 import {
   DeleteAirtableRecordResponseValidationSchema,
-  FindAllRecordsQueryParams,
   convertToAirtableFindAllRecordsQueryParams,
 } from '../models/__Utils';
 import {
   AirtablePascalCaseEntity,
   CreatePascalCaseEntitiesRequestValidationSchema,
+  FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponseValidationSchema,
   PascalCaseEntityAirtableResponseValidationSchema,
   PascalCaseEntityCreationDetails,
   PascalCaseEntityPropertyToAirtableColumnNameMapper,
   PascalCaseEntityPropertyToAirtableLookupColumnNameMapper,
-  PascalCaseEntityQueryableField,
   PascalCaseEntityUpdates,
-  PascalCaseEntityView,
   UpdatePascalCaseEntitiesRequestValidationSchema,
+  camelCaseEntityQueryableFields,
 } from '../models/PascalCaseEntities';
 import Adapter from './Adapter';
 
@@ -34,11 +33,6 @@ export const ENTITY_CREATE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 export const ENTITY_UPDATE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 export const ENTITY_DELETE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 
-/***************************** DEFAULTS *********************************/
-const DEFAULT_ENTITY_QUERYABLE_FIELDS: PascalCaseEntityQueryableField[] = [
-  /* QUERYABLE_FIELDS */
-];
-
 /**
  * Finds entities label limited by queryParams.pageSize
  *
@@ -46,10 +40,7 @@ const DEFAULT_ENTITY_QUERYABLE_FIELDS: PascalCaseEntityQueryableField[] = [
  * @returns The entities label.
  */
 export const findPascalCaseEntitiesFirstPage = async (
-  queryParams: FindAllRecordsQueryParams<
-    PascalCaseEntityQueryableField,
-    PascalCaseEntityView
-  > = {}
+  queryParams: FindAllPascalCaseEntitiesQueryParams = {}
 ) => {
   console.log(
     `\nLoading entities label with the following input:\x1b[2m\n${JSON.stringify(
@@ -59,8 +50,11 @@ export const findPascalCaseEntitiesFirstPage = async (
     )}\x1b[0m`
   );
 
-  if (!queryParams.fields && DEFAULT_ENTITY_QUERYABLE_FIELDS.length > 0) {
-    queryParams = { ...queryParams, fields: DEFAULT_ENTITY_QUERYABLE_FIELDS };
+  if (!queryParams.fields && camelCaseEntityQueryableFields.length > 0) {
+    queryParams = {
+      ...queryParams,
+      fields: [...camelCaseEntityQueryableFields],
+    };
   }
 
   const airtableRequestUrl = addSearchParams(
@@ -90,10 +84,7 @@ export const findPascalCaseEntitiesFirstPage = async (
  * @returns The entities label.
  */
 export const findAllPascalCaseEntities = async (
-  queryParams: FindAllRecordsQueryParams<
-    PascalCaseEntityQueryableField,
-    PascalCaseEntityView
-  > = {}
+  queryParams: FindAllPascalCaseEntitiesQueryParams = {}
 ) => {
   const records: AirtablePascalCaseEntity[] = [];
 

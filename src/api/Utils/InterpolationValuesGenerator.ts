@@ -45,6 +45,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   editableTableColumns,
   nonLookupColumnNameToObjectPropertyMapper,
   lookupColumnNameToObjectPropertyMapper,
+  queryableNonLookupFields,
   queryableLookupFields,
   columnNameToValidationSchemaTypeStringGroupMapper,
   restAPIModelExtrasCollector,
@@ -149,6 +150,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       return '';
     })(),
 
+    ['/* QUERYABLE_FIELDS */']: [
+      ...queryableNonLookupFields,
+      ...queryableLookupFields,
+    ].join(', '),
+
     ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
       .map((tableColumn) => {
         const {
@@ -250,8 +256,6 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   views,
   labelSingular,
   labelPlural,
-  queryableNonLookupFields,
-  queryableLookupFields,
 }: Omit<
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
   'base' | 'editableTableColumns'
@@ -268,11 +272,6 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
         return `"${RegExp.escape(name)}"`;
       })
       .join(', '),
-
-    ['/* QUERYABLE_FIELDS */']: [
-      ...queryableNonLookupFields,
-      ...queryableLookupFields,
-    ].join(', '),
 
     ['/* AIRTABLE_API_MODEL_IMPORTS */']: [
       ...new Set(airtableAPIModelImportsCollector),
