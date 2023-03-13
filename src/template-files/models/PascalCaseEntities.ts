@@ -275,6 +275,13 @@ export class PascalCaseEntityUpdates extends PascalCaseEntityCreationDetails {
 
 export class UpdatePascalCaseEntitiesReponse extends CreateNewPascalCaseEntitiesReponse {}
 
+export class PascalCaseEntitiesSortOption extends AirtableSortOption {
+  @Property()
+  @Enum(...camelCaseEntityQueryableFields)
+  @Description('The field to sort by.')
+  public declare field: PascalCaseEntityQueryableField;
+}
+
 export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryParams {
   @Property()
   @Enum(...camelCaseEntityQueryableFields)
@@ -296,7 +303,7 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
   public declare fields?: PascalCaseEntityQueryableField[];
 
   @Property()
-  @ArrayOf(AirtableSortOption)
+  @ArrayOf(PascalCaseEntitiesSortOption)
   @Description(
     `
     A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
@@ -311,7 +318,7 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
       .trimIndent()
       .trim()
   )
-  public declare sort?: AirtableSortOption[];
+  public declare sort?: PascalCaseEntitiesSortOption[];
 
   @Property()
   @Enum(...camelCaseEntityViews)
