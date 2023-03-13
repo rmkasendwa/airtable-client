@@ -57,23 +57,23 @@ export const findPascalCaseEntitiesFirstPage = async (
     };
   }
 
-  const airtableRequestUrl = addSearchParams(
-    FIND_ALL_ENTITIES_ENDPOINT_PATH,
-    {
-      ...convertToAirtableFindAllRecordsQueryParams(
-        queryParams as any,
-        PascalCaseEntityPropertyToAirtableColumnNameMapper,
-        PascalCaseEntityPropertyToAirtableLookupColumnNameMapper
-      ),
-    },
-    { arrayParamStyle: 'append' }
+  const requestPayload = convertToAirtableFindAllRecordsQueryParams(
+    queryParams as any,
+    PascalCaseEntityPropertyToAirtableColumnNameMapper,
+    PascalCaseEntityPropertyToAirtableLookupColumnNameMapper
   );
+
+  const requestUrl = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/listRecords`;
 
   console.log(
-    `\nSending entities label GET request to airtable to the following URL:\x1b[2m\n${airtableRequestUrl}\x1b[0m`
+    `\nSending entities label POST request to airtable to the following URL:\x1b[2m\n${requestUrl}\x1b[0m\nWith the following payload: \x1b[2m\n${JSON.stringify(
+      requestPayload,
+      null,
+      2
+    )}\x1b[0m`
   );
 
-  const { data } = await Adapter.get(airtableRequestUrl);
+  const { data } = await Adapter.post(requestUrl, requestPayload);
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
