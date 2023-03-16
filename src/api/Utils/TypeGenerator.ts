@@ -315,6 +315,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
               accessModifier: 'public',
               decorators: [
                 '@Property()',
+                '@Required()',
                 `@Description('Unique identifer for ${tableColumn.name}')`,
                 `@Example('recO0FYb1Tccm9MZ2')`,
               ],
