@@ -5,6 +5,7 @@ import {
   Enum,
   Example,
   Property,
+  Required,
 } from '@tsed/schema';
 import { omit } from 'lodash';
 import { AnyZodObject, z } from 'zod';
@@ -49,10 +50,12 @@ export type AirtableFieldType = typeof airtableFieldTypes[number];
 
 export class AirtableSortOption<Field extends string = string> {
   @Property()
+  @Required()
   @Description('The field to sort by.')
   public field!: Field;
 
   @Property()
+  @Required()
   @Enum('asc', 'desc')
   @Description('The sort direction')
   @Example('asc')

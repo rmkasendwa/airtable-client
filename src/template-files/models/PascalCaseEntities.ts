@@ -235,6 +235,7 @@ export const UpdatePascalCaseEntitiesRequestValidationSchema = z.array(
 
 export class FindAllPascalCaseEntitiesReponse {
   @Property()
+  @Required()
   @ArrayOf(PascalCaseEntity)
   @Description('The list of Entities Label.')
   public records!: PascalCaseEntity[];
@@ -260,6 +261,7 @@ export class PascalCaseEntityCreationDetails {
 
 export class CreateNewPascalCaseEntitiesReponse {
   @Property()
+  @Required()
   @ArrayOf(PascalCaseEntity)
   @Description('The list of Entities Label.')
   public records!: PascalCaseEntity[];
@@ -277,6 +279,7 @@ export class UpdatePascalCaseEntitiesReponse extends CreateNewPascalCaseEntities
 
 export class PascalCaseEntitiesSortOption extends AirtableSortOption {
   @Property()
+  @Required()
   @Enum(...camelCaseEntityQueryableFields)
   @Description('The field to sort by.')
   public declare field: PascalCaseEntityQueryableField;
