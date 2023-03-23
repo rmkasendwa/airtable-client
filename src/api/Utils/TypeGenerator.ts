@@ -196,7 +196,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
         propertyName: camelCasePropertyName,
         propertyType: `AirtableAttachment[]`,
         accessModifier: 'public',
-        decorators: ['@Property()'],
+        decorators: ['@Property()', '@ArrayOf(AirtableAttachment)'],
         required: false,
       };
 
@@ -414,7 +414,12 @@ export const getTableColumnValidationSchemaTypeStrings = (
         );
       })();
 
-      const airtableResponseValidationString: string = `z.array(${baseAirtableResponseValidationString}.nullish())`;
+      const airtableResponseValidationString: string = (() => {
+        if (!baseAirtableResponseValidationString.match(/^z\.array/g)) {
+          return `z.array(${baseAirtableResponseValidationString}.nullish())`;
+        }
+        return baseAirtableResponseValidationString;
+      })();
       const objectModelPropertyType = ((): ObjectModelProperty => {
         if (
           !baseObjectModelPropertyType.propertyName.match(/\[\]$/g) &&
