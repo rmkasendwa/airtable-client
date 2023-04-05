@@ -255,6 +255,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
             'count',
             'autoNumber',
             'rating',
+            'singleLineText',
           ].includes(tableColumn.options?.result?.type)
         ) {
           return getTableColumnValidationSchemaTypeStrings(
