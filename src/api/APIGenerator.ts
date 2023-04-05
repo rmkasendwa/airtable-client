@@ -670,9 +670,8 @@ export const generateAirtableAPI = async ({
           // TODO: Merge all schema generation calls
           const columnNameToValidationSchemaTypeStringGroupMapper = [
             ...nonLookupTableColumns,
-            ...lookupTableColumns,
           ].reduce((accumulator, tableColumn) => {
-            accumulator[tableColumn.name] =
+            const tableColumnValidationSchemaTypeStrings =
               getTableColumnValidationSchemaTypeStrings(tableColumn, {
                 airtableAPIModelImportsCollector,
                 currentTable: table,
@@ -684,6 +683,26 @@ export const generateAirtableAPI = async ({
                 restAPIModelImportsCollector,
                 tables,
               });
+
+            if (tableColumn.type === 'multipleRecordLinks') {
+              const tableColumnModelExtras = restAPIModelExtrasCollector.find(
+                ({ modelName }) => {
+                  return (
+                    modelName ===
+                    tableColumnValidationSchemaTypeStrings.propertyType
+                  );
+                }
+              );
+              if (tableColumnModelExtras) {
+                const { modelProperties } = tableColumnModelExtras;
+                modelProperties.forEach((modelProperty) => {
+                  accumulator[modelProperty.tableColumName] = modelProperty;
+                });
+              }
+            }
+
+            accumulator[tableColumn.name] =
+              tableColumnValidationSchemaTypeStrings;
             return accumulator;
           }, {} as Record<string, TableColumnValidationSchemaTypeStringGroup>);
 

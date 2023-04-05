@@ -135,11 +135,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       ...nonLookupTableColumns,
       ...lookupTableColumns,
     ]
-      .map((field) => {
-        return `["${field.name}"]: ${
-          columnNameToValidationSchemaTypeStringGroupMapper[field.name]
-            .airtableResponseValidationString
-        }.nullish()`;
+      .filter(({ name }) => {
+        return columnNameToValidationSchemaTypeStringGroupMapper[name];
+      })
+      .map(({ name }) => {
+        return `["${name}"]: ${columnNameToValidationSchemaTypeStringGroupMapper[name].airtableResponseValidationString}.nullish()`;
       })
       .join(',\n'),
 
@@ -158,13 +158,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
     ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
       .map((tableColumn) => {
         const {
-          objectModelPropertyType: {
-            accessModifier,
-            decorators,
-            propertyName,
-            propertyType,
-            required,
-          },
+          accessModifier,
+          decorators,
+          propertyName,
+          propertyType,
+          required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
         return `
           ${decorators.join('\n')}
@@ -179,9 +177,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
 
     ['/* ENTITY_INTERFACE_FIELDS */']: nonLookupTableColumns
       .map((tableColumn) => {
-        const {
-          objectModelPropertyType: { propertyName, propertyType, required },
-        } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        const { propertyName, propertyType, required } =
+          columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
 
         const modelExtra = restAPIModelExtrasCollector.find(({ modelName }) => {
           return modelName === propertyType;
@@ -225,13 +222,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
     ['/* ENTITY_MODEL_EDITABLE_FIELDS */']: editableFieldsTypes
       .map((tableColumn) => {
         const {
-          objectModelPropertyType: {
-            accessModifier,
-            decorators,
-            propertyName,
-            propertyType,
-            required,
-          },
+          accessModifier,
+          decorators,
+          propertyName,
+          propertyType,
+          required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
         return `
         ${decorators.join('\n')}
@@ -257,7 +252,6 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   labelSingular,
   labelPlural,
   nonLookupTableColumns,
-  lookupTableColumns,
   columnNameToValidationSchemaTypeStringGroupMapper,
 }: Omit<
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
@@ -290,30 +284,24 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
           .filter((tableColumn) => {
             return columnNameToValidationSchemaTypeStringGroupMapper[
               tableColumn.name
-            ]?.objectModelPropertyType?.typeDefinitionSnippet;
+            ]?.typeDefinitionSnippet;
           })
           .map((tableColumn) => {
-            const {
-              objectModelPropertyType: { typeDefinitionSnippet },
-            } =
+            const { typeDefinitionSnippet } =
               columnNameToValidationSchemaTypeStringGroupMapper[
                 tableColumn.name
               ];
             return typeDefinitionSnippet!.trimIndent().trim();
           }),
-        ...lookupTableColumns
-          .filter((tableColumn) => {
-            return columnNameToValidationSchemaTypeStringGroupMapper[
-              tableColumn.name
-            ]?.objectModelPropertyType?.typeDefinitionSnippet;
+        ...restAPIModelExtrasCollector
+          .reduce((accumulator, modelDefinition) => {
+            accumulator.push(...modelDefinition.modelProperties);
+            return accumulator;
+          }, [] as typeof restAPIModelExtrasCollector[number]['modelProperties'])
+          .filter(({ typeDefinitionSnippet }) => {
+            return typeDefinitionSnippet;
           })
-          .map((tableColumn) => {
-            const {
-              objectModelPropertyType: { typeDefinitionSnippet },
-            } =
-              columnNameToValidationSchemaTypeStringGroupMapper[
-                tableColumn.name
-              ];
+          .map(({ typeDefinitionSnippet }) => {
             return typeDefinitionSnippet!.trimIndent().trim();
           }),
         ...restAPIModelExtrasCollector.map(({ modelName, modelProperties }) => {
