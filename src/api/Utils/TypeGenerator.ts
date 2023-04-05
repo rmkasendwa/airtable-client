@@ -188,7 +188,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
     case 'multipleAttachments': {
       airtableAPIModelImportsCollector.push(
-        `import {AirtableAttachmentValidationSchema, AirtableAttachment} from './__Utils';`
+        `import {AirtableAttachmentValidationSchema, AirtableAttachment} from './Utils';`
       );
 
       const airtableResponseValidationString = `z.array(AirtableAttachmentValidationSchema)`;
@@ -208,7 +208,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
     case 'button': {
       airtableAPIModelImportsCollector.push(
-        `import {AirtableButton, AirtableButtonValidationSchema} from './__Utils';`
+        `import {AirtableButton, AirtableButtonValidationSchema} from './Utils';`
       );
 
       const airtableResponseValidationString = `AirtableButtonValidationSchema`;
@@ -228,7 +228,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
     case 'formula': {
       airtableAPIModelImportsCollector.push(
-        `import {AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
+        `import {AirtableFormulaColumnErrorValidationSchema} from './Utils';`
       );
 
       const {
@@ -624,10 +624,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = (() => {
         switch (type) {
           case 'multipleSelects':
-            return `z.enum(${enumValuesVariableName})`;
+            return `z.array(z.enum(${enumValuesVariableName}))`;
           case 'singleSelect':
           default:
-            return `z.array(z.enum(${enumValuesVariableName}))`;
+            return `z.enum(${enumValuesVariableName})`;
         }
       })();
       const objectModelPropertyType: ObjectModelProperty = {

@@ -32,6 +32,7 @@ import {
 /* AUTH_IMPORTS */
 import { Authenticate } from '../decorators/Authenticate.placeholder';
 import { Authorize } from '../decorators/Authorize.placeholder';
+/* AUTH_IMPORTS */
 import {
   CreateNewPascalCaseEntitiesReponse,
   FindAllPascalCaseEntitiesQueryParams,
@@ -41,7 +42,6 @@ import {
   PascalCaseEntityUpdates,
   UpdatePascalCaseEntitiesReponse,
 } from '../models/PascalCaseEntities';
-/* AUTH_IMPORTS */
 import {
   DeleteAirtableRecordResponse,
   DeleteAirtableRecordsResponse,
