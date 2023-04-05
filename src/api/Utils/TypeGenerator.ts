@@ -228,7 +228,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
     case 'formula': {
       airtableAPIModelImportsCollector.push(
-        `import {AirtableFormulaColumnError, AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
+        `import {AirtableFormulaColumnErrorValidationSchema} from './__Utils';`
       );
 
       const {
@@ -245,7 +245,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString: string = `z.union([${baseAirtableResponseValidationString}, AirtableFormulaColumnErrorValidationSchema])`;
       const objectModelPropertyType: ObjectModelProperty = {
         ...baseObjectModelPropertyType,
-        propertyType: `${baseObjectModelPropertyType.propertyType} | AirtableFormulaColumnError`,
+        propertyType: `${baseObjectModelPropertyType.propertyType}`,
       };
 
       return {

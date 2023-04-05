@@ -374,7 +374,14 @@ export const getAirtableRecordResponseValidationSchema = <
                   }
                 }
               } else if (typeof nonLookupColumMapping === 'string') {
-                (accumulator as any)[nonLookupColumMapping] = fields[key];
+                // Check if the field is not an airtable error
+                if (
+                  fields[key] != null &&
+                  !fields[key].specialValue &&
+                  !fields[key].error
+                ) {
+                  (accumulator as any)[nonLookupColumMapping] = fields[key];
+                }
               } else if (nonLookupColumMapping.isMultipleRecordLinksField) {
                 // Check if reference field
                 if (fields[key] != null && Array.isArray(fields[key])) {
