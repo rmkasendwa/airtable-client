@@ -289,19 +289,7 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
   @Property()
   @Enum(...camelCaseEntityQueryableFields)
   @Description(
-    `
-    Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
-
-    For example, to only return data from Name and Status, send these two query parameters:
-
-    fields%5B%5D=Name&fields%5B%5D=Status
-    You can also perform the same action with field ids (they can be found in the fields section):
-
-    fields%5B%5D=fldG9yBafL709WagC&fields%5B%5D=fldySXPDpkljy1BCq
-    Note: %5B%5D may be omitted when specifying multiple fields, but must always be included when specifying only a single field.
-  `
-      .trimIndent()
-      .trim()
+    "Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred."
   )
   public declare fields?: PascalCaseEntityQueryableField[];
 
@@ -312,11 +300,6 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
     A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
 
     The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
-
-    For example, to sort records by name in descending order, send these two query parameters:
-
-    sort%5B0%5D%5Bfield%5D=name
-    sort%5B0%5D%5Bdirection%5D=desc
   `
       .trimIndent()
       .trim()

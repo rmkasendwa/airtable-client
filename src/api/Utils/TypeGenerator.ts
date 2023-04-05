@@ -177,7 +177,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
   }[tableColumn.name] || {};
 
   switch (type) {
-    case 'multipleSelects':
     case 'singleCollaborator':
     case 'multipleCollaborators':
     case 'barcode':
@@ -417,7 +416,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
       const airtableResponseValidationString: string = (() => {
         if (!baseAirtableResponseValidationString.match(/^z\.array/g)) {
-          return `z.array(${baseAirtableResponseValidationString}.nullish())`;
+          return `z.array(${baseAirtableResponseValidationString})`;
         }
         return baseAirtableResponseValidationString;
       })();
@@ -578,7 +577,8 @@ export const getTableColumnValidationSchemaTypeStrings = (
           airtableResponseValidationString,
       };
     }
-    case 'singleSelect': {
+    case 'singleSelect':
+    case 'multipleSelects': {
       const enumValuesVariableName =
         tableLabelSingular.toCamelCase() +
         camelCasePropertyName.charAt(0).toUpperCase() +
@@ -607,8 +607,26 @@ export const getTableColumnValidationSchemaTypeStrings = (
         export type ${enumTypeName} = (typeof ${enumValuesVariableName})[number];
       `;
 
-      const baseType = userDefinedType || enumTypeName;
-      const airtableResponseValidationString = `z.enum(${enumValuesVariableName})`;
+      const baseType =
+        userDefinedType ||
+        (() => {
+          switch (type) {
+            case 'multipleSelects':
+              return `${enumTypeName}[]`;
+            case 'singleSelect':
+            default:
+              return enumTypeName;
+          }
+        })();
+      const airtableResponseValidationString = (() => {
+        switch (type) {
+          case 'multipleSelects':
+            return `z.enum(${enumValuesVariableName})`;
+          case 'singleSelect':
+          default:
+            return `z.array(z.enum(${enumValuesVariableName}))`;
+        }
+      })();
       const objectModelPropertyType: ObjectModelProperty = {
         propertyName: camelCasePropertyName,
         propertyType: baseType,
