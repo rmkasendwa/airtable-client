@@ -258,13 +258,16 @@ export const getTableColumnValidationSchemaTypeStrings = (
             'singleLineText',
           ].includes(tableColumn.options?.result?.type)
         ) {
-          return getTableColumnValidationSchemaTypeStrings(
-            {
-              ...tableColumn,
-              type: tableColumn.options?.result?.type,
-            },
-            { ...options, camelCasePropertyName }
-          );
+          return {
+            ...getTableColumnValidationSchemaTypeStrings(
+              {
+                ...tableColumn,
+                type: tableColumn.options?.result?.type,
+              },
+              { ...options, camelCasePropertyName }
+            ),
+            airtableResponseValidationString: `z.any()`,
+          };
         }
       }
       break;
