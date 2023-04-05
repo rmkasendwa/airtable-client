@@ -14,7 +14,7 @@ import {
   FindAllRecordsQueryParams,
   getAirtableRecordRequestValidationSchema,
   getAirtableRecordResponseValidationSchema,
-} from './__Utils';
+} from './Utils';
 
 /* AIRTABLE_API_MODEL_IMPORTS */
 

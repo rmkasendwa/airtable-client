@@ -6,10 +6,6 @@ import {
 
 import { AIRTABLE_BASE_ID } from '../config';
 import {
-  DeleteAirtableRecordResponseValidationSchema,
-  convertToAirtableFindAllRecordsQueryParams,
-} from '../models/__Utils';
-import {
   AirtablePascalCaseEntity,
   CreatePascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesQueryParams,
@@ -22,6 +18,10 @@ import {
   UpdatePascalCaseEntitiesRequestValidationSchema,
   camelCaseEntityQueryableFields,
 } from '../models/PascalCaseEntities';
+import {
+  DeleteAirtableRecordResponseValidationSchema,
+  convertToAirtableFindAllRecordsQueryParams,
+} from '../models/Utils';
 import Adapter from './Adapter';
 
 /**************************** ENDPOINT PATHS *****************************/

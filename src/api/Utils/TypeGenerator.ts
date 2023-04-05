@@ -594,7 +594,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const enumValues = (() => {
         if (tableColumnOptions?.choices) {
           return tableColumnOptions.choices.map(({ name }) => {
-            return `"${name}"`;
+            if (name.includes('"')) {
+              return `'${name}'`;
+            }
+            return `"${name.replace(/(['"])/g, '\\$1')}"`;
           });
         }
         return [`"A"`];
