@@ -105,6 +105,7 @@ export type ObjectModelProperty = {
   decorators: string[];
   accessModifier: 'public' | 'private' | 'protected';
   required?: boolean;
+  typeDefinitionSnippet?: string;
 };
 
 export type ModelClass = {
@@ -165,7 +166,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
   const rootField = getRootAirtableColumn(tableColumn, tables, currentTable);
 
-  const { type } = tableColumn;
+  const { type, options: tableColumnOptions } = tableColumn;
   const {
     type: userDefinedType,
     prefersSingleRecordLink,
@@ -557,8 +558,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
     case 'singleLineText':
     case 'multilineText':
     case 'richText':
-    case 'phoneNumber':
-    case 'singleSelect': {
+    case 'phoneNumber': {
       const baseType = userDefinedType || 'string';
       const airtableResponseValidationString = `z.string()`;
       const objectModelPropertyType: ObjectModelProperty = {
@@ -569,6 +569,52 @@ export const getTableColumnValidationSchemaTypeStrings = (
           '@Property()',
           `@Example(${getModelPropertyExampleString(baseType)})`,
         ],
+      };
+
+      return {
+        airtableResponseValidationString,
+        objectModelPropertyType,
+        requestObjectPropertyTypeValidationString:
+          airtableResponseValidationString,
+      };
+    }
+    case 'singleSelect': {
+      const enumValuesVariableName =
+        tableLabelSingular.toCamelCase() +
+        camelCasePropertyName.charAt(0).toUpperCase() +
+        camelCasePropertyName.slice(1) +
+        'Options';
+
+      const enumTypeName =
+        tableLabelSingular.toPascalCase() +
+        camelCasePropertyName.charAt(0).toUpperCase() +
+        camelCasePropertyName.slice(1) +
+        'Option';
+
+      const enumValues = (() => {
+        if (tableColumnOptions?.choices) {
+          return tableColumnOptions.choices.map(({ name }) => {
+            return `"${name}"`;
+          });
+        }
+        return [`"A"`];
+      })();
+
+      const enumValuesCode = `
+        export const ${enumValuesVariableName} = [${enumValues.join(
+        ', '
+      )}] as const;
+        export type ${enumTypeName} = (typeof ${enumValuesVariableName})[number];
+      `;
+
+      const baseType = userDefinedType || enumTypeName;
+      const airtableResponseValidationString = `z.enum(${enumValuesVariableName})`;
+      const objectModelPropertyType: ObjectModelProperty = {
+        propertyName: camelCasePropertyName,
+        propertyType: baseType,
+        accessModifier: 'public',
+        decorators: ['@Property()', `@Enum(...${enumValuesVariableName})`],
+        typeDefinitionSnippet: enumValuesCode,
       };
 
       return {

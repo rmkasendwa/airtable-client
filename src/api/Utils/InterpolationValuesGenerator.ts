@@ -256,6 +256,9 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   views,
   labelSingular,
   labelPlural,
+  nonLookupTableColumns,
+  lookupTableColumns,
+  columnNameToValidationSchemaTypeStringGroupMapper,
 }: Omit<
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
   'base' | 'editableTableColumns'
@@ -282,8 +285,38 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
     ].join('\n'),
 
     ['/* REST_API_MODEL_EXTRAS */']: [
-      ...new Set(
-        restAPIModelExtrasCollector.map(({ modelName, modelProperties }) => {
+      ...new Set([
+        ...nonLookupTableColumns
+          .filter((tableColumn) => {
+            return columnNameToValidationSchemaTypeStringGroupMapper[
+              tableColumn.name
+            ]?.objectModelPropertyType?.typeDefinitionSnippet;
+          })
+          .map((tableColumn) => {
+            const {
+              objectModelPropertyType: { typeDefinitionSnippet },
+            } =
+              columnNameToValidationSchemaTypeStringGroupMapper[
+                tableColumn.name
+              ];
+            return typeDefinitionSnippet!.trimIndent().trim();
+          }),
+        ...lookupTableColumns
+          .filter((tableColumn) => {
+            return columnNameToValidationSchemaTypeStringGroupMapper[
+              tableColumn.name
+            ]?.objectModelPropertyType?.typeDefinitionSnippet;
+          })
+          .map((tableColumn) => {
+            const {
+              objectModelPropertyType: { typeDefinitionSnippet },
+            } =
+              columnNameToValidationSchemaTypeStringGroupMapper[
+                tableColumn.name
+              ];
+            return typeDefinitionSnippet!.trimIndent().trim();
+          }),
+        ...restAPIModelExtrasCollector.map(({ modelName, modelProperties }) => {
           const modelPropertiesString = modelProperties
             .map(
               ({
@@ -294,11 +327,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
                 required,
               }) => {
                 return `
-                  ${decorators.join('\n')}
-                  ${accessModifier} ${propertyName}${
+                    ${decorators.join('\n')}
+                    ${accessModifier} ${propertyName}${
                   required ? '!' : '?'
                 }: ${propertyType}
-                `
+                  `
                   .trimIndent()
                   .trim();
               }
@@ -306,10 +339,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
             .join(';\n\n');
 
           return `export class ${modelName} {
-            ${modelPropertiesString}
-          }`;
-        })
-      ),
+              ${modelPropertiesString}
+            }`;
+        }),
+      ]),
     ].join('\n\n'),
 
     ['Entities Table']: tableName,
