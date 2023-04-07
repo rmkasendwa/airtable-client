@@ -128,7 +128,7 @@ export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
 export const createNewPascalCaseEntity = async (
   camelCaseEntityDetails: PascalCaseEntityCreationDetails
 ) => {
-  return (await createNewPascalCaseEntities([camelCaseEntityDetails]))
+  return (await createManyNewPascalCaseEntities([camelCaseEntityDetails]))
     .records[0];
 };
 
@@ -138,7 +138,7 @@ export const createNewPascalCaseEntity = async (
  * @param records The entities label to be created.
  * @returns The created entities label.
  */
-export const createNewPascalCaseEntities = async (
+export const createManyNewPascalCaseEntities = async (
   records: PascalCaseEntityCreationDetails[]
 ) => {
   console.log(
@@ -177,7 +177,8 @@ export const createNewPascalCaseEntities = async (
 export const updatePascalCaseEntity = async (
   camelCaseEntityUpdates: PascalCaseEntityUpdates
 ) => {
-  return (await updatePascalCaseEntities([camelCaseEntityUpdates])).records[0];
+  return (await updateManyPascalCaseEntities([camelCaseEntityUpdates]))
+    .records[0];
 };
 
 /**
@@ -186,7 +187,7 @@ export const updatePascalCaseEntity = async (
  * @param records The entities label to be updated.
  * @returns The updated entities label.
  */
-export const updatePascalCaseEntities = async (
+export const updateManyPascalCaseEntities = async (
   records: PascalCaseEntityUpdates[]
 ) => {
   console.log(
@@ -225,7 +226,8 @@ export const updatePascalCaseEntities = async (
 export const patchPascalCaseEntity = async (
   camelCaseEntityUpdates: PascalCaseEntityUpdates
 ) => {
-  return (await patchPascalCaseEntities([camelCaseEntityUpdates])).records[0];
+  return (await patchManyPascalCaseEntities([camelCaseEntityUpdates]))
+    .records[0];
 };
 
 /**
@@ -234,7 +236,7 @@ export const patchPascalCaseEntity = async (
  * @param records The entities label to be patched.
  * @returns The patched entities label.
  */
-export const patchPascalCaseEntities = async (
+export const patchManyPascalCaseEntities = async (
   records: PascalCaseEntityUpdates[]
 ) => {
   console.log(
@@ -271,7 +273,7 @@ export const patchPascalCaseEntities = async (
  * @returns Deleted record response.
  */
 export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
-  return (await deletePascalCaseEntities([camelCaseEntityId]))[0];
+  return (await deleteManyPascalCaseEntities([camelCaseEntityId]))[0];
 };
 
 /**
@@ -280,7 +282,7 @@ export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
  * @param recordIds The ids of the entities label to be deleted.
  * @returns Deleted records response.
  */
-export const deletePascalCaseEntities = async (recordIds: string[]) => {
+export const deleteManyPascalCaseEntities = async (recordIds: string[]) => {
   console.log(
     `\nDeleting entities label with the following input:\n\x1b[2m${JSON.stringify(
       recordIds,

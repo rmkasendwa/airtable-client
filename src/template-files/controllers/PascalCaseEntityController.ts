@@ -17,16 +17,16 @@ import {
 import { Docs } from '@tsed/swagger';
 
 import {
-  createNewPascalCaseEntities,
+  createManyNewPascalCaseEntities,
   createNewPascalCaseEntity,
-  deletePascalCaseEntities,
+  deleteManyPascalCaseEntities,
   deletePascalCaseEntity,
   findAllPascalCaseEntities,
   findPascalCaseEntitiesFirstPage,
   findPascalCaseEntityById,
-  patchPascalCaseEntities,
+  patchManyPascalCaseEntities,
   patchPascalCaseEntity,
-  updatePascalCaseEntities,
+  updateManyPascalCaseEntities,
   updatePascalCaseEntity,
 } from '../api/PascalCaseEntities';
 /* AUTH_IMPORTS */
@@ -122,21 +122,21 @@ export class PascalCaseEntityController {
 
   @Post('/batch')
   @Authorize(CREATE_ENTITY_PERMISSION)
-  @Summary('Create new entities label')
+  @Summary('Create many new entities label')
   @Description(
-    'Creates new entities label. Returns the created entities label.'
+    'Creates many new entities label. Returns the created entities label.'
   )
   @Returns(200, CreateNewPascalCaseEntitiesReponse).Description(
     'The created entities label'
   )
   @Returns(422).Description('Unprocessable Request')
-  async createNewPascalCaseEntities(
+  async createManyNewPascalCaseEntities(
     @BodyParams()
     @ArrayOf(PascalCaseEntityCreationDetails)
     @Required()
     records: PascalCaseEntityCreationDetails[]
   ) {
-    return createNewPascalCaseEntities(records);
+    return createManyNewPascalCaseEntities(records);
   }
 
   @Put()
@@ -156,21 +156,21 @@ export class PascalCaseEntityController {
 
   @Put('/batch')
   @Authorize(UPDATE_ENTITY_PERMISSION)
-  @Summary('Update existing entities label')
+  @Summary('Update many existing entities label')
   @Description(
-    'Updates existing entities label. Returns the updated entities label. Null values will wipe database table fields.'
+    'Updates many existing entities label. Returns the updated entities label. Null values will wipe database table fields.'
   )
   @Returns(200, UpdatePascalCaseEntitiesReponse).Description(
     'The updated entities label'
   )
   @Returns(422).Description('Unprocessable Request')
-  async updatePascalCaseEntities(
+  async updateManyPascalCaseEntities(
     @BodyParams()
     @ArrayOf(PascalCaseEntityUpdates)
     @Required()
     records: PascalCaseEntityUpdates[]
   ) {
-    return updatePascalCaseEntities(records);
+    return updateManyPascalCaseEntities(records);
   }
 
   @Patch()
@@ -190,21 +190,21 @@ export class PascalCaseEntityController {
 
   @Patch('/batch')
   @Authorize(UPDATE_ENTITY_PERMISSION)
-  @Summary('Patch existing entities label')
+  @Summary('Patch many existing entities label')
   @Description(
-    'Patches existing entities label. Returns the patched entities label.'
+    'Patches many existing entities label. Returns the patched entities label.'
   )
   @Returns(200, UpdatePascalCaseEntitiesReponse).Description(
     'The patched entities label'
   )
   @Returns(422).Description('Unprocessable Request')
-  async patchPascalCaseEntities(
+  async patchManyPascalCaseEntities(
     @BodyParams()
     @ArrayOf(PascalCaseEntityUpdates)
     @Required()
     records: PascalCaseEntityUpdates[]
   ) {
-    return patchPascalCaseEntities(records);
+    return patchManyPascalCaseEntities(records);
   }
 
   @Delete('/:camelCaseEntityId')
@@ -227,15 +227,15 @@ export class PascalCaseEntityController {
 
   @Delete('/batch')
   @Authorize(DELETE_ENTITY_PERMISSION)
-  @Summary('Delete existing entities label')
+  @Summary('Delete many existing entities label')
   @Description(
-    'Deletes existing entities label. Returns ids of the deleted entities label.'
+    'Deletes many existing entities label. Returns ids of the deleted entities label.'
   )
   @Returns(200, DeleteAirtableRecordsResponse).Description(
     'The deleted entities label response'
   )
   @Returns(422).Description('Unprocessable Request')
-  async deletePascalCaseEntities(
+  async deleteManyPascalCaseEntities(
     @Description(
       'The list of ids of the entities label to be deleted. Note: this list should contain at least one entity label.'
     )
@@ -245,6 +245,6 @@ export class PascalCaseEntityController {
     @Required()
     recordIds: string[]
   ) {
-    return deletePascalCaseEntities(recordIds);
+    return deleteManyPascalCaseEntities(recordIds);
   }
 }
