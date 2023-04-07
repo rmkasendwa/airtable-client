@@ -7,7 +7,7 @@ import {
 import { AIRTABLE_BASE_ID } from '../config';
 import {
   AirtablePascalCaseEntity,
-  CreatePascalCaseEntitiesRequestValidationSchema,
+  CreateManyNewPascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponseValidationSchema,
   PascalCaseEntityAirtableResponseValidationSchema,
@@ -15,7 +15,7 @@ import {
   PascalCaseEntityPropertyToAirtableColumnNameMapper,
   PascalCaseEntityPropertyToAirtableLookupColumnNameMapper,
   PascalCaseEntityUpdates,
-  UpdatePascalCaseEntitiesRequestValidationSchema,
+  UpdateManyPascalCaseEntitiesRequestValidationSchema,
   camelCaseEntityQueryableFields,
 } from '../models/PascalCaseEntities';
 import {
@@ -150,7 +150,8 @@ export const createManyNewPascalCaseEntities = async (
   );
 
   const airtableRequestData = {
-    records: CreatePascalCaseEntitiesRequestValidationSchema.parse(records),
+    records:
+      CreateManyNewPascalCaseEntitiesRequestValidationSchema.parse(records),
   };
 
   console.log(
@@ -199,7 +200,7 @@ export const updateManyPascalCaseEntities = async (
   );
 
   const airtableRequestData = {
-    records: UpdatePascalCaseEntitiesRequestValidationSchema.parse(records),
+    records: UpdateManyPascalCaseEntitiesRequestValidationSchema.parse(records),
   };
 
   console.log(
@@ -248,7 +249,7 @@ export const patchManyPascalCaseEntities = async (
   );
 
   const airtableRequestData = {
-    records: UpdatePascalCaseEntitiesRequestValidationSchema.parse(records),
+    records: UpdateManyPascalCaseEntitiesRequestValidationSchema.parse(records),
   };
 
   console.log(

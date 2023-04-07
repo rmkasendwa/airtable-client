@@ -208,15 +208,15 @@ export const PascalCaseEntityAirtableRequestValidationSchema = z.object({
 });
 
 // Validates request to create entity label.
-export const CreatePascalCaseEntityRequestValidationSchema =
+export const CreateNewPascalCaseEntityRequestValidationSchema =
   getAirtableRecordRequestValidationSchema(
     PascalCaseEntityAirtableRequestValidationSchema,
     PascalCaseEntityPropertyToAirtableColumnConfigMapper
   );
 
 // Validates request to create entities label.
-export const CreatePascalCaseEntitiesRequestValidationSchema = z.array(
-  CreatePascalCaseEntityRequestValidationSchema
+export const CreateManyNewPascalCaseEntitiesRequestValidationSchema = z.array(
+  CreateNewPascalCaseEntityRequestValidationSchema
 );
 
 // Validates request to update entity label.
@@ -229,7 +229,7 @@ export const UpdatePascalCaseEntityRequestValidationSchema =
   );
 
 // Validates request to update entities label.
-export const UpdatePascalCaseEntitiesRequestValidationSchema = z.array(
+export const UpdateManyPascalCaseEntitiesRequestValidationSchema = z.array(
   UpdatePascalCaseEntityRequestValidationSchema
 );
 
