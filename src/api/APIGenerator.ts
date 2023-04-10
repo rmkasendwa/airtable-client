@@ -689,7 +689,10 @@ export const generateAirtableAPI = async ({
                 ({ modelName }) => {
                   return (
                     modelName ===
-                    tableColumnValidationSchemaTypeStrings.propertyType
+                    tableColumnValidationSchemaTypeStrings.propertyType.replace(
+                      /\[\]$/g,
+                      ''
+                    )
                   );
                 }
               );

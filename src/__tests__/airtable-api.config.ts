@@ -357,5 +357,8 @@ export default defineConfig({
         'lever-link (from Lever Report)',
       ],
     },
+    {
+      name: 'SOWs',
+    },
   ],
 });

@@ -58,7 +58,7 @@ export const findPascalCaseEntitiesFirstPage = async (
   }
 
   const requestPayload = convertToAirtableFindAllRecordsQueryParams(
-    queryParams as any,
+    queryParams,
     PascalCaseEntityPropertyToAirtableColumnNameMapper,
     PascalCaseEntityPropertyToAirtableLookupColumnNameMapper
   );
