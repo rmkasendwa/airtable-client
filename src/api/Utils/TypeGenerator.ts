@@ -421,7 +421,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
       const airtableResponseValidationString: string = (() => {
         if (!baseAirtableResponseValidationString.match(/^z\.array/g)) {
-          return `z.array(${baseAirtableResponseValidationString})`;
+          return `z.array(${baseAirtableResponseValidationString}.nullish())`;
         }
         return baseAirtableResponseValidationString;
       })();
