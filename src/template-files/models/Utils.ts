@@ -396,9 +396,13 @@ export const getAirtableRecordResponseValidationSchema = <
                     accumulator[propertyName] ||
                       ((accumulator as any)[propertyName] = []);
                     linkFieldValue.forEach((fieldValue, index) => {
-                      (accumulator as any)[propertyName][index] = {
-                        id: fieldValue,
-                      };
+                      if (!(accumulator as any)[propertyName][index]) {
+                        (accumulator as any)[propertyName][index] = {};
+                      }
+                      if (!(accumulator as any)[propertyName][index].id) {
+                        (accumulator as any)[propertyName][index].id =
+                          fieldValue;
+                      }
                     });
                   }
                 }

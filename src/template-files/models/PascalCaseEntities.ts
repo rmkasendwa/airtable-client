@@ -1,5 +1,6 @@
 import {
   ArrayOf,
+  DateTime,
   Description,
   Enum,
   Example,
@@ -28,6 +29,12 @@ export class PascalCaseEntity {
   @Description('Unique identifer for Entity Label.')
   @Example('recO0FYb1Tccm9MZ2')
   public id!: string;
+
+  @Property()
+  @DateTime()
+  @Description('The time when the entity label was created.')
+  @Example('2021-08-03T18:00:00.000Z')
+  public created!: string;
 
   /* ENTITY_MODEL_FIELDS */
   @Property()
