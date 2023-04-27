@@ -120,6 +120,13 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
                     'type'
                   );
                 })(),
+                ...(() => {
+                  if (options?.result?.type === 'multipleAttachments') {
+                    return {
+                      isLookupWithListOfValues: true,
+                    };
+                  }
+                })(),
               };
               if (Object.keys(obj).length > 1) {
                 return JSON.stringify(obj);
