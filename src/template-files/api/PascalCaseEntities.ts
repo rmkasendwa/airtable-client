@@ -7,6 +7,7 @@ import {
 import { AIRTABLE_BASE_ID } from '../config';
 import {
   AirtablePascalCaseEntity,
+  CountAllPascalCaseEntitiesQueryParams,
   CreateManyNewPascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponseValidationSchema,
@@ -78,7 +79,7 @@ export const findPascalCaseEntitiesFirstPage = async (
 };
 
 /**
- * Finds all entities label in Entities Table table.
+ * Finds all existing entities label in Entities Table table.
  *
  * @param queryParams The query params.
  * @returns The entities label.
@@ -101,6 +102,23 @@ export const findAllPascalCaseEntities = async (
   await findPages();
 
   return { records };
+};
+
+/**
+ * Count all existing entities label in Entities Table table.
+ *
+ * @param queryParams The query params.
+ * @returns The number of existing entities label.
+ */
+export const countAllPascalCaseEntities = async (
+  queryParams: CountAllPascalCaseEntitiesQueryParams = {}
+) => {
+  const { records } = await findAllPascalCaseEntities({
+    ...queryParams,
+    fields: [],
+  });
+
+  return { recordsCount: records.length };
 };
 
 /**

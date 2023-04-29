@@ -12,6 +12,7 @@ import { z } from 'zod';
 import {
   AirtableColumnMapping,
   AirtableSortOption,
+  CountAllRecordsQueryParams,
   FindAllRecordsQueryParams,
   getAirtableRecordRequestValidationSchema,
   getAirtableRecordResponseValidationSchema,
@@ -313,6 +314,15 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
   )
   public declare sort?: PascalCaseEntitiesSortOption[];
 
+  @Property()
+  @Enum(...camelCaseEntityViews)
+  @Description(
+    'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
+  )
+  public declare view?: PascalCaseEntityView;
+}
+
+export class CountAllPascalCaseEntitiesQueryParams extends CountAllRecordsQueryParams {
   @Property()
   @Enum(...camelCaseEntityViews)
   @Description(

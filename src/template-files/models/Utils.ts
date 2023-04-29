@@ -169,6 +169,36 @@ export class FindAllRecordsQueryParams<
   public offset?: string;
 }
 
+export class CountAllRecordsQueryParams<View extends string = string> {
+  @Property()
+  @Description(
+    `
+    A formula used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
+
+    If combined with the view parameter, only records in that view which satisfy the formula will be returned.
+    
+    The formula must be encoded first before passing it as a value. You can use this tool to not only encode the formula but also create the entire url you need. For example, to only include records where Name isn't empty, pass in NOT({Name} = '') as a parameter like this:
+    
+    filterByFormula=NOT%28%7BName%7D%20%3D%20%27%27%29
+  `
+      .trimIndent()
+      .trim()
+  )
+  public filterByFormula?: string;
+
+  @Property()
+  @Description(
+    'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
+  )
+  public view?: View;
+}
+
+export class CountAllRecordsResponse {
+  @Property()
+  @Description('The number of existing records that satisfy the query.')
+  public recordsCount!: number;
+}
+
 export const convertToAirtableFindAllRecordsQueryParams = <
   T extends FindAllRecordsQueryParams
 >(

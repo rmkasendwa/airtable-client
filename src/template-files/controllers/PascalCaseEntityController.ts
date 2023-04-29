@@ -17,6 +17,7 @@ import {
 import { Docs } from '@tsed/swagger';
 
 import {
+  countAllPascalCaseEntities,
   createManyNewPascalCaseEntities,
   createNewPascalCaseEntity,
   deleteManyPascalCaseEntities,
@@ -34,6 +35,7 @@ import { Authenticate } from '../decorators/Authenticate.placeholder';
 import { Authorize } from '../decorators/Authorize.placeholder';
 /* AUTH_IMPORTS */
 import {
+  CountAllPascalCaseEntitiesQueryParams,
   CreateNewPascalCaseEntitiesReponse,
   FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponse,
@@ -43,6 +45,7 @@ import {
   UpdatePascalCaseEntitiesReponse,
 } from '../models/PascalCaseEntities';
 import {
+  CountAllRecordsResponse,
   DeleteAirtableRecordResponse,
   DeleteAirtableRecordsResponse,
 } from '../models/Utils';
@@ -72,7 +75,7 @@ export class PascalCaseEntityController {
     @QueryParams()
     queryParams: FindAllPascalCaseEntitiesQueryParams
   ) {
-    return findPascalCaseEntitiesFirstPage(queryParams as any);
+    return findPascalCaseEntitiesFirstPage(queryParams);
   }
 
   @Get()
@@ -88,7 +91,23 @@ export class PascalCaseEntityController {
     @QueryParams()
     queryParams: FindAllPascalCaseEntitiesQueryParams
   ) {
-    return findAllPascalCaseEntities(queryParams as any) as any;
+    return findAllPascalCaseEntities(queryParams);
+  }
+
+  @Get('/count')
+  @Authorize(VIEW_ENTITIES_PERMISSION)
+  @Summary('Count all entities label')
+  @Description(
+    'Counts all entities label. Returns entities label matching query paramenters.'
+  )
+  @Returns(200, CountAllRecordsResponse).Description(
+    'The number of existing entities label'
+  )
+  async countAllPascalCaseEntities(
+    @QueryParams()
+    queryParams: CountAllPascalCaseEntitiesQueryParams
+  ) {
+    return countAllPascalCaseEntities(queryParams);
   }
 
   @Get('/:camelCaseEntityId')
@@ -104,7 +123,7 @@ export class PascalCaseEntityController {
     @PathParams('camelCaseEntityId')
     camelCaseEntityId: string
   ) {
-    return findPascalCaseEntityById(camelCaseEntityId) as any;
+    return findPascalCaseEntityById(camelCaseEntityId);
   }
 
   @Post()
