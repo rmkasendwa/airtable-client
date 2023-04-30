@@ -102,6 +102,7 @@ export const getModelPropertyExampleString = (type: string) => {
 export type ObjectModelProperty = {
   propertyName: string;
   propertyType: string;
+  editablePropertyType?: string;
   decorators: string[];
   accessModifier: 'public' | 'private' | 'protected';
   required?: boolean;
@@ -297,6 +298,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
           tableLabelSingular.toPascalCase() +
           camelCasePropertyName.charAt(0).toUpperCase() +
           camelCasePropertyName.slice(1);
+        const editableModelClassName = `Editable${modelClassName}`;
 
         const modelClass: ModelClass = {
           modelName: modelClassName,
@@ -344,7 +346,27 @@ export const getTableColumnValidationSchemaTypeStrings = (
           ],
         };
 
-        restAPIModelExtrasCollector.push(modelClass);
+        const editableModelClass: ModelClass = {
+          modelName: editableModelClassName,
+          modelProperties: [
+            {
+              accessModifier: 'public',
+              decorators: [
+                '@Property()',
+                '@Required()',
+                `@Description('Unique identifer for ${tableColumn.name}')`,
+                `@Example('recO0FYb1Tccm9MZ2')`,
+              ],
+              propertyName: 'id',
+              propertyType: 'string',
+              required: true,
+              airtableResponseValidationString,
+              tableColumName: tableColumn.name,
+            },
+          ],
+        };
+
+        restAPIModelExtrasCollector.push(modelClass, editableModelClass);
 
         if (
           prefersSingleRecordLink ||
@@ -353,6 +375,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
           return {
             propertyName: camelCasePropertyName,
             propertyType: modelClassName,
+            editablePropertyType: editableModelClassName,
             accessModifier: 'public',
             decorators: ['@Property()'],
             airtableResponseValidationString,

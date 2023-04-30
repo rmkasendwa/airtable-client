@@ -176,9 +176,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           ${accessModifier} ${propertyName}${
           required ? '!' : '?'
         }: ${propertyType}
-        `
-          .trimIndent()
-          .trim();
+        `.trimIndent();
       })
       .join(';\n\n'),
 
@@ -201,16 +199,12 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
               ${propertyName}${
             required ? '' : '?'
           }: {\n${modelPropertiesString}\n}
-            `
-            .trimIndent()
-            .trim();
+            `.trimIndent();
         }
 
         return `
             ${propertyName}${required ? '' : '?'}: ${propertyType}
-          `
-          .trimIndent()
-          .trim();
+          `.trimIndent();
       })
       .join(';\n'),
 
@@ -232,17 +226,16 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           accessModifier,
           decorators,
           propertyName,
+          editablePropertyType,
           propertyType,
           required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
         return `
         ${decorators.join('\n')}
-        ${accessModifier} ${propertyName}${
-          required ? '!' : '?'
-        }: ${propertyType}
-      `
-          .trimIndent()
-          .trim();
+        ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
+          editablePropertyType || propertyType
+        }
+      `.trimIndent();
       })
       .join(';\n\n'),
 
@@ -298,7 +291,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
               columnNameToValidationSchemaTypeStringGroupMapper[
                 tableColumn.name
               ];
-            return typeDefinitionSnippet!.trimIndent().trim();
+            return typeDefinitionSnippet!.trimIndent();
           }),
         ...restAPIModelExtrasCollector
           .reduce((accumulator, modelDefinition) => {
@@ -309,7 +302,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
             return typeDefinitionSnippet;
           })
           .map(({ typeDefinitionSnippet }) => {
-            return typeDefinitionSnippet!.trimIndent().trim();
+            return typeDefinitionSnippet!.trimIndent();
           }),
         ...restAPIModelExtrasCollector.map(({ modelName, modelProperties }) => {
           const modelPropertiesString = modelProperties
@@ -326,9 +319,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
                     ${accessModifier} ${propertyName}${
                   required ? '!' : '?'
                 }: ${propertyType}
-                  `
-                  .trimIndent()
-                  .trim();
+                  `.trimIndent();
               }
             )
             .join(';\n\n');
