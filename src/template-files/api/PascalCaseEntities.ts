@@ -40,7 +40,7 @@ export const ENTITY_DELETE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
  * @param queryParams The query params.
  * @returns The entities label.
  */
-export const findPascalCaseEntitiesFirstPage = async (
+export const findFirstPagePascalCaseEntities = async (
   queryParams: FindAllPascalCaseEntitiesQueryParams = {}
 ) => {
   console.log(
@@ -91,7 +91,7 @@ export const findAllPascalCaseEntities = async (
 
   const findPages = async (offset?: string) => {
     const { records: responseRecords, offset: responseOffset } =
-      await findPascalCaseEntitiesFirstPage({ ...queryParams, offset });
+      await findFirstPagePascalCaseEntities({ ...queryParams, offset });
 
     records.push(...responseRecords);
     if (responseOffset) {

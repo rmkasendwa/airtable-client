@@ -23,7 +23,7 @@ import {
   deleteManyPascalCaseEntities,
   deletePascalCaseEntity,
   findAllPascalCaseEntities,
-  findPascalCaseEntitiesFirstPage,
+  findFirstPagePascalCaseEntities,
   findPascalCaseEntityById,
   patchManyPascalCaseEntities,
   patchPascalCaseEntity,
@@ -39,6 +39,7 @@ import {
   CreateNewPascalCaseEntitiesReponse,
   FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponse,
+  FindFirstPagePascalCaseEntitiesReponse,
   PascalCaseEntity,
   PascalCaseEntityCreationDetails,
   PascalCaseEntityUpdates,
@@ -68,14 +69,14 @@ export class PascalCaseEntityController {
   @Description(
     'Finds the first page of entities label. Returns entities label first page matching query paramenters.'
   )
-  @Returns(200, FindAllPascalCaseEntitiesReponse).Description(
+  @Returns(200, FindFirstPagePascalCaseEntitiesReponse).Description(
     'The existing entities label on the first page'
   )
-  async findPascalCaseEntitiesFirstPage(
+  async findFirstPagePascalCaseEntities(
     @QueryParams()
     queryParams: FindAllPascalCaseEntitiesQueryParams
   ) {
-    return findPascalCaseEntitiesFirstPage(queryParams);
+    return findFirstPagePascalCaseEntities(queryParams);
   }
 
   @Get()

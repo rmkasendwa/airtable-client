@@ -247,7 +247,9 @@ export class FindAllPascalCaseEntitiesReponse {
   @ArrayOf(PascalCaseEntity)
   @Description('The list of Entities Label.')
   public records!: PascalCaseEntity[];
+}
 
+export class FindFirstPagePascalCaseEntitiesReponse extends FindAllPascalCaseEntitiesReponse {
   @Property()
   @Description(
     'The airtable offset identifier in case there are more records to fetch.'
