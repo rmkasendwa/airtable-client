@@ -33,6 +33,7 @@ export class PascalCaseEntity {
 
   @Property()
   @DateTime()
+  @Required()
   @Description('The time when the entity label was created.')
   @Example('2021-08-03T18:00:00.000Z')
   public created!: string;

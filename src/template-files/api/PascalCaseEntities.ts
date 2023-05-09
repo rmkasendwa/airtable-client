@@ -23,10 +23,10 @@ import {
   DeleteAirtableRecordResponseValidationSchema,
   convertToAirtableFindAllRecordsQueryParams,
 } from '../models/Utils';
-import Adapter from './Adapter';
+import { _delete, get, patch, post } from './Adapter';
 
 /**************************** ENDPOINT PATHS *****************************/
-export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `${AIRTABLE_BASE_ID}/Entities Table`;
+export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `/${AIRTABLE_BASE_ID}/Entities Table`;
 export const FIND_ENTITY_BY_ID_ENPOINT_PATH: TemplatePath<{
   camelCaseEntityId: string;
 }> = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/:camelCaseEntityId`;
@@ -74,7 +74,10 @@ export const findFirstPagePascalCaseEntities = async (
     )}\x1b[0m`
   );
 
-  const { data } = await Adapter.post(requestUrl, requestPayload);
+  const { data } = await post(requestUrl, {
+    data: requestPayload,
+    label: 'Loading entities label',
+  });
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
@@ -131,8 +134,11 @@ export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
   console.log(
     `\nLoading entity label by id: \x1b[2m${camelCaseEntityId}\x1b[0m`
   );
-  const { data } = await Adapter.get(
-    getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, { camelCaseEntityId })
+  const { data } = await get(
+    getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, { camelCaseEntityId }),
+    {
+      label: 'Loading entity label',
+    }
   );
   return PascalCaseEntityAirtableResponseValidationSchema.parse(data);
 };
@@ -180,10 +186,10 @@ export const createManyNewPascalCaseEntities = async (
     )}\x1b[0m`
   );
 
-  const { data } = await Adapter.post(
-    ENTITY_CREATE_ENDPOINT_PATH,
-    airtableRequestData
-  );
+  const { data } = await post(ENTITY_CREATE_ENDPOINT_PATH, {
+    data: airtableRequestData,
+    label: 'Creating entities label',
+  });
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
@@ -229,10 +235,10 @@ export const updateManyPascalCaseEntities = async (
     )}\x1b[0m`
   );
 
-  const { data } = await Adapter.post(
-    ENTITY_UPDATE_ENDPOINT_PATH,
-    airtableRequestData
-  );
+  const { data } = await post(ENTITY_UPDATE_ENDPOINT_PATH, {
+    data: airtableRequestData,
+    label: 'Updating entities label',
+  });
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
@@ -278,10 +284,10 @@ export const patchManyPascalCaseEntities = async (
     )}\x1b[0m`
   );
 
-  const { data } = await Adapter.patch(
-    ENTITY_UPDATE_ENDPOINT_PATH,
-    airtableRequestData
-  );
+  const { data } = await patch(ENTITY_UPDATE_ENDPOINT_PATH, {
+    data: airtableRequestData,
+    label: 'Updating entities label',
+  });
   return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
 };
 
@@ -309,7 +315,7 @@ export const deleteManyPascalCaseEntities = async (recordIds: string[]) => {
       2
     )}\x1b[0m`
   );
-  const { data } = await Adapter.delete(
+  const { data } = await _delete(
     addSearchParams(
       ENTITY_DELETE_ENDPOINT_PATH,
       {
@@ -318,7 +324,8 @@ export const deleteManyPascalCaseEntities = async (recordIds: string[]) => {
       { arrayParamStyle: 'append' }
     ),
     {
-      data: JSON.stringify({ records: recordIds }),
+      data: { records: recordIds },
+      label: 'Deleting entities label',
     }
   );
   return DeleteAirtableRecordResponseValidationSchema.parse(data);
