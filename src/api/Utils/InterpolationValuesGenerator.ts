@@ -121,7 +121,12 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
                   );
                 })(),
                 ...(() => {
-                  if (options?.result?.type === 'multipleAttachments') {
+                  if (
+                    options?.result?.type &&
+                    ['multipleAttachments', 'multipleSelects'].includes(
+                      options.result.type
+                    )
+                  ) {
                     return {
                       isLookupWithListOfValues: true,
                     };
