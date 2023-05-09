@@ -1,14 +1,46 @@
-import axios from 'axios';
+import { getAPIAdapter } from '@infinite-debugger/axios-api-adapter';
 
 import { AIRTABLE_API_KEY } from '../config/env';
 
-const instance = axios.create({
-  baseURL: 'https://api.airtable.com/v0',
-  headers: {
-    Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
+export {
+  IAPIAdapterConfiguration,
+  REDIRECTION_ERROR_MESSAGES,
+  RequestOptions,
+  ResponseProcessor,
+} from '@infinite-debugger/axios-api-adapter';
+export {
+  APIAdapterConfiguration,
+  RequestController,
+  _delete,
+  defaultRequestHeaders,
+  get,
+  logout,
+  patch,
+  patchDefaultRequestHeaders,
+  post,
+  put,
+};
+
+const {
+  APIAdapterConfiguration,
+  RequestController,
+  _delete,
+  defaultRequestHeaders,
+  get,
+  logout,
+  patch,
+  patchDefaultRequestHeaders,
+  post,
+  put,
+} = getAPIAdapter({
+  id: 'airtable-client',
 });
 
-export default instance;
+APIAdapterConfiguration.HOST_URL = 'https://api.airtable.com/v0';
+APIAdapterConfiguration.preProcessResponseErrorMessages = false;
+
+patchDefaultRequestHeaders({
+  Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+  'Content-Type': 'application/json',
+  Accept: 'application/json',
+});

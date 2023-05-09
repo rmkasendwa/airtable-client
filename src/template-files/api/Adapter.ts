@@ -37,6 +37,7 @@ const {
 });
 
 APIAdapterConfiguration.HOST_URL = 'https://api.airtable.com/v0';
+APIAdapterConfiguration.preProcessResponseErrorMessages = false;
 
 patchDefaultRequestHeaders({
   Authorization: `Bearer ${AIRTABLE_API_KEY}`,
