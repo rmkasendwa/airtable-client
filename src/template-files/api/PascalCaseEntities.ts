@@ -11,6 +11,7 @@ import {
   CreateManyNewPascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponseValidationSchema,
+  PascalCaseEntity,
   PascalCaseEntityAirtableResponseValidationSchema,
   PascalCaseEntityCreationDetails,
   PascalCaseEntityPropertyToAirtableColumnNameMapper,
@@ -272,23 +273,50 @@ export const patchManyPascalCaseEntities = async (
     )}\x1b[0m`
   );
 
-  const airtableRequestData = {
-    records: UpdateManyPascalCaseEntitiesRequestValidationSchema.parse(records),
+  const updatedRecords: PascalCaseEntity[] = [];
+
+  const patchPascalCaseEntitiePage = async (
+    records: PascalCaseEntityUpdates[]
+  ) => {
+    records = [...records];
+    const recordsToUpdate = records.splice(0, 10);
+
+    const airtableRequestData = {
+      records:
+        UpdateManyPascalCaseEntitiesRequestValidationSchema.parse(
+          recordsToUpdate
+        ),
+    };
+
+    console.log(
+      `\nSending entities label PATCH request to airtable with the following input:\x1b[2m\n${JSON.stringify(
+        airtableRequestData,
+        null,
+        2
+      )}\x1b[0m`
+    );
+
+    const { data } = await patch(ENTITY_UPDATE_ENDPOINT_PATH, {
+      data: airtableRequestData,
+      label: 'Updating entities label',
+    });
+
+    updatedRecords.push(
+      ...FindAllPascalCaseEntitiesReponseValidationSchema.parse(data).records
+    );
+
+    if (records.length > 0) {
+      await patchPascalCaseEntitiePage(records);
+    }
   };
 
-  console.log(
-    `\nSending entities label PUT request to airtable with the following input:\x1b[2m\n${JSON.stringify(
-      airtableRequestData,
-      null,
-      2
-    )}\x1b[0m`
-  );
+  if (records.length > 0) {
+    await patchPascalCaseEntitiePage(records);
+  }
 
-  const { data } = await patch(ENTITY_UPDATE_ENDPOINT_PATH, {
-    data: airtableRequestData,
-    label: 'Updating entities label',
-  });
-  return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
+  return {
+    records: updatedRecords,
+  };
 };
 
 /**
