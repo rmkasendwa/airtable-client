@@ -569,10 +569,7 @@ export const getAirtableRecordResponseValidationSchema = <
       );
       //#endregion
 
-      //#region Remove null Values
-      removeNullValues(transformedRecord);
-      //#endregion
-      return transformedRecord;
+      return removeNullValues(transformedRecord);
     });
 };
 
