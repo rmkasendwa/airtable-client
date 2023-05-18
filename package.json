@@ -1,6 +1,6 @@
 {
   "name": "@theoremone-talent/airtable-client",
-  "version": "1.0.0-alpha.77",
+  "version": "1.0.0-alpha.79",
   "description": "Airtable client",
   "keywords": [
     "airtable",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@infinite-debugger/axios-api-adapter": "^0.1.0-alpha.12",
-    "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.16",
+    "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.20",
     "@infinite-debugger/rmk-utils": "^0.1.0-alpha.9",
     "@tsed/ajv": "^7.9.0",
     "@tsed/common": "^7.9.0",

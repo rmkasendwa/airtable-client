@@ -1,3 +1,4 @@
+import { removeNullValues } from '@infinite-debugger/rmk-utils';
 import {
   ArrayOf,
   Default,
@@ -315,7 +316,7 @@ export const getAirtableRecordResponseValidationSchema = <
       fields: responseFieldsValidationSchema,
     })
     .transform(({ createdTime, fields, id }) => {
-      return {
+      const transformedRecord = {
         id,
         created: createdTime,
         ...Object.keys(fields)
@@ -540,6 +541,38 @@ export const getAirtableRecordResponseValidationSchema = <
             return accumulator;
           }, {} as Omit<T, 'id'>),
       };
+
+      //#region Remove deformed array items
+      Object.values(nonLookupColumnNameToObjectPropertyMapper).forEach(
+        (nonLookupColumMapping) => {
+          if (
+            typeof nonLookupColumMapping === 'object' &&
+            nonLookupColumMapping.isMultipleRecordLinksField
+          ) {
+            const { propertyName } = nonLookupColumMapping;
+            if (
+              transformedRecord[propertyName] &&
+              Array.isArray(transformedRecord[propertyName])
+            ) {
+              const deformedItems = transformedRecord[propertyName].filter(
+                ({ id }: any) => !id
+              );
+              deformedItems.forEach((deformedItem: any) => {
+                transformedRecord[propertyName].splice(
+                  transformedRecord[propertyName].indexOf(deformedItem),
+                  1
+                );
+              });
+            }
+          }
+        }
+      );
+      //#endregion
+
+      //#region Remove null Values
+      removeNullValues(transformedRecord);
+      //#endregion
+      return transformedRecord;
     });
 };
 
