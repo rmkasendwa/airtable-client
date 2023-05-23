@@ -27,7 +27,9 @@ import {
 import { _delete, get, patch, post } from './Adapter';
 
 /**************************** ENDPOINT PATHS *****************************/
-export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `/${AIRTABLE_BASE_ID}/Entities Table`;
+export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+  'Entities Table'
+)}`;
 export const FIND_ENTITY_BY_ID_ENPOINT_PATH: TemplatePath<{
   camelCaseEntityId: string;
 }> = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/:camelCaseEntityId`;

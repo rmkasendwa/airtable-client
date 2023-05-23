@@ -1,6 +1,6 @@
 {
   "name": "@theoremone-talent/airtable-client",
-  "version": "1.0.0-alpha.80",
+  "version": "1.0.0-alpha.81",
   "description": "Airtable client",
   "keywords": [
     "airtable",
@@ -78,6 +78,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-sort-keys-fix": "^1.1.2",
     "express": "^4.18.2",
+    "hash-it": "^6.0.0",
     "husky": "^8.0.3",
     "import-sort-style-module": "^6.0.0",
     "lodash": "^4.17.21",

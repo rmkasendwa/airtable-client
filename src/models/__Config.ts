@@ -40,6 +40,7 @@ export type Config<FocusColumn extends string> = {
   bases?: (ConfigAirtableBase & {
     tables?: Omit<ConfigTable<FocusColumn>, 'base'>[];
   })[];
+  includeAirtableSpecificQueryParameters?: boolean;
 };
 
 export const defineConfig = <FocusColumn extends string>(

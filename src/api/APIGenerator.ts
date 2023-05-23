@@ -95,6 +95,9 @@ export const generateAirtableAPI = async ({
       .flat(),
   ];
 
+  const includeAirtableSpecificQueryParameters =
+    userConfig.includeAirtableSpecificQueryParameters;
+
   const outputFolderPath = normalize(
     `${outputRootPath}/${airtableAPIFolderName}`
   );
@@ -726,6 +729,7 @@ export const generateAirtableAPI = async ({
               queryableNonLookupFields,
               restAPIModelExtrasCollector,
               columnNameToValidationSchemaTypeStringGroupMapper,
+              includeAirtableSpecificQueryParameters,
             });
 
           // Getting interpolation string replacement map
@@ -746,6 +750,7 @@ export const generateAirtableAPI = async ({
               queryableNonLookupFields,
               restAPIModelExtrasCollector,
               columnNameToValidationSchemaTypeStringGroupMapper,
+              includeAirtableSpecificQueryParameters,
             });
 
           // Replacing interpolation templates in template file contents
@@ -757,7 +762,7 @@ export const generateAirtableAPI = async ({
               Object.keys(interpolationBlocks).reduce((fileContents, key) => {
                 const escapedKey = RegExp.escape(key);
                 return fileContents.replace(
-                  new RegExp(`${escapedKey}[\\s\\S]*${escapedKey}`, 'g'),
+                  new RegExp(`${escapedKey}([\\s\\S]*)${escapedKey}`, 'g'),
                   interpolationBlocks[key]
                 );
               }, templateFileContents)

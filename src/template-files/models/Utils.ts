@@ -139,6 +139,11 @@ export class FindAllRecordsQueryParams<
   public view?: View;
 
   @Property()
+  @Description('The airtable offset to load the next page.')
+  public offset?: string;
+
+  /* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */
+  @Property()
   @Enum('string', 'json')
   @Description(
     `
@@ -164,10 +169,7 @@ export class FindAllRecordsQueryParams<
     'The user locale that should be used to format dates when using string as the cellFormat. This parameter is required when using string as the cellFormat.'
   )
   public userLocale?: string;
-
-  @Property()
-  @Description('The airtable offset to load the next page.')
-  public offset?: string;
+  /* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */
 }
 
 export class CountAllRecordsQueryParams<View extends string = string> {

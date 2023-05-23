@@ -36,6 +36,7 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
     string,
     TableColumnValidationSchemaTypeStringGroup
   >;
+  includeAirtableSpecificQueryParameters?: boolean;
 };
 
 export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
@@ -49,6 +50,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   queryableLookupFields,
   columnNameToValidationSchemaTypeStringGroupMapper,
   restAPIModelExtrasCollector,
+  includeAirtableSpecificQueryParameters = true,
 }: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
   const { id: baseId } = base;
   const editableFieldsTypes = editableTableColumns.filter((tableColumn) => {
@@ -245,6 +247,12 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       .join(';\n\n'),
 
     ['/* AUTH_IMPORTS */']: `import { Authenticate, Authorize } from '../../../../decorators';`,
+    ['/* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */']: (() => {
+      if (!includeAirtableSpecificQueryParameters) {
+        return '';
+      }
+      return '$1';
+    })(),
   } as Record<string, string>;
 };
 
