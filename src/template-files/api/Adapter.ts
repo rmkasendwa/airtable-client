@@ -2,12 +2,19 @@ import { getAPIAdapter } from '@infinite-debugger/axios-api-adapter';
 
 import { AIRTABLE_API_KEY } from '../config';
 
+declare module '@infinite-debugger/axios-api-adapter' {
+  interface IAPIAdapterConfiguration {
+    AIRTABLE_REQUEST_ONLY_FOCUS_FIELDS?: boolean;
+  }
+}
+
 export {
   IAPIAdapterConfiguration,
   REDIRECTION_ERROR_MESSAGES,
   RequestOptions,
   ResponseProcessor,
 } from '@infinite-debugger/axios-api-adapter';
+
 export {
   APIAdapterConfiguration,
   RequestController,
@@ -38,6 +45,7 @@ const {
 
 APIAdapterConfiguration.HOST_URL = 'https://api.airtable.com/v0';
 APIAdapterConfiguration.preProcessResponseErrorMessages = false;
+APIAdapterConfiguration.AIRTABLE_REQUEST_ONLY_FOCUS_FIELDS = true;
 
 patchDefaultRequestHeaders({
   Authorization: `Bearer ${AIRTABLE_API_KEY}`,

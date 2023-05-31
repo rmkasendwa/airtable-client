@@ -24,7 +24,7 @@ import {
   DeleteAirtableRecordResponseValidationSchema,
   convertToAirtableFindAllRecordsQueryParams,
 } from '../models/Utils';
-import { _delete, get, patch, post } from './Adapter';
+import { APIAdapterConfiguration, _delete, get, patch, post } from './Adapter';
 
 /**************************** ENDPOINT PATHS *****************************/
 export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `/${AIRTABLE_BASE_ID}/${encodeURIComponent(
@@ -54,7 +54,11 @@ export const findFirstPagePascalCaseEntities = async (
     )}\x1b[0m`
   );
 
-  if (!queryParams.fields && camelCaseEntityQueryableFields.length > 0) {
+  if (
+    !queryParams.fields &&
+    camelCaseEntityQueryableFields.length > 0 &&
+    APIAdapterConfiguration.AIRTABLE_REQUEST_ONLY_FOCUS_FIELDS
+  ) {
     queryParams = {
       ...queryParams,
       fields: [...camelCaseEntityQueryableFields],
