@@ -79,9 +79,7 @@ export class FindAllRecordsQueryParams<
 
     fields%5B%5D=fldG9yBafL709WagC&fields%5B%5D=fldySXPDpkljy1BCq
     Note: %5B%5D may be omitted when specifying multiple fields, but must always be included when specifying only a single field.
-  `
-      .trimIndent()
-      .trim()
+  `.trimIndent()
   )
   public fields?: Field[];
 
@@ -95,9 +93,7 @@ export class FindAllRecordsQueryParams<
     The formula must be encoded first before passing it as a value. You can use this tool to not only encode the formula but also create the entire url you need. For example, to only include records where Name isn't empty, pass in NOT({Name} = '') as a parameter like this:
     
     filterByFormula=NOT%28%7BName%7D%20%3D%20%27%27%29
-  `
-      .trimIndent()
-      .trim()
+  `.trimIndent()
   )
   public filterByFormula?: string;
 
@@ -126,9 +122,7 @@ export class FindAllRecordsQueryParams<
 
     sort%5B0%5D%5Bfield%5D=name
     sort%5B0%5D%5Bdirection%5D=desc
-  `
-      .trimIndent()
-      .trim()
+  `.trimIndent()
   )
   public sort?: AirtableSortOption[];
 
@@ -152,9 +146,7 @@ export class FindAllRecordsQueryParams<
     json: cells will be formatted as JSON, depending on the field type.
   
     string: cells will be formatted as user-facing strings, regardless of the field type. The timeZone and userLocale parameters are required when using string as the cellFormat.
-  `
-      .trimIndent()
-      .trim()
+  `.trimIndent()
   )
   public cellFormat?: 'string' | 'json';
 
@@ -183,9 +175,7 @@ export class CountAllRecordsQueryParams<View extends string = string> {
     The formula must be encoded first before passing it as a value. You can use this tool to not only encode the formula but also create the entire url you need. For example, to only include records where Name isn't empty, pass in NOT({Name} = '') as a parameter like this:
     
     filterByFormula=NOT%28%7BName%7D%20%3D%20%27%27%29
-  `
-      .trimIndent()
-      .trim()
+  `.trimIndent()
   )
   public filterByFormula?: string;
 
@@ -201,6 +191,9 @@ export class CountAllRecordsResponse {
   @Description('The number of existing records that satisfy the query.')
   public recordsCount!: number;
 }
+
+export const DEFAULT_VIEW_NAME = 'Grid view';
+export const DEFAULT_VIEW_ALIAS = 'Default';
 
 export const convertToAirtableFindAllRecordsQueryParams = <
   T extends FindAllRecordsQueryParams
@@ -270,6 +263,18 @@ export const convertToAirtableFindAllRecordsQueryParams = <
               return `{${airtableColumnName || field}}`;
             }
           ),
+        };
+      }
+    })(),
+    ...(() => {
+      if (queryParams.view) {
+        return {
+          view: (() => {
+            if (DEFAULT_VIEW_ALIAS) {
+              return DEFAULT_VIEW_NAME;
+            }
+            return queryParams.view;
+          })(),
         };
       }
     })(),

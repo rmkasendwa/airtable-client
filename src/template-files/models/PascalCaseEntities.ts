@@ -311,9 +311,7 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
     A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
 
     The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
-  `
-      .trimIndent()
-      .trim()
+  `.trimIndent()
   )
   public declare sort?: PascalCaseEntitiesSortOption[];
 

@@ -4,6 +4,7 @@ import {
   Table,
 } from '../../models';
 
+//#region getExpandedAirtableLookupColumn
 export const getExpandedAirtableLookupColumn = (
   field: AirtableField,
   tables: Table[],
@@ -39,7 +40,9 @@ export const getExpandedAirtableLookupColumn = (
   }
   return field;
 };
+//#endregion
 
+//#region getRootAirtableColumn
 export const getRootAirtableColumn = (
   field: AirtableField,
   tables: Table[],
@@ -79,7 +82,9 @@ export const getRootAirtableColumn = (
   }
   return field;
 };
+//#endregion
 
+//#region getModelPropertyExampleString
 export const getModelPropertyExampleString = (type: string) => {
   switch (type) {
     case 'boolean':
@@ -98,7 +103,9 @@ export const getModelPropertyExampleString = (type: string) => {
   }
   return '""';
 };
+//#endregion
 
+//#region getTableColumnValidationSchemaTypeStrings
 export type ObjectModelProperty = {
   propertyName: string;
   propertyType: string;
@@ -664,3 +671,4 @@ export const getTableColumnValidationSchemaTypeStrings = (
     tableColumName: tableColumn.name,
   };
 };
+//#endregion

@@ -41,11 +41,15 @@ const prettierConfig: prettier.Options = {
 
 const airtableAPIFolderName = 'Airtable';
 
-/****************** CONSTANTS *********************/
+//#region CONSTANTS
 const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
   'lookup',
   'multipleLookupValues',
 ];
+
+const DEFAULT_VIEW_NAME = 'Grid view';
+const DEFAULT_VIEW_ALIAS = 'Default';
+//#endregion
 
 export interface GenerateAirtableAPIConfig {
   userConfig: Config<string>;
@@ -271,7 +275,16 @@ export const generateAirtableAPI = async ({
             .sort((a, b) => a.name.localeCompare(b.name))
             .filter(({ name }) => {
               return !configViews || configViews.includes(name);
-            });
+            })
+            .reduce(
+              (accumulator, { name }) => {
+                if (!accumulator.includes(name) && name !== DEFAULT_VIEW_NAME) {
+                  accumulator.push(name);
+                }
+                return accumulator;
+              },
+              [DEFAULT_VIEW_ALIAS] as string[]
+            );
 
           const filteredTableColumns = columns
             .sort((a, b) => {

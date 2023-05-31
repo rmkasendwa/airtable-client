@@ -3,7 +3,6 @@ import { pick } from 'lodash';
 import {
   AirtableBase,
   AirtableField,
-  AirtableView,
   DetailedColumnNameToObjectPropertyMapping,
   Table,
 } from '../../models';
@@ -270,7 +269,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
   'base' | 'editableTableColumns'
 > & {
-  views: AirtableView[];
+  views: string[];
   labelSingular: string;
   labelPlural: string;
 }) => {
@@ -278,8 +277,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
 
   return {
     ['/* AIRTABLE_VIEWS */']: views
-      .map(({ name }) => {
-        return `"${RegExp.escape(name)}"`;
+      .map((view) => {
+        return `"${RegExp.escape(view)}"`;
       })
       .join(', '),
 
