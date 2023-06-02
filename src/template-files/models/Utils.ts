@@ -270,10 +270,9 @@ export const convertToAirtableFindAllRecordsQueryParams = <
       if (queryParams.view) {
         return {
           view: (() => {
-            if (DEFAULT_VIEW_ALIAS) {
-              return DEFAULT_VIEW_NAME;
+            if (queryParams.view && queryParams.view !== DEFAULT_VIEW_ALIAS) {
+              return queryParams.view;
             }
-            return queryParams.view;
           })(),
         };
       }
