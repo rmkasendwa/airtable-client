@@ -188,6 +188,7 @@ export class CountAllRecordsQueryParams<View extends string = string> {
 
 export class CountAllRecordsResponse {
   @Property()
+  @Required()
   @Description('The number of existing records that satisfy the query.')
   public recordsCount!: number;
 }
