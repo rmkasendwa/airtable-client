@@ -203,30 +203,25 @@ export const convertToAirtableFindAllRecordsQueryParams = <
   objectPropertyToColumnNameMapper: Record<string, string>,
   lookupObjectPropertyToColumnNameMapper: Record<string, string>
 ) => {
-  const airtableQueryParams: Omit<
-    FindAllRecordsQueryParams,
-    'sort' | 'fields'
-  > & {
-    sort?: string[];
+  const airtableQueryParams: Omit<FindAllRecordsQueryParams, 'fields'> & {
     fields?: string[];
   } = {
     ...omit(queryParams, 'sort', 'fields', 'filterByFormula'),
     ...(() => {
       if (queryParams.sort) {
         return {
-          sort: queryParams.sort
-            .map(({ field, direction }, index) => {
-              return [
-                `sort[${index}][field]=${field}`,
-                ...(() => {
-                  if (direction) {
-                    return `sort[${index}][direction]=${direction}`;
-                  }
-                  return [];
-                })(),
-              ];
-            })
-            .flat(),
+          sort: queryParams.sort.map(({ field, direction }) => {
+            const columnName = (() => {
+              if (field.includes('.')) {
+                return lookupObjectPropertyToColumnNameMapper[field];
+              }
+              return objectPropertyToColumnNameMapper[field];
+            })();
+            return {
+              field: columnName,
+              direction: direction,
+            };
+          }),
         };
       }
     })(),
