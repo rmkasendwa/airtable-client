@@ -800,6 +800,7 @@ export const generateAirtableAPI = async ({
                 MANAGE_ENTITIES_PERMISSION,
                 CREATE_ENTITY_PERMISSION,
                 VIEW_ENTITIES_PERMISSION,
+                COUNT_ENTITIES_PERMISSION,
                 VIEW_ENTITY_DETAILS_PERMISSION,
                 UPDATE_ENTITY_PERMISSION,
                 DELETE_ENTITY_PERMISSION
