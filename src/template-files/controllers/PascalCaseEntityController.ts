@@ -51,6 +51,7 @@ import {
   DeleteAirtableRecordsResponse,
 } from '../models/Utils';
 import {
+  COUNT_ENTITIES_PERMISSION,
   CREATE_ENTITY_PERMISSION,
   DELETE_ENTITY_PERMISSION,
   UPDATE_ENTITY_PERMISSION,
@@ -96,7 +97,7 @@ export class PascalCaseEntityController {
   }
 
   @Get('/count')
-  @Authorize(VIEW_ENTITIES_PERMISSION)
+  @Authorize(COUNT_ENTITIES_PERMISSION)
   @Summary('Count all entities label')
   @Description(
     'Counts all entities label. Returns entities label matching query paramenters.'

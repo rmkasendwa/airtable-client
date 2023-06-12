@@ -10,6 +10,7 @@ import {
   removeSync,
   writeFileSync,
 } from 'fs-extra';
+import pluralize from 'pluralize';
 import prettier from 'prettier';
 import walk from 'walk-sync';
 
@@ -226,23 +227,13 @@ export const generateAirtableAPI = async ({
                 const sanitisedTableName = (configTableAlias || configTableName)
                   .trim()
                   .replace(/[^\w\s]/g, '');
-                outputConfig.labelPlural = (() => {
-                  if (!sanitisedTableName.match(/s$/g)) {
-                    return sanitisedTableName + 's';
-                  }
-                  return sanitisedTableName;
-                })();
+                outputConfig.labelPlural = pluralize(sanitisedTableName);
               }
               if (configTable.labelSingular) {
                 outputConfig.labelSingular = configTable.labelSingular;
               } else {
                 const labelPlural = outputConfig.labelPlural!;
-                outputConfig.labelSingular = (() => {
-                  if (labelPlural.match(/ies$/)) {
-                    return labelPlural.replace(/ies$/, 'y');
-                  }
-                  return labelPlural.replace(/s$/g, '');
-                })();
+                outputConfig.labelSingular = pluralize.singular(labelPlural);
               }
               focusColumns && (outputConfig.focusColumns = focusColumns.sort());
               configColumnNameToObjectPropertyMapper &&
@@ -253,18 +244,10 @@ export const generateAirtableAPI = async ({
               const sanitisedTableName = tableName
                 .trim()
                 .replace(/[^\w\s]/g, '');
-              outputConfig.labelPlural = (() => {
-                if (!sanitisedTableName.match(/s$/g)) {
-                  return sanitisedTableName + 's';
-                }
-                return sanitisedTableName;
-              })();
-              outputConfig.labelSingular = (() => {
-                if (outputConfig.labelPlural.match(/ies$/)) {
-                  return outputConfig.labelPlural.replace(/ies$/, 'y');
-                }
-                return outputConfig.labelPlural.replace(/s$/g, '');
-              })();
+              outputConfig.labelPlural = pluralize(sanitisedTableName);
+              outputConfig.labelSingular = pluralize.singular(
+                outputConfig.labelPlural
+              );
             }
 
             return outputConfig;
@@ -398,7 +381,9 @@ export const generateAirtableAPI = async ({
           const restAPIModelExtrasCollector: ModelClass[] = [];
 
           console.log(
-            `  -> Processing \x1b[34m${workingBaseName.trim()}/${tableName.trim()}\x1b[0m table...`
+            `  -> Processing \x1b[34m${workingBaseName.trim()}/${encodeURIComponent(
+              tableName.trim()
+            )}\x1b[0m table...`
           );
 
           const nonLookupColumnNameToObjectPropertyMapper =
