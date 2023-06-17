@@ -228,24 +228,6 @@ export class PascalCaseEntityController {
     return patchManyPascalCaseEntities(records);
   }
 
-  @Delete('/:camelCaseEntityId')
-  @Authorize(DELETE_ENTITY_PERMISSION)
-  @Summary('Delete existing entity label by id')
-  @Description(
-    'Deletes an existing entity label by id. Returns id of the deleted entity label.'
-  )
-  @Returns(200, DeleteAirtableRecordResponse).Description(
-    'The deleted entity label response'
-  )
-  @Returns(404).Description('Not found')
-  async deletePascalCaseEntity(
-    @Description('The id of the entity label to be deleted.')
-    @PathParams('camelCaseEntityId')
-    camelCaseEntityId: string
-  ) {
-    return deletePascalCaseEntity(camelCaseEntityId);
-  }
-
   @Delete('/batch')
   @Authorize(DELETE_ENTITY_PERMISSION)
   @Summary('Delete many existing entities label')
@@ -267,5 +249,23 @@ export class PascalCaseEntityController {
     recordIds: string[]
   ) {
     return deleteManyPascalCaseEntities(recordIds);
+  }
+
+  @Delete('/:camelCaseEntityId')
+  @Authorize(DELETE_ENTITY_PERMISSION)
+  @Summary('Delete existing entity label by id')
+  @Description(
+    'Deletes an existing entity label by id. Returns id of the deleted entity label.'
+  )
+  @Returns(200, DeleteAirtableRecordResponse).Description(
+    'The deleted entity label response'
+  )
+  @Returns(404).Description('Not found')
+  async deletePascalCaseEntity(
+    @Description('The id of the entity label to be deleted.')
+    @PathParams('camelCaseEntityId')
+    camelCaseEntityId: string
+  ) {
+    return deletePascalCaseEntity(camelCaseEntityId);
   }
 }
