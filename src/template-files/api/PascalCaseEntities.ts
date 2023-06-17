@@ -307,7 +307,7 @@ export const patchManyPascalCaseEntities = async (
 
   const updatedRecords: PascalCaseEntity[] = [];
 
-  const patchPascalCaseEntitiePage = async (
+  const patchPascalCaseEntitiesPage = async (
     records: PascalCaseEntityUpdates[]
   ) => {
     records = [...records];
@@ -338,12 +338,12 @@ export const patchManyPascalCaseEntities = async (
     );
 
     if (records.length > 0) {
-      await patchPascalCaseEntitiePage(records);
+      await patchPascalCaseEntitiesPage(records);
     }
   };
 
   if (records.length > 0) {
-    await patchPascalCaseEntitiePage(records);
+    await patchPascalCaseEntitiesPage(records);
   }
 
   return {
@@ -375,18 +375,39 @@ export const deleteManyPascalCaseEntities = async (recordIds: string[]) => {
       2
     )}\x1b[0m`
   );
-  const { data } = await _delete(
-    addSearchParams(
-      ENTITY_DELETE_ENDPOINT_PATH,
+
+  const deletedRecordsResponse: { id: string; deleted: boolean }[] = [];
+
+  const deletePascalCaseEntitiesPage = async (recordIds: string[]) => {
+    recordIds = [...recordIds];
+    const recordsToDelete = recordIds.splice(0, 10);
+
+    const { data } = await _delete(
+      addSearchParams(
+        ENTITY_DELETE_ENDPOINT_PATH,
+        {
+          records: recordsToDelete,
+        },
+        { arrayParamStyle: 'append' }
+      ),
       {
-        records: recordIds,
-      },
-      { arrayParamStyle: 'append' }
-    ),
-    {
-      data: { records: recordIds },
-      label: 'Deleting entities label',
+        data: { records: recordsToDelete },
+        label: 'Deleting entities label',
+      }
+    );
+
+    deletedRecordsResponse.push(
+      ...DeleteAirtableRecordResponseValidationSchema.parse(data)
+    );
+
+    if (recordIds.length > 0) {
+      await deletePascalCaseEntitiesPage(recordIds);
     }
-  );
-  return DeleteAirtableRecordResponseValidationSchema.parse(data);
+  };
+
+  if (recordIds.length > 0) {
+    await deletePascalCaseEntitiesPage(recordIds);
+  }
+
+  return deletedRecordsResponse;
 };
