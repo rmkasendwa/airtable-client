@@ -360,14 +360,12 @@ export const generateAirtableAPI = async ({
                 case 'percent':
                 case 'currency':
                 case 'count':
-                case 'autoNumber':
                 case 'rating':
                 case 'checkbox':
                 case 'multipleRecordLinks':
                 case 'date':
                 case 'dateTime':
                 case 'lastModifiedTime':
-                case 'createdTime':
                 case 'multipleSelects':
                   return true;
               }

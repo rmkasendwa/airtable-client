@@ -180,24 +180,50 @@ export const createManyNewPascalCaseEntities = async (
     )}\x1b[0m`
   );
 
-  const airtableRequestData = {
-    records:
-      CreateManyNewPascalCaseEntitiesRequestValidationSchema.parse(records),
+  const createdRecords: PascalCaseEntity[] = [];
+
+  const createPascalCaseEntitiePage = async (
+    records: PascalCaseEntityCreationDetails[]
+  ) => {
+    records = [...records];
+    const recordsToCreate = records.splice(0, 10);
+
+    const airtableRequestData = {
+      records:
+        CreateManyNewPascalCaseEntitiesRequestValidationSchema.parse(
+          recordsToCreate
+        ),
+    };
+
+    console.log(
+      `\nSending entities label POST request to airtable with the following input:\x1b[2m\n${JSON.stringify(
+        airtableRequestData,
+        null,
+        2
+      )}\x1b[0m`
+    );
+
+    const { data } = await post(ENTITY_CREATE_ENDPOINT_PATH, {
+      data: airtableRequestData,
+      label: 'Creating entities label',
+    });
+
+    createdRecords.push(
+      ...FindAllPascalCaseEntitiesReponseValidationSchema.parse(data).records
+    );
+
+    if (records.length > 0) {
+      await createPascalCaseEntitiePage(records);
+    }
   };
 
-  console.log(
-    `\nSending entities label POST request to airtable with the following input:\x1b[2m\n${JSON.stringify(
-      airtableRequestData,
-      null,
-      2
-    )}\x1b[0m`
-  );
+  if (records.length > 0) {
+    await createPascalCaseEntitiePage(records);
+  }
 
-  const { data } = await post(ENTITY_CREATE_ENDPOINT_PATH, {
-    data: airtableRequestData,
-    label: 'Creating entities label',
-  });
-  return FindAllPascalCaseEntitiesReponseValidationSchema.parse(data);
+  return {
+    records: createdRecords,
+  };
 };
 
 /**
