@@ -40,7 +40,10 @@ export type ConfigTable<FocusColumn extends string> = {
   alias?: string;
   labelPlural?: string;
   labelSingular?: string;
-  focusColumns?: FocusColumn[];
+  focusColumns?: (
+    | FocusColumn
+    | [FocusColumn, UserEditableDetailedColumnNameToObjectPropertyMapping]
+  )[];
   columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<FocusColumn>;
   views?: string[];
 };

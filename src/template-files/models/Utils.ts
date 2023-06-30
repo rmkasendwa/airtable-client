@@ -283,6 +283,11 @@ export type AirtableColumnConfigMapping<ObjectPropertyName extends string> = {
   isMultipleRecordLinksField?: boolean;
   prefersSingleRecordLink?: boolean;
   isLookupWithListOfValues?: boolean;
+  required?: boolean;
+  min?: number;
+  max?: number;
+  minLength?: number;
+  maxLength?: number;
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
 };
 

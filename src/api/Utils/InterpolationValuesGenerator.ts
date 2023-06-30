@@ -81,7 +81,12 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
               return pick(
                 nonLookupColumnNameToObjectPropertyMapper[name],
                 'prefersSingleRecordLink',
-                'type'
+                'type',
+                'required',
+                'min',
+                'max',
+                'minLength',
+                'maxLength'
               );
             })(),
           };
@@ -118,6 +123,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
                     lookupColumnNameToObjectPropertyMapper[name],
                     'prefersSingleRecordLink',
                     'isLookupWithListOfValues',
+                    'required',
+                    'min',
+                    'max',
+                    'minLength',
+                    'maxLength',
                     'type'
                   );
                 })(),

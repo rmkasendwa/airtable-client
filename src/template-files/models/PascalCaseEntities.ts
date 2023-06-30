@@ -100,7 +100,7 @@ export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
 > = {
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
   ['Name']: {
-    propertyName: 'id',
+    propertyName: 'name',
   },
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 };

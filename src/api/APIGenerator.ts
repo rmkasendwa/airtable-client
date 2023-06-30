@@ -19,6 +19,7 @@ import {
   Config,
   ConfigDetailedColumnNameToObjectPropertyMapper,
   DetailedColumnNameToObjectPropertyMapping,
+  UserEditableDetailedColumnNameToObjectPropertyMapping,
 } from '../models';
 import { findAllAirtableBases, findAllTablesByBaseId } from './Metadata';
 import {
@@ -239,9 +240,34 @@ export const generateAirtableAPI = async ({
                 const labelPlural = outputConfig.labelPlural!;
                 outputConfig.labelSingular = pluralize.singular(labelPlural);
               }
-              focusColumns && (outputConfig.focusColumns = focusColumns.sort());
+              if (focusColumns) {
+                Object.assign(
+                  outputConfig.configColumnNameToObjectPropertyMapper,
+                  Object.fromEntries(
+                    focusColumns
+                      .map((focusColumn) => {
+                        if (Array.isArray(focusColumn)) {
+                          return focusColumn;
+                        }
+                      })
+                      .filter((focusColumn) => focusColumn) as [
+                      string,
+                      UserEditableDetailedColumnNameToObjectPropertyMapping
+                    ][]
+                  )
+                );
+                outputConfig.focusColumns = focusColumns
+                  .map((focusColumn) => {
+                    if (Array.isArray(focusColumn)) {
+                      return focusColumn[0];
+                    }
+                    return focusColumn;
+                  })
+                  .sort();
+              }
               if (configColumnNameToObjectPropertyMapper) {
-                outputConfig.configColumnNameToObjectPropertyMapper =
+                Object.assign(
+                  outputConfig.configColumnNameToObjectPropertyMapper,
                   Object.fromEntries(
                     Object.entries(configColumnNameToObjectPropertyMapper).map(
                       ([key, value]) => {
@@ -255,7 +281,8 @@ export const generateAirtableAPI = async ({
                         ];
                       }
                     )
-                  );
+                  )
+                );
               }
               views && (outputConfig.configViews = views);
             } else {
@@ -405,6 +432,7 @@ export const generateAirtableAPI = async ({
           const nonLookupColumnNameToObjectPropertyMapper =
             nonLookupTableColumns.reduce((accumulator, tableColumn) => {
               accumulator[tableColumn.name] = {
+                ...configColumnNameToObjectPropertyMapper[tableColumn.name],
                 propertyName: (() => {
                   // Extracting column object property name from user config.
                   if (
@@ -413,7 +441,7 @@ export const generateAirtableAPI = async ({
                   ) {
                     return configColumnNameToObjectPropertyMapper[
                       tableColumn.name
-                    ]!.propertyName!;
+                    ]!.propertyName!.split('.')[0];
                   }
                   return getCamelCaseFieldPropertyName(tableColumn); // Automatically converting table column name to camel case object property name
                 })(),
@@ -426,19 +454,6 @@ export const generateAirtableAPI = async ({
                   );
                   if (prefersSingleRecordLink) {
                     return { prefersSingleRecordLink };
-                  }
-                })(),
-                ...(() => {
-                  // Extracting user defined object data type
-                  if (
-                    configColumnNameToObjectPropertyMapper![tableColumn.name]
-                      ?.type
-                  ) {
-                    return {
-                      type: configColumnNameToObjectPropertyMapper[
-                        tableColumn.name
-                      ]!.type,
-                    };
                   }
                 })(),
               };
@@ -521,6 +536,7 @@ export const generateAirtableAPI = async ({
               );
 
               accumulator[tableColumn.name] = {
+                ...configColumnNameToObjectPropertyMapper[tableColumn.name],
                 propertyName: (() => {
                   // Extracting column object property name from user config.
                   const propertyName = (() => {
@@ -547,27 +563,6 @@ export const generateAirtableAPI = async ({
                   if (flattenLookupField) {
                     return {
                       prefersSingleRecordLink: flattenLookupField,
-                    };
-                  }
-                })(),
-                ...(() => {
-                  if (
-                    configColumnNameToObjectPropertyMapper[tableColumn.name]
-                      ?.isLookupWithListOfValues
-                  ) {
-                    return { isLookupWithListOfValues: true };
-                  }
-                })(),
-                ...(() => {
-                  // Extracting user defined object data type
-                  if (
-                    configColumnNameToObjectPropertyMapper[tableColumn.name]
-                      ?.type
-                  ) {
-                    return {
-                      type: configColumnNameToObjectPropertyMapper[
-                        tableColumn.name
-                      ]!.type,
                     };
                   }
                 })(),
