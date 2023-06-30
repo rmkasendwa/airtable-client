@@ -17,7 +17,7 @@ import walk from 'walk-sync';
 import {
   AirtableFieldType,
   Config,
-  ConfigColumnNameToObjectPropertyMapper,
+  ConfigDetailedColumnNameToObjectPropertyMapper,
   DetailedColumnNameToObjectPropertyMapping,
 } from '../models';
 import { findAllAirtableBases, findAllTablesByBaseId } from './Metadata';
@@ -165,7 +165,7 @@ export const generateAirtableAPI = async ({
         );
       });
 
-      // Filtering focus tables (tables defined in user config)
+      // Filter focus tables (tables defined in user config)
       if (filteredTables.length > 0) {
         console.log(
           `\nProcessing \x1b[34m${workingBaseName.trim()}\x1b[0m base...`
@@ -199,9 +199,13 @@ export const generateAirtableAPI = async ({
               labelPlural: string;
               labelSingular: string;
               focusColumns?: string[];
-              configColumnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<string>;
+              configColumnNameToObjectPropertyMapper: ConfigDetailedColumnNameToObjectPropertyMapper<string>;
               configViews?: string[];
-            } = { labelPlural: '', labelSingular: '' };
+            } = {
+              labelPlural: '',
+              labelSingular: '',
+              configColumnNameToObjectPropertyMapper: {},
+            };
 
             // Finding table definition in user config
             const configTable = configTables.find(({ name, base }) => {
@@ -236,9 +240,23 @@ export const generateAirtableAPI = async ({
                 outputConfig.labelSingular = pluralize.singular(labelPlural);
               }
               focusColumns && (outputConfig.focusColumns = focusColumns.sort());
-              configColumnNameToObjectPropertyMapper &&
-                (outputConfig.configColumnNameToObjectPropertyMapper =
-                  configColumnNameToObjectPropertyMapper);
+              if (configColumnNameToObjectPropertyMapper) {
+                outputConfig.configColumnNameToObjectPropertyMapper =
+                  Object.fromEntries(
+                    Object.entries(configColumnNameToObjectPropertyMapper).map(
+                      ([key, value]) => {
+                        return [
+                          key,
+                          typeof value === 'string'
+                            ? {
+                                propertyName: value,
+                              }
+                            : value,
+                        ];
+                      }
+                    )
+                  );
+              }
               views && (outputConfig.configViews = views);
             } else {
               const sanitisedTableName = tableName
@@ -276,14 +294,14 @@ export const generateAirtableAPI = async ({
             .filter(({ name }) => {
               return (
                 (name.replace(/[^\w\s]/g, '').length > 0 || // Filtering table columns with names with invalid characters
-                  configColumnNameToObjectPropertyMapper?.[name]) &&
+                  configColumnNameToObjectPropertyMapper[name]) &&
                 (!focusColumnNames || focusColumnNames.includes(name))
               );
             })
             .filter(({ name }) => {
               return (
                 !name.match(/^id$/gi) || // Filtering columns that match the id field to avoid overwriting the id
-                configColumnNameToObjectPropertyMapper?.[name]
+                configColumnNameToObjectPropertyMapper[name]
               );
             });
 
@@ -389,57 +407,22 @@ export const generateAirtableAPI = async ({
               accumulator[tableColumn.name] = {
                 propertyName: (() => {
                   // Extracting column object property name from user config.
-                  if (configColumnNameToObjectPropertyMapper) {
-                    if (
-                      configColumnNameToObjectPropertyMapper[
-                        tableColumn.name
-                      ] &&
-                      typeof configColumnNameToObjectPropertyMapper[
-                        tableColumn.name
-                      ] !== 'string' &&
-                      (
-                        configColumnNameToObjectPropertyMapper[
-                          tableColumn.name
-                        ] as any
-                      ).propertyName
-                    ) {
-                      return (
-                        configColumnNameToObjectPropertyMapper[
-                          tableColumn.name
-                        ] as any
-                      ).propertyName;
-                    }
-                    if (
-                      configColumnNameToObjectPropertyMapper[
-                        tableColumn.name
-                      ] &&
-                      typeof configColumnNameToObjectPropertyMapper[
-                        tableColumn.name
-                      ] === 'string'
-                    ) {
-                      return configColumnNameToObjectPropertyMapper[
-                        tableColumn.name
-                      ];
-                    }
+                  if (
+                    configColumnNameToObjectPropertyMapper[tableColumn.name]
+                      ?.propertyName
+                  ) {
+                    return configColumnNameToObjectPropertyMapper[
+                      tableColumn.name
+                    ]!.propertyName!;
                   }
-
                   return getCamelCaseFieldPropertyName(tableColumn); // Automatically converting table column name to camel case object property name
                 })(),
                 ...(() => {
                   // Extracting prefer single record link
                   const prefersSingleRecordLink = Boolean(
                     tableColumn.options?.prefersSingleRecordLink ||
-                      (configColumnNameToObjectPropertyMapper?.[
-                        tableColumn.name
-                      ] &&
-                        typeof configColumnNameToObjectPropertyMapper?.[
-                          tableColumn.name
-                        ] === 'object' &&
-                        (
-                          configColumnNameToObjectPropertyMapper?.[
-                            tableColumn.name
-                          ] as DetailedColumnNameToObjectPropertyMapping
-                        ).prefersSingleRecordLink)
+                      configColumnNameToObjectPropertyMapper?.[tableColumn.name]
+                        ?.prefersSingleRecordLink
                   );
                   if (prefersSingleRecordLink) {
                     return { prefersSingleRecordLink };
@@ -448,21 +431,13 @@ export const generateAirtableAPI = async ({
                 ...(() => {
                   // Extracting user defined object data type
                   if (
-                    typeof configColumnNameToObjectPropertyMapper?.[
-                      tableColumn.name
-                    ] === 'object' &&
-                    (
-                      configColumnNameToObjectPropertyMapper![
-                        tableColumn.name
-                      ] as DetailedColumnNameToObjectPropertyMapping
-                    ).type
+                    configColumnNameToObjectPropertyMapper![tableColumn.name]
+                      ?.type
                   ) {
                     return {
-                      type: (
-                        configColumnNameToObjectPropertyMapper[
-                          tableColumn.name
-                        ] as DetailedColumnNameToObjectPropertyMapping
-                      ).type,
+                      type: configColumnNameToObjectPropertyMapper[
+                        tableColumn.name
+                      ]!.type,
                     };
                   }
                 })(),
@@ -548,39 +523,14 @@ export const generateAirtableAPI = async ({
               accumulator[tableColumn.name] = {
                 propertyName: (() => {
                   // Extracting column object property name from user config.
-                  const propertyName: string | undefined = (() => {
-                    if (configColumnNameToObjectPropertyMapper) {
-                      if (
-                        configColumnNameToObjectPropertyMapper[
-                          tableColumn.name
-                        ] &&
-                        typeof configColumnNameToObjectPropertyMapper[
-                          tableColumn.name
-                        ] !== 'string' &&
-                        (
-                          configColumnNameToObjectPropertyMapper[
-                            tableColumn.name
-                          ] as any
-                        ).propertyName
-                      ) {
-                        return (
-                          configColumnNameToObjectPropertyMapper[
-                            tableColumn.name
-                          ] as any
-                        ).propertyName;
-                      }
-                      if (
-                        configColumnNameToObjectPropertyMapper[
-                          tableColumn.name
-                        ] &&
-                        typeof configColumnNameToObjectPropertyMapper[
-                          tableColumn.name
-                        ] === 'string'
-                      ) {
-                        return configColumnNameToObjectPropertyMapper[
-                          tableColumn.name
-                        ];
-                      }
+                  const propertyName = (() => {
+                    if (
+                      configColumnNameToObjectPropertyMapper[tableColumn.name]
+                        ?.propertyName
+                    ) {
+                      return configColumnNameToObjectPropertyMapper[
+                        tableColumn.name
+                      ]!.propertyName;
                     }
                   })();
 
@@ -602,17 +552,8 @@ export const generateAirtableAPI = async ({
                 })(),
                 ...(() => {
                   if (
-                    configColumnNameToObjectPropertyMapper?.[
-                      tableColumn.name
-                    ] &&
-                    typeof configColumnNameToObjectPropertyMapper?.[
-                      tableColumn.name
-                    ] === 'object' &&
-                    (
-                      configColumnNameToObjectPropertyMapper?.[
-                        tableColumn.name
-                      ] as DetailedColumnNameToObjectPropertyMapping
-                    ).isLookupWithListOfValues
+                    configColumnNameToObjectPropertyMapper[tableColumn.name]
+                      ?.isLookupWithListOfValues
                   ) {
                     return { isLookupWithListOfValues: true };
                   }
@@ -620,21 +561,13 @@ export const generateAirtableAPI = async ({
                 ...(() => {
                   // Extracting user defined object data type
                   if (
-                    typeof configColumnNameToObjectPropertyMapper?.[
-                      tableColumn.name
-                    ] === 'object' &&
-                    (
-                      configColumnNameToObjectPropertyMapper![
-                        tableColumn.name
-                      ] as DetailedColumnNameToObjectPropertyMapping
-                    ).type
+                    configColumnNameToObjectPropertyMapper[tableColumn.name]
+                      ?.type
                   ) {
                     return {
-                      type: (
-                        configColumnNameToObjectPropertyMapper[
-                          tableColumn.name
-                        ] as DetailedColumnNameToObjectPropertyMapping
-                      ).type,
+                      type: configColumnNameToObjectPropertyMapper[
+                        tableColumn.name
+                      ]!.type,
                     };
                   }
                 })(),

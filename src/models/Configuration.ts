@@ -9,6 +9,11 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   propertyName?: string;
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
   isLookupWithListOfValues?: boolean;
+  required?: boolean;
+  min?: number;
+  max?: number;
+  minLength?: number;
+  maxLength?: number;
 };
 
 export type DetailedColumnNameToObjectPropertyMapping = Required<
@@ -22,6 +27,12 @@ export type ConfigColumnNameToObjectPropertyMapper<FocusColumn extends string> =
       | string
       | UserEditableDetailedColumnNameToObjectPropertyMapping;
   }>;
+
+export type ConfigDetailedColumnNameToObjectPropertyMapper<
+  FocusColumn extends string
+> = Partial<{
+  [P in FocusColumn]: UserEditableDetailedColumnNameToObjectPropertyMapping;
+}>;
 
 export type ConfigTable<FocusColumn extends string> = {
   base?: ConfigAirtableBase;

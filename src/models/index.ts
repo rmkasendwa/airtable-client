@@ -1,2 +1,2 @@
 export * from './Metadata';
-export * from './__Config';
+export * from './Configuration';
