@@ -26,7 +26,7 @@ import {
 } from '../models/Utils';
 import { APIAdapterConfiguration, _delete, get, patch, post } from './Adapter';
 
-/**************************** ENDPOINT PATHS *****************************/
+//#region ENDPOINT PATHS
 export const FIND_ALL_ENTITIES_ENDPOINT_PATH = `/${AIRTABLE_BASE_ID}/${encodeURIComponent(
   'Entities Table'
 )}`;
@@ -36,7 +36,9 @@ export const FIND_ENTITY_BY_ID_ENPOINT_PATH: TemplatePath<{
 export const ENTITY_CREATE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 export const ENTITY_UPDATE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
 export const ENTITY_DELETE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
+//#endregion
 
+//#region Find All Entities Label
 /**
  * Finds entities label limited by queryParams.pageSize
  *
@@ -113,6 +115,7 @@ export const findAllPascalCaseEntities = async (
 
   return { records };
 };
+//#endregion
 
 /**
  * Count all existing entities label in Entities Table table.

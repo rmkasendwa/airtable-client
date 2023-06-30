@@ -7,6 +7,7 @@ import {
   Property,
   Required,
 } from '@tsed/schema';
+import { result } from 'lodash';
 import { z } from 'zod';
 
 import {
@@ -48,7 +49,7 @@ export class PascalCaseEntity {
   /* ENTITY_MODEL_FIELDS */
 }
 
-// All Entities Table lookup table columns
+//#region All Entities Table lookup table columns
 export const camelCaseEntitiesAirtableLookupColumns = [
   /* AIRTABLE_ENTITY_LOOKUP_COLUMNS */
   'Name',
@@ -57,8 +58,9 @@ export const camelCaseEntitiesAirtableLookupColumns = [
 
 export type PascalCaseEntitiesAirtableLookupColumn =
   typeof camelCaseEntitiesAirtableLookupColumns[number];
+//#endregion
 
-// Maps Entities Table lookup columns to Entity Label properties.
+//#region Maps Entities Table lookup columns to Entity Label properties.
 export const PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper: Record<
   PascalCaseEntitiesAirtableLookupColumn,
   AirtableColumnMapping<string>
@@ -67,8 +69,9 @@ export const PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper: Rec
   ['Name']: 'name',
   /* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */
 };
+//#endregion
 
-// Maps entity label properties to Entities Table lookup column names
+//#region Maps entity label properties to Entities Table lookup column names
 export const PascalCaseEntityPropertyToAirtableLookupColumnNameMapper: Record<
   string,
   string
@@ -82,8 +85,9 @@ export const PascalCaseEntityPropertyToAirtableLookupColumnNameMapper: Record<
     return [value, key];
   })
 );
+//#endregion
 
-// All Entities Table non lookup table columns
+//#region All Entities Table non lookup table columns
 export const camelCaseEntitiesAirtableColumns = [
   /* AIRTABLE_ENTITY_COLUMNS */
   'Name',
@@ -92,8 +96,9 @@ export const camelCaseEntitiesAirtableColumns = [
 
 export type PascalCaseEntitiesAirtableColumn =
   typeof camelCaseEntitiesAirtableColumns[number];
+//#endregion
 
-// Maps Entities Table non lookup columns to Entity Label properties.
+//#region Maps Entities Table non lookup columns to Entity Label properties.
 export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
   PascalCaseEntitiesAirtableColumn,
   AirtableColumnMapping<keyof PascalCaseEntity>
@@ -104,7 +109,25 @@ export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
   },
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 };
+//#endregion
 
+export const camelCaseEntityRequiredProperties = [
+  ...Object.entries(PascalCaseEntityAirtableColumnToObjectPropertyMapper),
+  ...Object.entries(
+    PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper
+  ),
+]
+  .filter(([, value]) => {
+    return typeof value === 'object' && value.required;
+  })
+  .map(([, value]) => {
+    if (typeof value === 'string') {
+      return value;
+    }
+    return value.propertyName;
+  });
+
+//#region Queryable Fields
 export const camelCaseEntityQueryableFields = [
   /* QUERYABLE_FIELDS */
   'name',
@@ -113,20 +136,21 @@ export const camelCaseEntityQueryableFields = [
 
 export type PascalCaseEntityQueryableField =
   typeof camelCaseEntityQueryableFields[number];
+//#endregion
 
 /********************* Airtable Entities Table views ***********************/
 
-// Entities Table table focus views.
+//#region Entities Table table focus views.
 export const camelCaseEntityViews = [
   /* AIRTABLE_VIEWS */
 ] as const;
 
-// Entities Table table view type.
 export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
+//#endregion
 
 /********************* Validation Schemas ***********************/
 
-// Maps entity label properties to Entities Table columns
+//#region Maps entity label properties to Entities Table columns
 export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
   Object.fromEntries(
     Object.entries(PascalCaseEntityAirtableColumnToObjectPropertyMapper).map(
@@ -163,8 +187,9 @@ export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
       }
     )
   );
+//#endregion
 
-// Maps entity label properties to Entities Table column names
+//#region Maps entity label properties to Entities Table column names
 export const PascalCaseEntityPropertyToAirtableColumnNameMapper =
   Object.fromEntries(
     Object.entries(PascalCaseEntityAirtableColumnToObjectPropertyMapper).map(
@@ -181,8 +206,9 @@ export const PascalCaseEntityPropertyToAirtableColumnNameMapper =
       }
     )
   );
+//#endregion
 
-// Validates Entities Table airtable response.
+//#region Validates Entities Table airtable response.
 export const PascalCaseEntityAirtableResponseValidationSchema =
   getAirtableRecordResponseValidationSchema<PascalCaseEntity>({
     nonLookupColumnNameToObjectPropertyMapper:
@@ -197,36 +223,58 @@ export const PascalCaseEntityAirtableResponseValidationSchema =
       /* AIRTABLE_RESPONSE_VALIDATION_SCHEMA_FIELDS */
     }),
   });
+//#endregion
 
-// Entities Table table columns interface.
+//#region Entities Table table columns interface.
 export type AirtablePascalCaseEntity = z.infer<
   typeof PascalCaseEntityAirtableResponseValidationSchema
 >;
+//#endregion
 
-// Validates airtable response to find all entities label.
-export const FindAllPascalCaseEntitiesReponseValidationSchema = z.object({
-  records: z.array(PascalCaseEntityAirtableResponseValidationSchema),
-  offset: z.string().optional(),
-});
+//#region Validates airtable response to find all entities label.
+export const FindAllPascalCaseEntitiesReponseValidationSchema = z
+  .object({
+    records: z.array(PascalCaseEntityAirtableResponseValidationSchema),
+    offset: z.string().optional(),
+  })
+  .transform(({ records, offset }) => {
+    return {
+      records: (() => {
+        if (camelCaseEntityRequiredProperties.length > 0) {
+          return records.filter((record) => {
+            return camelCaseEntityRequiredProperties.every((propertyName) => {
+              return result(record, propertyName) != null;
+            });
+          });
+        }
+        return records;
+      })(),
+      offset,
+    };
+  });
+//#endregion
 
-// Validates requests to mutate entities label.
+//#region Validates requests to mutate entities label.
 export const PascalCaseEntityAirtableRequestValidationSchema = z.object({
   /* REQUEST_ENTITY_PROPERTIES */
   a: z.string().nullish(),
   /* REQUEST_ENTITY_PROPERTIES */
 });
+//#endregion
 
-// Validates request to create entity label.
+//#region Validates request to create entity label.
 export const CreateNewPascalCaseEntityRequestValidationSchema =
   getAirtableRecordRequestValidationSchema(
     PascalCaseEntityAirtableRequestValidationSchema,
     PascalCaseEntityPropertyToAirtableColumnConfigMapper
   );
+//#endregion
 
-// Validates request to create entities label.
+//#region Validates request to create entities label.
 export const CreateManyNewPascalCaseEntitiesRequestValidationSchema = z.array(
   CreateNewPascalCaseEntityRequestValidationSchema
 );
+//#endregion
 
 // Validates request to update entity label.
 export const UpdatePascalCaseEntityRequestValidationSchema =
