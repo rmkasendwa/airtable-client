@@ -14,18 +14,39 @@ export default defineConfig({
             type: 'string',
           },
         ],
+
+        //#region Project
+        [
+          'Project',
+          {
+            required: true,
+          },
+        ],
         [
           'Project (from Project)',
           {
             propertyName: 'project.name',
+            required: true,
+          },
+        ],
+        //#endregion
+
+        //#region Role
+        [
+          'Role',
+          {
+            required: true,
           },
         ],
         [
           'Role Name (from Role)',
           {
             propertyName: 'role.name',
+            required: true,
           },
         ],
+        //#endregion
+
         'Assignments',
         [
           'Calculated Name',
@@ -64,18 +85,6 @@ export default defineConfig({
           'SOW',
           {
             propertyName: 'sow.id',
-            required: true,
-          },
-        ],
-        [
-          'Role',
-          {
-            required: true,
-          },
-        ],
-        [
-          'Project',
-          {
             required: true,
           },
         ],

@@ -611,6 +611,15 @@ export const generateAirtableAPI = async ({
                 tables,
               });
 
+            if (
+              nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+                ?.required
+            ) {
+              tableColumnValidationSchemaTypeStrings.decorators.push(
+                '@Required()'
+              );
+            }
+
             if (tableColumn.type === 'multipleRecordLinks') {
               const tableColumnModelExtras = restAPIModelExtrasCollector.find(
                 ({ modelName }) => {
@@ -626,6 +635,13 @@ export const generateAirtableAPI = async ({
               if (tableColumnModelExtras) {
                 const { modelProperties } = tableColumnModelExtras;
                 modelProperties.forEach((modelProperty) => {
+                  if (
+                    lookupColumnNameToObjectPropertyMapper[
+                      modelProperty.tableColumName
+                    ]?.required
+                  ) {
+                    modelProperty.decorators.push('@Required()');
+                  }
                   accumulator[modelProperty.tableColumName] = modelProperty;
                 });
               }
