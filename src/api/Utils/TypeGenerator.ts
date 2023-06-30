@@ -1,3 +1,5 @@
+import pluralize from 'pluralize';
+
 import {
   AirtableField,
   DetailedColumnNameToObjectPropertyMapping,
@@ -301,10 +303,12 @@ export const getTableColumnValidationSchemaTypeStrings = (
     case 'multipleRecordLinks': {
       const airtableResponseValidationString = `z.array(z.string())`;
       const objectModelPropertyType: ObjectModelProperty = (() => {
-        const modelClassName =
-          tableLabelSingular.toPascalCase() +
+        const pascalCasePropertyNameSingular = pluralize.singular(
           camelCasePropertyName.charAt(0).toUpperCase() +
-          camelCasePropertyName.slice(1);
+            camelCasePropertyName.slice(1)
+        );
+        const modelClassName =
+          tableLabelSingular.toPascalCase() + pascalCasePropertyNameSingular;
         const editableModelClassName = `Editable${modelClassName}`;
 
         const modelClass: ModelClass = {
