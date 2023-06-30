@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import '@infinite-debugger/rmk-js-extensions/RegExp';
 import '@infinite-debugger/rmk-js-extensions/String';
 
