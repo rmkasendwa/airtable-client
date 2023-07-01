@@ -254,14 +254,12 @@ export const generateAirtableAPI = async ({
                     ][]
                   )
                 );
-                outputConfig.focusColumns = focusColumns
-                  .map((focusColumn) => {
-                    if (Array.isArray(focusColumn)) {
-                      return focusColumn[0];
-                    }
-                    return focusColumn;
-                  })
-                  .sort();
+                outputConfig.focusColumns = focusColumns.map((focusColumn) => {
+                  if (Array.isArray(focusColumn)) {
+                    return focusColumn[0];
+                  }
+                  return focusColumn;
+                });
               }
               if (configColumnNameToObjectPropertyMapper) {
                 Object.assign(
@@ -314,7 +312,11 @@ export const generateAirtableAPI = async ({
 
           const filteredTableColumns = columns
             .sort((a, b) => {
-              return a.name.localeCompare(b.name);
+              const localFocusColumnNames = focusColumnNames || [];
+              return (
+                localFocusColumnNames.indexOf(a.name) -
+                localFocusColumnNames.indexOf(b.name)
+              );
             })
             .filter(({ name }) => {
               return (
