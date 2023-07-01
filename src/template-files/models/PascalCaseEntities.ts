@@ -23,6 +23,7 @@ import {
 
 /* REST_API_MODEL_IMPORTS */
 
+//#region Entity Label model
 /* REST_API_MODEL_EXTRAS */
 
 export class PascalCaseEntity {
@@ -48,6 +49,7 @@ export class PascalCaseEntity {
   public list?: string[];
   /* ENTITY_MODEL_FIELDS */
 }
+//#endregion
 
 //#region All Entities Table lookup table columns
 export const camelCaseEntitiesAirtableLookupColumns = [
@@ -115,6 +117,7 @@ export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
 };
 //#endregion
 
+//#region Required Properties
 export const camelCaseEntityRequiredProperties = [
   ...Object.entries(PascalCaseEntityAirtableColumnToObjectPropertyMapper),
   ...Object.entries(
@@ -130,6 +133,7 @@ export const camelCaseEntityRequiredProperties = [
     }
     return value.propertyName;
   });
+//#endregion
 
 //#region Queryable Fields
 export const camelCaseEntityQueryableFields = [
@@ -280,7 +284,7 @@ export const CreateManyNewPascalCaseEntitiesRequestValidationSchema = z.array(
 );
 //#endregion
 
-// Validates request to update entity label.
+//#region Validates request to update entity label.
 export const UpdatePascalCaseEntityRequestValidationSchema =
   getAirtableRecordRequestValidationSchema(
     PascalCaseEntityAirtableRequestValidationSchema.extend({
@@ -288,12 +292,15 @@ export const UpdatePascalCaseEntityRequestValidationSchema =
     }),
     PascalCaseEntityPropertyToAirtableColumnConfigMapper
   );
+//#endregion
 
-// Validates request to update entities label.
+//#region Validates request to update entities label.
 export const UpdateManyPascalCaseEntitiesRequestValidationSchema = z.array(
   UpdatePascalCaseEntityRequestValidationSchema
 );
+//#endregion
 
+//#region Find all entities label response.
 export class FindAllPascalCaseEntitiesReponse {
   @Property()
   @Required()
@@ -309,8 +316,9 @@ export class FindFirstPagePascalCaseEntitiesReponse extends FindAllPascalCaseEnt
   )
   public offset?: string;
 }
+//#endregion
 
-// Entity Label editable fields.
+//#region Entity Label creation details.
 export class PascalCaseEntityCreationDetails {
   /* ENTITY_MODEL_EDITABLE_FIELDS */
   @Property()
@@ -321,7 +329,9 @@ export class PascalCaseEntityCreationDetails {
   public list?: string[];
   /* ENTITY_MODEL_EDITABLE_FIELDS */
 }
+//#endregion
 
+//#region Create new entity label response payload.
 export class CreateNewPascalCaseEntitiesReponse {
   @Property()
   @Required()
@@ -329,7 +339,9 @@ export class CreateNewPascalCaseEntitiesReponse {
   @Description('The list of Entities Label.')
   public records!: PascalCaseEntity[];
 }
+//#endregion
 
+//#region Entity Label updates.
 export class PascalCaseEntityUpdates extends PascalCaseEntityCreationDetails {
   @Property()
   @Required()
@@ -337,9 +349,13 @@ export class PascalCaseEntityUpdates extends PascalCaseEntityCreationDetails {
   @Example('recO0FYb1Tccm9MZ2')
   public id!: string;
 }
+//#endregion
 
+//#region Update entity label response payload.
 export class UpdatePascalCaseEntitiesReponse extends CreateNewPascalCaseEntitiesReponse {}
+//#endregion
 
+//#region Find All entities label query params.
 export class PascalCaseEntitiesSortOption extends AirtableSortOption {
   @Property()
   @Required()
@@ -374,7 +390,9 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
   )
   public declare view?: PascalCaseEntityView;
 }
+//#endregion
 
+//#region Count all entities label query params.
 export class CountAllPascalCaseEntitiesQueryParams extends CountAllRecordsQueryParams {
   @Property()
   @Enum(...camelCaseEntityViews)
@@ -383,3 +401,4 @@ export class CountAllPascalCaseEntitiesQueryParams extends CountAllRecordsQueryP
   )
   public declare view?: PascalCaseEntityView;
 }
+//#endregion

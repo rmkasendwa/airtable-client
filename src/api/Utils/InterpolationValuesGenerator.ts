@@ -281,6 +281,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   labelPlural,
   nonLookupTableColumns,
   columnNameToValidationSchemaTypeStringGroupMapper,
+  nonLookupColumnNameToObjectPropertyMapper,
 }: Omit<
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
   'base' | 'editableTableColumns'
@@ -332,30 +333,45 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
           .map(({ typeDefinitionSnippet }) => {
             return typeDefinitionSnippet!.trimIndent();
           }),
-        ...restAPIModelExtrasCollector.map(({ modelName, modelProperties }) => {
-          const modelPropertiesString = modelProperties
-            .map(
-              ({
-                accessModifier,
-                decorators,
-                propertyName,
-                propertyType,
-                required,
-              }) => {
-                return `
+        ...restAPIModelExtrasCollector.map(
+          ({ modelName, modelProperties, tableColumName }) => {
+            const modelPropertiesString = modelProperties
+              .map(
+                ({
+                  accessModifier,
+                  decorators,
+                  propertyName,
+                  propertyType,
+                  required,
+                }) => {
+                  return `
                     ${decorators.join('\n')}
                     ${accessModifier} ${propertyName}${
-                  required ? '!' : '?'
-                }: ${propertyType}
+                    required ? '!' : '?'
+                  }: ${propertyType}
                   `.trimIndent();
-              }
-            )
-            .join(';\n\n');
+                }
+              )
+              .join(';\n\n');
 
-          return `export class ${modelName} {
-              ${modelPropertiesString}
-            }`;
-        }),
+            const descriptionDecoratorCode = (() => {
+              if (
+                nonLookupColumnNameToObjectPropertyMapper[tableColumName]
+                  ?.description
+              ) {
+                return `@Description('${nonLookupColumnNameToObjectPropertyMapper[tableColumName].description}')`;
+              }
+              return '';
+            })();
+
+            return `
+              ${descriptionDecoratorCode}
+              export class ${modelName} {
+                ${modelPropertiesString}
+              }
+            `.trimIndent();
+          }
+        ),
       ]),
     ].join('\n\n'),
 

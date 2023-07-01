@@ -124,6 +124,7 @@ export type ObjectModelProperty = {
 export type ModelClass = {
   modelName: string;
   modelProperties: ObjectModelProperty[];
+  tableColumName: string;
 };
 
 export type TableColumnValidationSchemaTypeStringGroup = ObjectModelProperty;
@@ -318,7 +319,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
               decorators: [
                 '@Property()',
                 '@Required()',
-                `@Description('Unique identifer for ${tableColumn.name}')`,
+                `@Description('The unique identifer')`,
                 `@Example('recO0FYb1Tccm9MZ2')`,
               ],
               propertyName: 'id',
@@ -354,6 +355,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
                 })
             ),
           ],
+          tableColumName: tableColumn.name,
         };
 
         const editableModelClassName = `Editable${modelClassName}`;
@@ -365,7 +367,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
               decorators: [
                 '@Property()',
                 '@Required()',
-                `@Description('Unique identifer for ${tableColumn.name}')`,
+                `@Description('The unique identifer')`,
                 `@Example('recO0FYb1Tccm9MZ2')`,
               ],
               propertyName: 'id',
@@ -375,10 +377,12 @@ export const getTableColumnValidationSchemaTypeStrings = (
               tableColumName: tableColumn.name,
             },
           ],
+          tableColumName: tableColumn.name,
         };
 
+        restAPIModelExtrasCollector.push(modelClass);
         if (editable !== false) {
-          restAPIModelExtrasCollector.push(modelClass, editableModelClass);
+          restAPIModelExtrasCollector.push(editableModelClass);
         }
 
         if (
