@@ -27,8 +27,10 @@ if (args.includes('-G') || args.includes('--generate')) {
   const userConfigFilePath = `${currentWorkingDirectory}/airtable-api.config`;
 
   if (
-    ['.json', '.js', '.ts'].some((fileExtension) =>
-      existsSync(userConfigFilePath + fileExtension)
+    ['.json', '.js', '.ts'].some(
+      (fileExtension) =>
+        existsSync(userConfigFilePath + fileExtension) ||
+        existsSync(userConfigFilePath + '/index' + fileExtension)
     )
   ) {
     const userConfig: Config<string> = (() => {
