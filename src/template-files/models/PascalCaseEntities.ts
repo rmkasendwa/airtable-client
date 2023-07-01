@@ -57,14 +57,14 @@ export const camelCaseEntitiesAirtableLookupColumns = [
 ] as const;
 
 export type PascalCaseEntitiesAirtableLookupColumn =
-  typeof camelCaseEntitiesAirtableLookupColumns[number];
+  typeof camelCaseEntitiesAirtableLookupColumns[number] extends never
+    ? string
+    : typeof camelCaseEntitiesAirtableLookupColumns[number];
 //#endregion
 
 //#region Maps Entities Table lookup columns to Entity Label properties.
 export const PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper: Record<
-  PascalCaseEntitiesAirtableLookupColumn extends never
-    ? string
-    : PascalCaseEntitiesAirtableLookupColumn,
+  PascalCaseEntitiesAirtableLookupColumn,
   AirtableColumnMapping<string>
 > = {
   /* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */
@@ -97,7 +97,9 @@ export const camelCaseEntitiesAirtableColumns = [
 ] as const;
 
 export type PascalCaseEntitiesAirtableColumn =
-  typeof camelCaseEntitiesAirtableColumns[number];
+  typeof camelCaseEntitiesAirtableColumns[number] extends never
+    ? string
+    : typeof camelCaseEntitiesAirtableColumns[number];
 //#endregion
 
 //#region Maps Entities Table non lookup columns to Entity Label properties.

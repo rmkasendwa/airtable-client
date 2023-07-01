@@ -7,8 +7,10 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   'prefersSingleRecordLink'
 > & {
   propertyName?: string;
+  description?: string;
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
   isLookupWithListOfValues?: boolean;
+  editable?: boolean;
   required?: boolean;
   min?: number;
   max?: number;

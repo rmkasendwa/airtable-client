@@ -182,6 +182,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
     type: userDefinedType,
     prefersSingleRecordLink,
     isLookupWithListOfValues,
+    editable,
   } = {
     ...nonLookupColumnNameToObjectPropertyMapper,
     ...lookupColumnNameToObjectPropertyMapper,
@@ -309,8 +310,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
         );
         const modelClassName =
           tableLabelSingular.toPascalCase() + pascalCasePropertyNameSingular;
-        const editableModelClassName = `Editable${modelClassName}`;
-
         const modelClass: ModelClass = {
           modelName: modelClassName,
           modelProperties: [
@@ -357,6 +356,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
           ],
         };
 
+        const editableModelClassName = `Editable${modelClassName}`;
         const editableModelClass: ModelClass = {
           modelName: editableModelClassName,
           modelProperties: [
@@ -377,7 +377,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
           ],
         };
 
-        restAPIModelExtrasCollector.push(modelClass, editableModelClass);
+        if (editable !== false) {
+          restAPIModelExtrasCollector.push(modelClass, editableModelClass);
+        }
 
         if (
           prefersSingleRecordLink ||
@@ -393,9 +395,11 @@ export const getTableColumnValidationSchemaTypeStrings = (
             tableColumName: tableColumn.name,
           };
         }
+
         return {
           propertyName: camelCasePropertyName,
           propertyType: `${modelClassName}[]`,
+          editablePropertyType: `${editableModelClassName}[]`,
           accessModifier: 'public',
           decorators: ['@Property()', `@ArrayOf(${modelClassName})`],
           airtableResponseValidationString,

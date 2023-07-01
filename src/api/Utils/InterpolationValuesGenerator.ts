@@ -237,6 +237,12 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       .join(',\n'),
 
     ['/* ENTITY_MODEL_EDITABLE_FIELDS */']: editableFieldsTypes
+      .filter((tableColumn) => {
+        return (
+          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+            .editable !== false
+        );
+      })
       .map((tableColumn) => {
         const {
           accessModifier,
@@ -247,11 +253,11 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
         return `
-        ${decorators.join('\n')}
-        ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
+          ${decorators.join('\n')}
+          ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
           editablePropertyType || propertyType
         }
-      `.trimIndent();
+        `.trimIndent();
       })
       .join(';\n\n'),
 

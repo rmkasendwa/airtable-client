@@ -620,6 +620,18 @@ export const generateAirtableAPI = async ({
               );
             }
 
+            if (
+              nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+                ?.description
+            ) {
+              tableColumnValidationSchemaTypeStrings.decorators.push(
+                `@Description('${
+                  nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+                    .description
+                }')`
+              );
+            }
+
             if (tableColumn.type === 'multipleRecordLinks') {
               const tableColumnModelExtras = restAPIModelExtrasCollector.find(
                 ({ modelName }) => {
