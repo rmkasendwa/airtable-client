@@ -190,7 +190,7 @@ export const generateAirtableAPI = async ({
           const {
             labelPlural,
             labelSingular,
-            focusColumns: focusColumnNames,
+            focusColumns: focusColumnNames = columns.map(({ name }) => name),
             configColumnNameToObjectPropertyMapper,
             configViews,
           } = (() => {
@@ -310,25 +310,14 @@ export const generateAirtableAPI = async ({
               [DEFAULT_VIEW_ALIAS] as string[]
             );
 
-          const filteredTableColumns = columns
-            .sort((a, b) => {
-              const localFocusColumnNames = focusColumnNames || [];
-              return (
-                localFocusColumnNames.indexOf(a.name) -
-                localFocusColumnNames.indexOf(b.name)
-              );
+          const filteredTableColumns = focusColumnNames
+            .map((focusColumnName) => {
+              return columns.find(({ name }) => name === focusColumnName)!;
             })
+            .filter((column) => column)
             .filter(({ name }) => {
               return (
-                (name.replace(/[^\w\s]/g, '').length > 0 || // Filtering table columns with names with invalid characters
-                  configColumnNameToObjectPropertyMapper[name]) &&
-                (!focusColumnNames || focusColumnNames.includes(name))
-              );
-            })
-            .filter(({ name }) => {
-              return (
-                !name.match(/^id$/gi) || // Filtering columns that match the id field to avoid overwriting the id
-                configColumnNameToObjectPropertyMapper[name]
+                name.replace(/[^\w\s]/g, '').length > 0 && !name.match(/^id$/gi)
               );
             });
 
@@ -336,13 +325,13 @@ export const generateAirtableAPI = async ({
             .filter(({ type }) => {
               return !type || !LOOKUP_TABLE_COLUMN_TYPES.includes(type);
             })
-            .reduce((accumulator, field) => {
+            .reduce<typeof filteredTableColumns>((accumulator, field) => {
               // Filtering columns with similar names.
               if (!accumulator.find(({ name }) => name === field.name)) {
                 accumulator.push(field);
               }
               return accumulator;
-            }, [] as typeof columns);
+            }, []);
 
           const lookupTableColumns = filteredTableColumns
             .filter(({ type, options }) => {

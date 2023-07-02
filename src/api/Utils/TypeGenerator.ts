@@ -306,11 +306,10 @@ export const getTableColumnValidationSchemaTypeStrings = (
       const airtableResponseValidationString = `z.array(z.string())`;
       const objectModelPropertyType: ObjectModelProperty = (() => {
         const pascalCasePropertyNameSingular = pluralize.singular(
-          camelCasePropertyName.charAt(0).toUpperCase() +
-            camelCasePropertyName.slice(1)
+          camelCasePropertyName
         );
         const modelClassName =
-          tableLabelSingular.toPascalCase() + pascalCasePropertyNameSingular;
+          `${tableLabelSingular} ${pascalCasePropertyNameSingular}`.toPascalCase();
         const modelClass: ModelClass = {
           modelName: modelClassName,
           modelProperties: [
@@ -601,24 +600,15 @@ export const getTableColumnValidationSchemaTypeStrings = (
     }
     case 'singleSelect':
     case 'multipleSelects': {
-      const pascalCasePropertyName =
-        (() => {
-          if (camelCaseParentPropertyName) {
-            return (
-              camelCaseParentPropertyName.charAt(0).toUpperCase() +
-              camelCaseParentPropertyName.slice(1)
-            );
-          }
-          return '';
-        })() +
-        camelCasePropertyName.charAt(0).toUpperCase() +
-        camelCasePropertyName.slice(1);
+      const pascalCasePropertyNameSingular = pluralize.singular(
+        camelCaseParentPropertyName || ''
+      );
 
       const enumValuesVariableName =
-        tableLabelSingular.toCamelCase() + pascalCasePropertyName + 'Options';
+        `${tableLabelSingular} ${pascalCasePropertyNameSingular} ${camelCasePropertyName} Options`.toCamelCase();
 
       const enumTypeName =
-        tableLabelSingular.toPascalCase() + pascalCasePropertyName + 'Option';
+        `${tableLabelSingular} ${pascalCasePropertyNameSingular} ${camelCasePropertyName} Option`.toPascalCase();
 
       const enumValues = (() => {
         if (tableColumnOptions?.choices) {
