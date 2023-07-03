@@ -7,7 +7,6 @@ import {
   Property,
   Required,
 } from '@tsed/schema';
-import { result } from 'lodash';
 import { z } from 'zod';
 
 import {
@@ -248,13 +247,15 @@ export const FindAllPascalCaseEntitiesReponseValidationSchema = z
   .transform(({ records, offset }) => {
     return {
       records: (() => {
-        if (camelCaseEntityRequiredProperties.length > 0) {
-          return records.filter((record) => {
-            return camelCaseEntityRequiredProperties.every((propertyName) => {
-              return result(record, propertyName) != null;
-            });
-          });
-        }
+        //#region Filter out records that are missing required properties.
+        // if (camelCaseEntityRequiredProperties.length > 0) {
+        //   return records.filter((record) => {
+        //     return camelCaseEntityRequiredProperties.every((propertyName) => {
+        //       return result(record, propertyName) != null;
+        //     });
+        //   });
+        // }
+        //#endregion
         return records;
       })(),
       offset,
