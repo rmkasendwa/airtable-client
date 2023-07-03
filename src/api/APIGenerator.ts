@@ -604,9 +604,12 @@ export const generateAirtableAPI = async ({
               nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
                 ?.required
             ) {
-              tableColumnValidationSchemaTypeStrings.decorators.push(
-                '@Required()'
-              );
+              tableColumnValidationSchemaTypeStrings.editModeDecorators ||
+                (tableColumnValidationSchemaTypeStrings.editModeDecorators =
+                  {});
+              tableColumnValidationSchemaTypeStrings.editModeDecorators[
+                'Required'
+              ] = [];
             }
 
             if (
@@ -614,12 +617,17 @@ export const generateAirtableAPI = async ({
                 ?.description &&
               tableColumn.type !== 'multipleRecordLinks'
             ) {
-              tableColumnValidationSchemaTypeStrings.decorators.push(
-                `@Description('${
+              tableColumnValidationSchemaTypeStrings.editModeDecorators ||
+                (tableColumnValidationSchemaTypeStrings.editModeDecorators =
+                  {});
+              tableColumnValidationSchemaTypeStrings.editModeDecorators[
+                'Description'
+              ] = [
+                `'${
                   nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
                     .description
-                }')`
-              );
+                }'`,
+              ];
             }
 
             if (tableColumn.type === 'multipleRecordLinks') {
@@ -642,7 +650,9 @@ export const generateAirtableAPI = async ({
                       modelProperty.tableColumName
                     ]?.required
                   ) {
-                    modelProperty.decorators.push('@Required()');
+                    modelProperty.editModeDecorators ||
+                      (modelProperty.editModeDecorators = {});
+                    modelProperty.editModeDecorators['Required'] = [];
                   }
                   accumulator[modelProperty.tableColumName] = modelProperty;
                 });

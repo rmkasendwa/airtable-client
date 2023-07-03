@@ -187,8 +187,13 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           propertyType,
           required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        const decoratorsCode = Object.entries(decorators)
+          .map(([decoratorName, parameters]) => {
+            return `@${decoratorName}(${parameters.join(', ')})`;
+          })
+          .join('\n');
         return `
-          ${decorators.join('\n')}
+          ${decoratorsCode}
           ${accessModifier} ${propertyName}${
           required ? '!' : '?'
         }: ${propertyType}
@@ -205,8 +210,13 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           propertyType,
           required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        const decoratorsCode = Object.entries(decorators)
+          .map(([decoratorName, parameters]) => {
+            return `@${decoratorName}(${parameters.join(', ')})`;
+          })
+          .join('\n');
         return `
-          ${decorators.join('\n')}
+          ${decoratorsCode}
           ${accessModifier} ${propertyName}${
           required ? '!' : '?'
         }: ${propertyType}
@@ -258,6 +268,8 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       .filter((tableColumn) => {
         return (
           nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+            .creatable !== false &&
+          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
             .editable !== false
         );
       })
@@ -265,13 +277,22 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         const {
           accessModifier,
           decorators,
+          editModeDecorators,
           propertyName,
           editablePropertyType,
           propertyType,
           required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        const decoratorsCode = Object.entries({
+          ...decorators,
+          ...editModeDecorators,
+        })
+          .map(([decoratorName, parameters]) => {
+            return `@${decoratorName}(${parameters.join(', ')})`;
+          })
+          .join('\n');
         return `
-          ${decorators.join('\n')}
+          ${decoratorsCode}
           ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
           editablePropertyType || propertyType
         }
@@ -290,17 +311,26 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         const {
           accessModifier,
           decorators,
+          editModeDecorators,
           propertyName,
           editablePropertyType,
           propertyType,
           required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        const decoratorsCode = Object.entries({
+          ...decorators,
+          ...editModeDecorators,
+        })
+          .map(([decoratorName, parameters]) => {
+            return `@${decoratorName}(${parameters.join(', ')})`;
+          })
+          .join('\n');
         return `
-            ${decorators.join('\n')}
-            ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
+          ${decoratorsCode}
+          ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
           editablePropertyType || propertyType
         }
-          `.trimIndent();
+        `.trimIndent();
       })
       .join(';\n\n'),
 
@@ -387,8 +417,13 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
                   propertyType,
                   required,
                 }) => {
+                  const decoratorsCode = Object.entries(decorators)
+                    .map(([decoratorName, parameters]) => {
+                      return `@${decoratorName}(${parameters.join(', ')})`;
+                    })
+                    .join('\n');
                   return `
-                    ${decorators.join('\n')}
+                    ${decoratorsCode}
                     ${accessModifier} ${propertyName}${
                     required ? '!' : '?'
                   }: ${propertyType}
