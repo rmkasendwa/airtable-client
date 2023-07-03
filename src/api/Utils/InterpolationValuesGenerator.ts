@@ -1,4 +1,4 @@
-import { pick } from 'lodash';
+import { omit, pick } from 'lodash';
 
 import {
   AirtableBase,
@@ -331,6 +331,45 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           editablePropertyType || propertyType
         }
         `.trimIndent();
+      })
+      .join(';\n\n'),
+
+    ['/* ENTITY_MODEL_PATCHABLE_FIELDS */']: editableFieldsTypes
+      .filter((tableColumn) => {
+        return (
+          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+            .editable !== false
+        );
+      })
+      .map((tableColumn) => {
+        const {
+          accessModifier,
+          decorators,
+          editModeDecorators,
+          propertyName,
+          editablePropertyType,
+          propertyType,
+          required,
+        } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        const decoratorsCode = Object.entries(
+          omit(
+            {
+              ...decorators,
+              ...editModeDecorators,
+            },
+            'Required'
+          )
+        )
+          .map(([decoratorName, parameters]) => {
+            return `@${decoratorName}(${parameters.join(', ')})`;
+          })
+          .join('\n');
+        return `
+            ${decoratorsCode}
+            ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
+          editablePropertyType || propertyType
+        }
+          `.trimIndent();
       })
       .join(';\n\n'),
 

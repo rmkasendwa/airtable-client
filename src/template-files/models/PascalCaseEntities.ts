@@ -393,14 +393,14 @@ export class PascalCaseEntityPatches {
   @Example('recO0FYb1Tccm9MZ2')
   public id!: string;
 
-  /* ENTITY_MODEL_EDITABLE_FIELDS */
+  /* ENTITY_MODEL_PATCHABLE_FIELDS */
   @Property()
   public name?: string;
 
   @Property()
   @ArrayOf(String)
   public list?: string[];
-  /* ENTITY_MODEL_EDITABLE_FIELDS */
+  /* ENTITY_MODEL_PATCHABLE_FIELDS */
 }
 //#endregion
 

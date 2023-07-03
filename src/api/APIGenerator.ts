@@ -617,17 +617,13 @@ export const generateAirtableAPI = async ({
                 ?.description &&
               tableColumn.type !== 'multipleRecordLinks'
             ) {
-              tableColumnValidationSchemaTypeStrings.editModeDecorators ||
-                (tableColumnValidationSchemaTypeStrings.editModeDecorators =
-                  {});
-              tableColumnValidationSchemaTypeStrings.editModeDecorators[
-                'Description'
-              ] = [
-                `'${
-                  nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
-                    .description
-                }'`,
-              ];
+              tableColumnValidationSchemaTypeStrings.decorators['Description'] =
+                [
+                  `'${
+                    nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+                      .description
+                  }'`,
+                ];
             }
 
             if (tableColumn.type === 'multipleRecordLinks') {
