@@ -22,8 +22,34 @@ import {
 
 /* REST_API_MODEL_IMPORTS */
 
-//#region Entity Label model
+//#region Entity Label model referenced models
 /* REST_API_MODEL_EXTRAS */
+//#endregion
+
+//#region Entity Label model
+export class BasePascalCaseEntity {
+  @Property()
+  @Required()
+  @Description('Unique identifer for Entity Label.')
+  @Example('recO0FYb1Tccm9MZ2')
+  public id!: string;
+
+  @Property()
+  @DateTime()
+  @Required()
+  @Description('The time when the entity label was created.')
+  @Example('2021-08-03T18:00:00.000Z')
+  public created!: string;
+
+  /* BASE_ENTITY_MODEL_FIELDS */
+  @Property()
+  public name?: string;
+
+  @Property()
+  @ArrayOf(String)
+  public list?: string[];
+  /* BASE_ENTITY_MODEL_FIELDS */
+}
 
 export class PascalCaseEntity {
   @Property()
@@ -217,7 +243,7 @@ export const PascalCaseEntityPropertyToAirtableColumnNameMapper =
 
 //#region Validates Entities Table airtable response.
 export const PascalCaseEntityAirtableResponseValidationSchema =
-  getAirtableRecordResponseValidationSchema<PascalCaseEntity>({
+  getAirtableRecordResponseValidationSchema<BasePascalCaseEntity>({
     nonLookupColumnNameToObjectPropertyMapper:
       PascalCaseEntityAirtableColumnToObjectPropertyMapper,
     lookupColumnNameToObjectPropertyMapper:
@@ -239,28 +265,10 @@ export type AirtablePascalCaseEntity = z.infer<
 //#endregion
 
 //#region Validates airtable response to find all entities label.
-export const FindAllPascalCaseEntitiesReponseValidationSchema = z
-  .object({
-    records: z.array(PascalCaseEntityAirtableResponseValidationSchema),
-    offset: z.string().optional(),
-  })
-  .transform(({ records, offset }) => {
-    return {
-      records: (() => {
-        //#region Filter out records that are missing required properties.
-        // if (camelCaseEntityRequiredProperties.length > 0) {
-        //   return records.filter((record) => {
-        //     return camelCaseEntityRequiredProperties.every((propertyName) => {
-        //       return result(record, propertyName) != null;
-        //     });
-        //   });
-        // }
-        //#endregion
-        return records;
-      })(),
-      offset,
-    };
-  });
+export const FindAllPascalCaseEntitiesReponseValidationSchema = z.object({
+  records: z.array(PascalCaseEntityAirtableResponseValidationSchema),
+  offset: z.string().optional(),
+});
 //#endregion
 
 //#region Validates requests to mutate entities label.
@@ -302,12 +310,28 @@ export const UpdateManyPascalCaseEntitiesRequestValidationSchema = z.array(
 //#endregion
 
 //#region Find all entities label response.
+export class BaseFindAllPascalCaseEntitiesReponse {
+  @Property()
+  @Required()
+  @ArrayOf(BasePascalCaseEntity)
+  @Description('The list of Entities Label.')
+  public records!: BasePascalCaseEntity[];
+}
+
 export class FindAllPascalCaseEntitiesReponse {
   @Property()
   @Required()
   @ArrayOf(PascalCaseEntity)
   @Description('The list of Entities Label.')
   public records!: PascalCaseEntity[];
+}
+
+export class BaseFindFirstPagePascalCaseEntitiesReponse extends BaseFindAllPascalCaseEntitiesReponse {
+  @Property()
+  @Description(
+    'The airtable offset identifier in case there are more records to fetch.'
+  )
+  public offset?: string;
 }
 
 export class FindFirstPagePascalCaseEntitiesReponse extends FindAllPascalCaseEntitiesReponse {
@@ -321,14 +345,14 @@ export class FindFirstPagePascalCaseEntitiesReponse extends FindAllPascalCaseEnt
 
 //#region Entity Label creation details.
 export class PascalCaseEntityCreationDetails {
-  /* ENTITY_MODEL_EDITABLE_FIELDS */
+  /* ENTITY_MODEL_CREATABLE_FIELDS */
   @Property()
   public name?: string;
 
   @Property()
   @ArrayOf(String)
   public list?: string[];
-  /* ENTITY_MODEL_EDITABLE_FIELDS */
+  /* ENTITY_MODEL_CREATABLE_FIELDS */
 }
 //#endregion
 
@@ -343,12 +367,40 @@ export class CreateNewPascalCaseEntitiesReponse {
 //#endregion
 
 //#region Entity Label updates.
-export class PascalCaseEntityUpdates extends PascalCaseEntityCreationDetails {
+export class PascalCaseEntityUpdates {
   @Property()
   @Required()
   @Description('Unique identifer for Entity Label.')
   @Example('recO0FYb1Tccm9MZ2')
   public id!: string;
+
+  /* ENTITY_MODEL_EDITABLE_FIELDS */
+  @Property()
+  public name?: string;
+
+  @Property()
+  @ArrayOf(String)
+  public list?: string[];
+  /* ENTITY_MODEL_EDITABLE_FIELDS */
+}
+//#endregion
+
+//#region Entity Label patches.
+export class PascalCaseEntityPatches {
+  @Property()
+  @Required()
+  @Description('Unique identifer for Entity Label.')
+  @Example('recO0FYb1Tccm9MZ2')
+  public id!: string;
+
+  /* ENTITY_MODEL_EDITABLE_FIELDS */
+  @Property()
+  public name?: string;
+
+  @Property()
+  @ArrayOf(String)
+  public list?: string[];
+  /* ENTITY_MODEL_EDITABLE_FIELDS */
 }
 //#endregion
 

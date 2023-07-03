@@ -10,6 +10,7 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   description?: string;
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
   isLookupWithListOfValues?: boolean;
+  creatable?: boolean;
   editable?: boolean;
   required?: boolean;
   min?: number;

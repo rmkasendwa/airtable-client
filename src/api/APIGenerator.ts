@@ -704,7 +704,7 @@ export const generateAirtableAPI = async ({
               Object.keys(interpolationBlocks).reduce((fileContents, key) => {
                 const escapedKey = RegExp.escape(key);
                 return fileContents.replace(
-                  new RegExp(`${escapedKey}([\\s\\S]*)${escapedKey}`, 'g'),
+                  new RegExp(`${escapedKey}([\\s\\S]*?)${escapedKey}`, 'g'),
                   interpolationBlocks[key]
                 );
               }, templateFileContents)

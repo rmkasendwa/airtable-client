@@ -178,6 +178,24 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       ...queryableLookupFields,
     ].join(', '),
 
+    ['/* BASE_ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
+      .map((tableColumn) => {
+        const {
+          accessModifier,
+          decorators,
+          propertyName,
+          propertyType,
+          required,
+        } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        return `
+          ${decorators.join('\n')}
+          ${accessModifier} ${propertyName}${
+          required ? '!' : '?'
+        }: ${propertyType}
+        `.trimIndent();
+      })
+      .join(';\n\n'),
+
     ['/* ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
       .map((tableColumn) => {
         const {
@@ -236,7 +254,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       })
       .join(',\n'),
 
-    ['/* ENTITY_MODEL_EDITABLE_FIELDS */']: editableFieldsTypes
+    ['/* ENTITY_MODEL_CREATABLE_FIELDS */']: editableFieldsTypes
       .filter((tableColumn) => {
         return (
           nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
@@ -258,6 +276,31 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           editablePropertyType || propertyType
         }
         `.trimIndent();
+      })
+      .join(';\n\n'),
+
+    ['/* ENTITY_MODEL_EDITABLE_FIELDS */']: editableFieldsTypes
+      .filter((tableColumn) => {
+        return (
+          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+            .editable !== false
+        );
+      })
+      .map((tableColumn) => {
+        const {
+          accessModifier,
+          decorators,
+          propertyName,
+          editablePropertyType,
+          propertyType,
+          required,
+        } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        return `
+            ${decorators.join('\n')}
+            ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
+          editablePropertyType || propertyType
+        }
+          `.trimIndent();
       })
       .join(';\n\n'),
 

@@ -7,13 +7,14 @@ import {
 import { AIRTABLE_BASE_ID } from '../config';
 import {
   AirtablePascalCaseEntity,
+  BasePascalCaseEntity,
   CountAllPascalCaseEntitiesQueryParams,
   CreateManyNewPascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponseValidationSchema,
-  PascalCaseEntity,
   PascalCaseEntityAirtableResponseValidationSchema,
   PascalCaseEntityCreationDetails,
+  PascalCaseEntityPatches,
   PascalCaseEntityPropertyToAirtableColumnNameMapper,
   PascalCaseEntityPropertyToAirtableLookupColumnNameMapper,
   PascalCaseEntityUpdates,
@@ -183,7 +184,7 @@ export const createManyNewPascalCaseEntities = async (
     )}\x1b[0m`
   );
 
-  const createdRecords: PascalCaseEntity[] = [];
+  const createdRecords: BasePascalCaseEntity[] = [];
 
   const createPascalCaseEntitiePage = async (
     records: PascalCaseEntityCreationDetails[]
@@ -285,7 +286,7 @@ export const updateManyPascalCaseEntities = async (
  * @returns The patched entity label.
  */
 export const patchPascalCaseEntity = async (
-  camelCaseEntityUpdates: PascalCaseEntityUpdates
+  camelCaseEntityUpdates: PascalCaseEntityPatches
 ) => {
   return (await patchManyPascalCaseEntities([camelCaseEntityUpdates]))
     .records[0];
@@ -298,7 +299,7 @@ export const patchPascalCaseEntity = async (
  * @returns The patched entities label.
  */
 export const patchManyPascalCaseEntities = async (
-  records: PascalCaseEntityUpdates[]
+  records: PascalCaseEntityPatches[]
 ) => {
   console.log(
     `\nUpdating entities label with the following input:\n\x1b[2m${JSON.stringify(
@@ -308,7 +309,7 @@ export const patchManyPascalCaseEntities = async (
     )}\x1b[0m`
   );
 
-  const updatedRecords: PascalCaseEntity[] = [];
+  const updatedRecords: BasePascalCaseEntity[] = [];
 
   const patchPascalCaseEntitiesPage = async (
     records: PascalCaseEntityUpdates[]

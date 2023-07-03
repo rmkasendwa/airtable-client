@@ -42,6 +42,7 @@ import {
   FindFirstPagePascalCaseEntitiesReponse,
   PascalCaseEntity,
   PascalCaseEntityCreationDetails,
+  PascalCaseEntityPatches,
   PascalCaseEntityUpdates,
   UpdatePascalCaseEntitiesReponse,
 } from '../models/PascalCaseEntities';
@@ -204,7 +205,7 @@ export class PascalCaseEntityController {
   async patchPascalCaseEntity(
     @BodyParams()
     @Required()
-    camelCaseEntityUpdates: PascalCaseEntityUpdates
+    camelCaseEntityUpdates: PascalCaseEntityPatches
   ) {
     return patchPascalCaseEntity(camelCaseEntityUpdates);
   }
@@ -221,9 +222,9 @@ export class PascalCaseEntityController {
   @Returns(422).Description('Unprocessable Request')
   async patchManyPascalCaseEntities(
     @BodyParams()
-    @ArrayOf(PascalCaseEntityUpdates)
+    @ArrayOf(PascalCaseEntityPatches)
     @Required()
-    records: PascalCaseEntityUpdates[]
+    records: PascalCaseEntityPatches[]
   ) {
     return patchManyPascalCaseEntities(records);
   }
