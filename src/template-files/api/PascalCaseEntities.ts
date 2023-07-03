@@ -6,14 +6,13 @@ import {
 
 import { AIRTABLE_BASE_ID } from '../config';
 import {
-  AirtablePascalCaseEntity,
   BasePascalCaseEntity,
+  BasePascalCaseEntityCreationDetails,
   CountAllPascalCaseEntitiesQueryParams,
   CreateManyNewPascalCaseEntitiesRequestValidationSchema,
   FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponseValidationSchema,
   PascalCaseEntityAirtableResponseValidationSchema,
-  PascalCaseEntityCreationDetails,
   PascalCaseEntityPatches,
   PascalCaseEntityPropertyToAirtableColumnNameMapper,
   PascalCaseEntityPropertyToAirtableLookupColumnNameMapper,
@@ -48,7 +47,10 @@ export const ENTITY_DELETE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
  */
 export const findFirstPagePascalCaseEntities = async (
   queryParams: FindAllPascalCaseEntitiesQueryParams = {}
-) => {
+): Promise<{
+  records: BasePascalCaseEntity[];
+  offset?: string;
+}> => {
   console.log(
     `\nLoading entities label with the following input:\x1b[2m\n${JSON.stringify(
       queryParams,
@@ -100,7 +102,7 @@ export const findFirstPagePascalCaseEntities = async (
 export const findAllPascalCaseEntities = async (
   queryParams: FindAllPascalCaseEntitiesQueryParams = {}
 ) => {
-  const records: AirtablePascalCaseEntity[] = [];
+  const records: BasePascalCaseEntity[] = [];
 
   const findPages = async (offset?: string) => {
     const { records: responseRecords, offset: responseOffset } =
@@ -141,7 +143,9 @@ export const countAllPascalCaseEntities = async (
  * @param camelCaseEntityId The entity label id.
  * @returns The entity label.
  */
-export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
+export const findPascalCaseEntityById = async (
+  camelCaseEntityId: string
+): Promise<BasePascalCaseEntity> => {
   console.log(
     `\nLoading entity label by id: \x1b[2m${camelCaseEntityId}\x1b[0m`
   );
@@ -161,7 +165,7 @@ export const findPascalCaseEntityById = async (camelCaseEntityId: string) => {
  * @returns The created entity label.
  */
 export const createNewPascalCaseEntity = async (
-  camelCaseEntityDetails: PascalCaseEntityCreationDetails
+  camelCaseEntityDetails: BasePascalCaseEntityCreationDetails
 ) => {
   return (await createManyNewPascalCaseEntities([camelCaseEntityDetails]))
     .records[0];
@@ -174,7 +178,7 @@ export const createNewPascalCaseEntity = async (
  * @returns The created entities label.
  */
 export const createManyNewPascalCaseEntities = async (
-  records: PascalCaseEntityCreationDetails[]
+  records: BasePascalCaseEntityCreationDetails[]
 ) => {
   console.log(
     `\nCreating entities label with the following input:\x1b[2m\n${JSON.stringify(
@@ -187,7 +191,7 @@ export const createManyNewPascalCaseEntities = async (
   const createdRecords: BasePascalCaseEntity[] = [];
 
   const createPascalCaseEntitiePage = async (
-    records: PascalCaseEntityCreationDetails[]
+    records: BasePascalCaseEntityCreationDetails[]
   ) => {
     records = [...records];
     const recordsToCreate = records.splice(0, 10);

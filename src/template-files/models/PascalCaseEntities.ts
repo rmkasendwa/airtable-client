@@ -344,6 +344,16 @@ export class FindFirstPagePascalCaseEntitiesReponse extends FindAllPascalCaseEnt
 //#endregion
 
 //#region Entity Label creation details.
+export class BasePascalCaseEntityCreationDetails {
+  /* BASE_ENTITY_MODEL_CREATABLE_FIELDS */
+  @Property()
+  public name?: string;
+
+  @Property()
+  @ArrayOf(String)
+  public list?: string[];
+  /* BASE_ENTITY_MODEL_CREATABLE_FIELDS */
+}
 export class PascalCaseEntityCreationDetails {
   /* ENTITY_MODEL_CREATABLE_FIELDS */
   @Property()

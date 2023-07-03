@@ -264,15 +264,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
       })
       .join(',\n'),
 
-    ['/* ENTITY_MODEL_CREATABLE_FIELDS */']: editableFieldsTypes
-      .filter((tableColumn) => {
-        return (
-          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
-            .creatable !== false &&
-          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
-            .editable !== false
-        );
-      })
+    ['/* BASE_ENTITY_MODEL_CREATABLE_FIELDS */']: editableFieldsTypes
       .map((tableColumn) => {
         const {
           accessModifier,
@@ -291,6 +283,45 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
             return `@${decoratorName}(${parameters.join(', ')})`;
           })
           .join('\n');
+        return `
+            ${decoratorsCode}
+            ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
+          editablePropertyType || propertyType
+        }
+          `.trimIndent();
+      })
+      .join(';\n\n'),
+
+    ['/* ENTITY_MODEL_CREATABLE_FIELDS */']: editableFieldsTypes
+      .filter((tableColumn) => {
+        return (
+          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+            .creatable !== false &&
+          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+            .editable !== false
+        );
+      })
+      .map((tableColumn) => {
+        const {
+          accessModifier,
+          decorators,
+          editModeDecorators,
+          propertyName,
+          editablePropertyType,
+          propertyType,
+          required: baseRequired,
+        } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        const decoratorsCode = Object.entries({
+          ...decorators,
+          ...editModeDecorators,
+        })
+          .map(([decoratorName, parameters]) => {
+            return `@${decoratorName}(${parameters.join(', ')})`;
+          })
+          .join('\n');
+        const required =
+          baseRequired ||
+          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name].required;
         return `
           ${decoratorsCode}
           ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
