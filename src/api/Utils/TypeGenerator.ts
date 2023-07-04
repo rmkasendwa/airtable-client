@@ -188,7 +188,6 @@ export const getTableColumnValidationSchemaTypeStrings = (
     type: userDefinedType,
     prefersSingleRecordLink,
     isLookupWithListOfValues,
-    editable,
   } = {
     ...nonLookupColumnNameToObjectPropertyMapper,
     ...lookupColumnNameToObjectPropertyMapper,
@@ -392,10 +391,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
           tableColumName: tableColumn.name,
         };
 
-        restAPIModelExtrasCollector.push(modelClass);
-        if (editable !== false) {
-          restAPIModelExtrasCollector.push(editableModelClass);
-        }
+        restAPIModelExtrasCollector.push(modelClass, editableModelClass);
 
         if (
           prefersSingleRecordLink ||
@@ -497,7 +493,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
           Object.entries(baseObjectModelPropertyType.decorators).forEach(
             ([decorator, parameters]) => {
               if (decorator.match(/^Example$/g)) {
-                baseObjectModelPropertyType.decorators[decorator] = parameters;
+                baseObjectModelPropertyType.decorators[decorator] = [
+                  `[${parameters[0]}]`,
+                ];
               }
             }
           );
