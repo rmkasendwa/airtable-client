@@ -489,7 +489,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
           !baseObjectModelPropertyType.propertyName.match(/\[\]$/g) &&
           isLookupWithListOfValues
         ) {
-          baseObjectModelPropertyType.decorators['ArrayOf'] = ['String'];
+          if (baseObjectModelPropertyType.propertyType === 'string') {
+            baseObjectModelPropertyType.decorators['ArrayOf'] = ['String'];
+          }
           Object.entries(baseObjectModelPropertyType.decorators).forEach(
             ([decorator, parameters]) => {
               if (decorator.match(/^Example$/g)) {
