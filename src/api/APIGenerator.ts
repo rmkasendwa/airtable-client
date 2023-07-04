@@ -615,7 +615,8 @@ export const generateAirtableAPI = async ({
             if (
               nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
                 ?.description &&
-              tableColumn.type !== 'multipleRecordLinks'
+              (tableColumn.type !== 'multipleRecordLinks' ||
+                !tableColumn.options?.prefersSingleRecordLink)
             ) {
               tableColumnValidationSchemaTypeStrings.decorators['Description'] =
                 [
