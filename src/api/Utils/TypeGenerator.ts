@@ -423,6 +423,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
             Property: [],
             ArrayOf: [modelClassName],
           },
+          editModeDecorators: {
+            ArrayOf: [editableModelClassName],
+          },
           airtableResponseValidationString,
           tableColumName: tableColumn.name,
         } as ObjectModelProperty;
