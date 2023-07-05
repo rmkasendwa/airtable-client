@@ -7,6 +7,7 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   'prefersSingleRecordLink'
 > & {
   propertyName?: string;
+  pascalCasePropertyName?: string;
   description?: string;
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
   isLookupWithListOfValues?: boolean;
