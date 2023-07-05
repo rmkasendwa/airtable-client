@@ -620,9 +620,10 @@ export const generateAirtableAPI = async ({
             ) {
               tableColumnValidationSchemaTypeStrings.decorators['Description'] =
                 [
-                  `'${nonLookupColumnNameToObjectPropertyMapper[
-                    tableColumn.name
-                  ].description?.replace(/\r?\n/g, '\\n')}'`,
+                  `${JSON.stringify(
+                    nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+                      .description
+                  )}`,
                 ];
             }
 

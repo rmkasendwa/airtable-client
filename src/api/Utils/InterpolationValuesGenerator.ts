@@ -507,9 +507,10 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
                 nonLookupColumnNameToObjectPropertyMapper[tableColumName]
                   ?.description
               ) {
-                return `@Description('${nonLookupColumnNameToObjectPropertyMapper[
-                  tableColumName
-                ].description?.replace(/\r?\n/g, '\\n')}')`;
+                return `@Description(${JSON.stringify(
+                  nonLookupColumnNameToObjectPropertyMapper[tableColumName]
+                    .description
+                )})`;
               }
               return '';
             })();
