@@ -10,6 +10,7 @@ import {
   removeSync,
   writeFileSync,
 } from 'fs-extra';
+import { pick } from 'lodash';
 import pluralize from 'pluralize';
 import prettier from 'prettier';
 import walk from 'walk-sync';
@@ -186,7 +187,7 @@ export const generateAirtableAPI = async ({
         filteredTables.forEach((table) => {
           const { name: tableName, fields: columns, views } = table;
 
-          // Table Configuration.
+          //#region User defined table configuration
           const {
             labelPlural,
             labelSingular,
@@ -293,8 +294,9 @@ export const generateAirtableAPI = async ({
 
             return outputConfig;
           })();
+          //#endregion
 
-          // Filtering views
+          //#region Filtering views
           const filteredViews = views
             .sort((a, b) => a.name.localeCompare(b.name))
             .filter(({ name }) => {
@@ -309,6 +311,7 @@ export const generateAirtableAPI = async ({
               },
               [DEFAULT_VIEW_ALIAS] as string[]
             );
+          //#endregion
 
           const filteredTableColumns = focusColumnNames
             .map((focusColumnName) => {
@@ -319,6 +322,18 @@ export const generateAirtableAPI = async ({
               return (
                 name.replace(/[^\w\s]/g, '').length > 0 && !name.match(/^id$/gi)
               );
+            })
+            .map((column) => {
+              const fieldOverride =
+                configColumnNameToObjectPropertyMapper[column.name]
+                  ?.fieldOverride;
+              if (fieldOverride) {
+                return {
+                  ...pick(column, 'id', 'name', 'description'),
+                  ...fieldOverride,
+                };
+              }
+              return column;
             });
 
           const nonLookupTableColumns = filteredTableColumns
@@ -399,7 +414,6 @@ export const generateAirtableAPI = async ({
                 case 'multipleRecordLinks':
                 case 'date':
                 case 'dateTime':
-                case 'lastModifiedTime':
                 case 'multipleSelects':
                   return true;
               }

@@ -70,7 +70,7 @@ export const AirtableFieldOptionsValidationSchema = z.object({
     .optional(),
   icon: z.string().optional(),
   color: z.string().optional(),
-  precision: z.number().optional().optional(),
+  precision: z.number().optional(),
   viewIdForRecordSelection: z.string().optional(),
   symbol: z.string().optional(),
   timeFormat: z

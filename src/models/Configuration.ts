@@ -1,4 +1,4 @@
-import { AirtableBase, AirtableFieldOptions } from './Metadata';
+import { AirtableBase, AirtableField, AirtableFieldOptions } from './Metadata';
 
 export type ConfigAirtableBase = Partial<Pick<AirtableBase, 'id' | 'name'>>;
 
@@ -18,6 +18,7 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   max?: number;
   minLength?: number;
   maxLength?: number;
+  fieldOverride?: Omit<AirtableField, 'id' | 'name' | 'description'>;
 };
 
 export type DetailedColumnNameToObjectPropertyMapping = Required<
