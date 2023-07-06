@@ -71,14 +71,6 @@ export class FindAllRecordsQueryParams<
   @Description(
     `
     Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
-
-    For example, to only return data from Name and Status, send these two query parameters:
-
-    fields%5B%5D=Name&fields%5B%5D=Status
-    You can also perform the same action with field ids (they can be found in the fields section):
-
-    fields%5B%5D=fldG9yBafL709WagC&fields%5B%5D=fldySXPDpkljy1BCq
-    Note: %5B%5D may be omitted when specifying multiple fields, but must always be included when specifying only a single field.
   `.trimIndent()
   )
   public fields?: Field[];
@@ -86,13 +78,11 @@ export class FindAllRecordsQueryParams<
   @Property()
   @Description(
     `
-    A formula used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
+    A [formula](https://support.airtable.com/docs/formula-field-reference) used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
 
     If combined with the view parameter, only records in that view which satisfy the formula will be returned.
     
-    The formula must be encoded first before passing it as a value. You can use this tool to not only encode the formula but also create the entire url you need. For example, to only include records where Name isn't empty, pass in NOT({Name} = '') as a parameter like this:
-    
-    filterByFormula=NOT%28%7BName%7D%20%3D%20%27%27%29
+    The formula must be encoded first before passing it as a value. You can use [this tool](https://codepen.io/rmkasendwa/full/qBQPBvJ) to not only encode the formula but also create the entire url you need.
   `.trimIndent()
   )
   public filterByFormula?: string;
@@ -117,11 +107,6 @@ export class FindAllRecordsQueryParams<
     A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
 
     The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
-
-    For example, to sort records by name in descending order, send these two query parameters:
-
-    sort%5B0%5D%5Bfield%5D=name
-    sort%5B0%5D%5Bdirection%5D=desc
   `.trimIndent()
   )
   public sort?: AirtableSortOption[];
@@ -168,13 +153,11 @@ export class CountAllRecordsQueryParams<View extends string = string> {
   @Property()
   @Description(
     `
-    A formula used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
+    A [formula](https://support.airtable.com/docs/formula-field-reference) used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
 
     If combined with the view parameter, only records in that view which satisfy the formula will be returned.
     
-    The formula must be encoded first before passing it as a value. You can use this tool to not only encode the formula but also create the entire url you need. For example, to only include records where Name isn't empty, pass in NOT({Name} = '') as a parameter like this:
-    
-    filterByFormula=NOT%28%7BName%7D%20%3D%20%27%27%29
+    The formula must be encoded first before passing it as a value. You can use [this tool](https://codepen.io/rmkasendwa/full/qBQPBvJ) to not only encode the formula but also create the entire url you need.
   `.trimIndent()
   )
   public filterByFormula?: string;
@@ -665,16 +648,19 @@ export const AirtableAttachmentValidationSchema = z.object({
 
 export class AirtableAttachmentThumbnail {
   @Property()
+  @Required()
   @Description('The thumbnail URL.')
   @Example('https://www.filepicker.io/api/file/ULCoXHhx0ivaSyDg5SIg')
   public url!: string;
 
   @Property()
+  @Required()
   @Description('The width of the thumbnail.')
   @Example(64)
   public width!: number;
 
   @Property()
+  @Required()
   @Description('The height of the thumbnail.')
   @Example(64)
   public height!: number;
@@ -711,21 +697,25 @@ export class AirtableAttachmentThumbnailGroup {
 
 export class AirtableAttachment {
   @Property()
+  @Required()
   @Description('The id of the attachment.')
   @Example('attL8HyJ4HiaudbBJ')
   public id!: string;
 
   @Property()
+  @Required()
   @Description('The attachment width.')
   @Example(144)
   public width!: number;
 
   @Property()
+  @Required()
   @Description('The attachment height.')
   @Example(144)
   public height!: number;
 
   @Property()
+  @Required()
   @Description('The attachment URL.')
   @Example(
     'https://v5.airtableusercontent.com/v1/13/13/2610752006007/RI51n3urgmQT8QKzLwlhnU/f1EqI4fPTACz8osywCFfw--kAv717Z6EGx8MOZnX3OGjqYpsGqdhlXUbSyYnOCOs-pQd_5eHNjbGprAnrDkRan/MYGj8OggA5ZRKdjUUDxyQLR5IZA33oucbyxvmfFkTIg'
@@ -733,16 +723,19 @@ export class AirtableAttachment {
   public url!: string;
 
   @Property()
+  @Required()
   @Description('The name of the attachment file.')
   @Example('dog.png')
   public filename!: string;
 
+  @Property()
+  @Required()
   @Description('The size of the attachment file in bytes.')
   @Example(4146)
-  @Property()
   public size!: number;
 
   @Property()
+  @Required()
   @Description('The mime type of the attachment file.')
   @Example('image/png')
   public type!: string;
@@ -794,11 +787,13 @@ export const AirtableButtonValidationSchema = z.object({
 
 export class AirtableButton {
   @Property()
+  @Required()
   @Description('The button label')
   @Example('Make Document')
   public label!: string;
 
   @Property()
+  @Required()
   @Description('The URL that should be opened when the button is clicked')
   @Example(
     'https://airtable.com/tbljnMFy6nqsFHFR7/recIXIpWdiuZd9VYg?blocks=blxYtqVDViGvyu90b'
@@ -808,11 +803,13 @@ export class AirtableButton {
 
 export class DeleteAirtableRecordResponse {
   @Property()
+  @Required()
   @Description('Unique identifer of the deleted item.')
   @Example('recM9m1bZOccF2TY0')
   public id!: string;
 
   @Property()
+  @Required()
   @Description('Whether the item was deleted or not.')
   @Example(true)
   public delete!: boolean;
@@ -820,6 +817,7 @@ export class DeleteAirtableRecordResponse {
 
 export class DeleteAirtableRecordsResponse {
   @Property()
+  @Required()
   @ArrayOf(DeleteAirtableRecordResponse)
   @Description('The list of deleted items.')
   public records!: DeleteAirtableRecordResponse[];

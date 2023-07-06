@@ -427,8 +427,8 @@ export const generateAirtableAPI = async ({
           const restAPIModelExtrasCollector: ModelClass[] = [];
 
           console.log(
-            `  -> Processing \x1b[34m${workingBaseName.trim()}/${encodeURIComponent(
-              tableName.trim()
+            `  -> Processing \x1b[34m${workingBaseName.trim()}/${JSON.stringify(
+              tableName
             )}\x1b[0m table...`
           );
 
