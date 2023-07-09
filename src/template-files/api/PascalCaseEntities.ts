@@ -316,7 +316,7 @@ export const patchManyPascalCaseEntities = async (
   const updatedRecords: BasePascalCaseEntity[] = [];
 
   const patchPascalCaseEntitiesPage = async (
-    records: PascalCaseEntityUpdates[]
+    records: PascalCaseEntityPatches[]
   ) => {
     records = [...records];
     const recordsToUpdate = records.splice(0, 10);
