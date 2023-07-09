@@ -275,14 +275,20 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           propertyType,
           required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
-        const decoratorsCode = Object.entries({
-          ...decorators,
-          ...editModeDecorators,
-        })
+        const decoratorsCode = Object.entries(
+          omit(
+            {
+              ...decorators,
+              ...editModeDecorators,
+            },
+            'Required'
+          )
+        )
           .map(([decoratorName, parameters]) => {
             return `@${decoratorName}(${parameters.join(', ')})`;
           })
           .join('\n');
+
         return `
             ${decoratorsCode}
             ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
@@ -322,6 +328,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
         const required =
           baseRequired ||
           nonLookupColumnNameToObjectPropertyMapper[tableColumn.name].required;
+
         return `
           ${decoratorsCode}
           ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
@@ -346,8 +353,12 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           propertyName,
           editablePropertyType,
           propertyType,
-          required,
+          required: baseRequired,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
+        const required =
+          baseRequired ||
+          nonLookupColumnNameToObjectPropertyMapper[tableColumn.name].required;
+
         const decoratorsCode = Object.entries({
           ...decorators,
           ...editModeDecorators,
