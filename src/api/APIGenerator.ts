@@ -408,7 +408,6 @@ export const generateAirtableAPI = async ({
                 case 'number':
                 case 'percent':
                 case 'currency':
-                case 'count':
                 case 'rating':
                 case 'checkbox':
                 case 'multipleRecordLinks':
