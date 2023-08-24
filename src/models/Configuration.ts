@@ -105,16 +105,56 @@ export type ConfigDetailedColumnNameToObjectPropertyMapper<
 }>;
 
 export type ConfigTable<FocusColumn extends string> = {
+  /**
+   * The base that the table belongs to.
+   */
   base?: ConfigAirtableBase;
+
+  /**
+   * The name of the table.
+   */
   name: string;
+
+  /**
+   * The alias of the table. This is useful when the table name is not a valid JavaScript
+   * identifier. For example, if the table name is "English Levels", you can set the alias
+   * to "englishLevels" to make the generated TypeScript API
+   */
   alias?: string;
+
+  /**
+   * The plural label of the table. This is useful when the table name is not a valid
+   * JavaScript identifier. For example, if the table name is "English Levels", you can
+   * set the plural label to "englishLevels" to make the generated TypeScript API
+   */
   labelPlural?: string;
+
+  /**
+   * The singular label of the table. This is useful when the table name is not a valid
+   * JavaScript identifier. For example, if the table name is "English Levels", you can
+   * set the singular label to "englishLevel" to make the generated TypeScript API
+   */
   labelSingular?: string;
+
+  /**
+   * The list of columns that should be included in the generated TypeScript API.
+   */
   focusColumns?: (
     | FocusColumn
     | [FocusColumn, UserEditableDetailedColumnNameToObjectPropertyMapping]
   )[];
+
+  /**
+   * The mapping of Airtable column names to object property names. This is useful when the
+   * Airtable column name is not a valid JavaScript identifier. For example, if the Airtable
+   * column name is "First Name", you can map it to "firstName" by setting the mapping to
+   * { 'First Name': 'firstName' }.
+   */
   columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<FocusColumn>;
+
+  /**
+   * The list of views that should be included in the generated TypeScript API.
+   */
   views?: string[];
 
   /**
@@ -125,11 +165,28 @@ export type ConfigTable<FocusColumn extends string> = {
 };
 
 export type Config<FocusColumn extends string> = {
+  /**
+   * The default base that should be used when the base is not specified in the table.
+   */
   defaultBase: ConfigAirtableBase;
+
+  /**
+   * The list of tables that should be included in the generated TypeScript API.
+   */
   tables?: ConfigTable<FocusColumn>[];
+
+  /**
+   * The list of bases that should be included in the generated TypeScript API.
+   */
   bases?: (ConfigAirtableBase & {
     tables?: Omit<ConfigTable<FocusColumn>, 'base'>[];
   })[];
+
+  /**
+   * Whether the generated TypeScript API should include Airtable specific query parameters.
+   * This is useful when you want to use the generated TypeScript API to make requests to
+   * the Airtable API directly.
+   */
   includeAirtableSpecificQueryParameters?: boolean;
 };
 
