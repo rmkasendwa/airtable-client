@@ -2,9 +2,10 @@ import { AirtableBase, AirtableField, AirtableFieldOptions } from './Metadata';
 
 export type ConfigAirtableBase = Partial<Pick<AirtableBase, 'id' | 'name'>>;
 
-export type UserEditableDetailedColumnNameToObjectPropertyMapping<
-  FocusColumn extends string
-> = Pick<AirtableFieldOptions, 'prefersSingleRecordLink'> & {
+export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
+  AirtableFieldOptions,
+  'prefersSingleRecordLink'
+> & {
   /**
    * The name of the property on the object that will be mapped to the column.
    */
@@ -83,37 +84,24 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping<
    * from the Airtable field type.
    */
   fieldOverride?: Omit<AirtableField, 'id' | 'name' | 'description'>;
-
-  /**
-   * The alternative airtable columns of the table that can be used to uniquely identify a record.
-   */
-  alternativeRecordIdColumns?: FocusColumn[];
 };
 
-export type DetailedColumnNameToObjectPropertyMapping<
-  FocusColumn extends string
-> = Required<
-  Pick<
-    UserEditableDetailedColumnNameToObjectPropertyMapping<FocusColumn>,
-    'propertyName'
-  >
+export type DetailedColumnNameToObjectPropertyMapping = Required<
+  Pick<UserEditableDetailedColumnNameToObjectPropertyMapping, 'propertyName'>
 > &
-  Omit<
-    UserEditableDetailedColumnNameToObjectPropertyMapping<FocusColumn>,
-    'propertyName'
-  >;
+  Omit<UserEditableDetailedColumnNameToObjectPropertyMapping, 'propertyName'>;
 
 export type ConfigColumnNameToObjectPropertyMapper<FocusColumn extends string> =
   Partial<{
     [P in FocusColumn]:
       | string
-      | UserEditableDetailedColumnNameToObjectPropertyMapping<FocusColumn>;
+      | UserEditableDetailedColumnNameToObjectPropertyMapping;
   }>;
 
 export type ConfigDetailedColumnNameToObjectPropertyMapper<
   FocusColumn extends string
 > = Partial<{
-  [P in FocusColumn]: UserEditableDetailedColumnNameToObjectPropertyMapping<FocusColumn>;
+  [P in FocusColumn]: UserEditableDetailedColumnNameToObjectPropertyMapping;
 }>;
 
 export type ConfigTable<FocusColumn extends string> = {
@@ -124,13 +112,16 @@ export type ConfigTable<FocusColumn extends string> = {
   labelSingular?: string;
   focusColumns?: (
     | FocusColumn
-    | [
-        FocusColumn,
-        UserEditableDetailedColumnNameToObjectPropertyMapping<FocusColumn>
-      ]
+    | [FocusColumn, UserEditableDetailedColumnNameToObjectPropertyMapping]
   )[];
   columnNameToObjectPropertyMapper?: ConfigColumnNameToObjectPropertyMapper<FocusColumn>;
   views?: string[];
+
+  /**
+   * The alternative airtable columns of the table or object field name that can be used
+   * to uniquely identify a record.
+   */
+  alternativeRecordIdColumns?: FocusColumn[];
 };
 
 export type Config<FocusColumn extends string> = {

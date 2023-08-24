@@ -44,6 +44,7 @@ export default defineConfig({
         ],
       ],
       views: [],
+      alternativeRecordIdColumns: ['Name'],
     },
   ],
   includeAirtableSpecificQueryParameters: true,

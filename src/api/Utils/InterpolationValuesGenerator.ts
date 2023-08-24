@@ -36,6 +36,7 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
     TableColumnValidationSchemaTypeStringGroup
   >;
   includeAirtableSpecificQueryParameters?: boolean;
+  alternativeRecordIdColumns?: string[];
 };
 
 export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
@@ -436,6 +437,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   nonLookupTableColumns,
   columnNameToValidationSchemaTypeStringGroupMapper,
   nonLookupColumnNameToObjectPropertyMapper,
+  alternativeRecordIdColumns,
 }: Omit<
   GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
   'base' | 'editableTableColumns'
@@ -536,6 +538,14 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
         ),
       ]),
     ].join('\n\n'),
+
+    ['/* AIRTABLE_ENTITY_ALTERNATIVE_RECORD_ID_COLUMNS */']: [
+      ...new Set(alternativeRecordIdColumns),
+    ]
+      .map((fieldName) => {
+        return `"${fieldName}"`;
+      })
+      .join(','),
 
     ['Entities Table']: tableName,
     ['Entities Label']: labelPlural,

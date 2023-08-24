@@ -194,6 +194,7 @@ export const generateAirtableAPI = async ({
             focusColumns: focusColumnNames = columns.map(({ name }) => name),
             configColumnNameToObjectPropertyMapper,
             configViews,
+            alternativeRecordIdColumns,
           } = (() => {
             const outputConfig: {
               labelPlural: string;
@@ -201,6 +202,7 @@ export const generateAirtableAPI = async ({
               focusColumns?: string[];
               configColumnNameToObjectPropertyMapper: ConfigDetailedColumnNameToObjectPropertyMapper<string>;
               configViews?: string[];
+              alternativeRecordIdColumns?: string[];
             } = {
               labelPlural: '',
               labelSingular: '',
@@ -224,6 +226,7 @@ export const generateAirtableAPI = async ({
                 columnNameToObjectPropertyMapper:
                   configColumnNameToObjectPropertyMapper,
                 views,
+                alternativeRecordIdColumns,
               } = configTable;
               if (configTable.labelPlural) {
                 outputConfig.labelPlural = configTable.labelPlural;
@@ -282,6 +285,9 @@ export const generateAirtableAPI = async ({
                 );
               }
               views && (outputConfig.configViews = views);
+              alternativeRecordIdColumns &&
+                (outputConfig.alternativeRecordIdColumns =
+                  alternativeRecordIdColumns);
             } else {
               const sanitisedTableName = tableName
                 .trim()
@@ -692,6 +698,7 @@ export const generateAirtableAPI = async ({
               restAPIModelExtrasCollector,
               columnNameToValidationSchemaTypeStringGroupMapper,
               includeAirtableSpecificQueryParameters,
+              alternativeRecordIdColumns,
             });
 
           // Getting interpolation string replacement map
@@ -713,6 +720,7 @@ export const generateAirtableAPI = async ({
               restAPIModelExtrasCollector,
               columnNameToValidationSchemaTypeStringGroupMapper,
               includeAirtableSpecificQueryParameters,
+              alternativeRecordIdColumns,
             });
 
           // Replacing interpolation templates in template file contents

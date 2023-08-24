@@ -89,6 +89,12 @@ export type PascalCaseEntitiesAirtableLookupColumn =
     : typeof camelCaseEntitiesAirtableLookupColumns[number];
 //#endregion
 
+//#region Alternative record id columns
+export const camelCaseEntitiesAirtableAlternativeRecordIdColumns = [
+  /* AIRTABLE_ENTITY_ALTERNATIVE_RECORD_ID_COLUMNS */
+];
+//#endregion
+
 //#region Maps Entities Table lookup columns to Entity Label properties.
 export const PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper: Record<
   PascalCaseEntitiesAirtableLookupColumn,
