@@ -150,35 +150,31 @@ export const findPascalCaseEntityById = async (
   console.log(
     `\nLoading entity label by id: \x1b[2m${camelCaseEntityId}\x1b[0m`
   );
-
-  const data = await (async () => {
-    if (camelCaseEntityId.match(/^rec/)) {
-      const { data } = await get(
-        getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, {
-          camelCaseEntityId,
-        }),
-        {
-          label: 'Loading entity label',
-        }
-      );
-      return data;
-    }
-
-    if (camelCaseEntitiesAirtableAlternativeRecordIdColumns.length > 0) {
-      const { records } = await findAllPascalCaseEntities({
-        filterByFormula: `OR(${camelCaseEntitiesAirtableAlternativeRecordIdColumns
-          .map((column) => `{${column}}='${camelCaseEntityId}'`)
-          .join(',')})`,
-      });
-
-      if (records.length > 0) {
-        return records[0];
+  if (camelCaseEntityId.match(/^rec/)) {
+    const { data } = await get(
+      getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, {
+        camelCaseEntityId,
+      }),
+      {
+        label: 'Loading entity label',
       }
-    }
-    throw new Error(`Record with id ${camelCaseEntityId} not found.`);
-  })();
+    );
 
-  return PascalCaseEntityAirtableResponseValidationSchema.parse(data);
+    return PascalCaseEntityAirtableResponseValidationSchema.parse(data);
+  }
+
+  if (camelCaseEntitiesAirtableAlternativeRecordIdColumns.length > 0) {
+    const { records } = await findAllPascalCaseEntities({
+      filterByFormula: `OR(${camelCaseEntitiesAirtableAlternativeRecordIdColumns
+        .map((column) => `{${column}}='${camelCaseEntityId}'`)
+        .join(',')})`,
+    });
+
+    if (records.length > 0) {
+      return records[0];
+    }
+  }
+  throw new Error(`Record with id ${camelCaseEntityId} not found.`);
 };
 
 /**
