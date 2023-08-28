@@ -394,24 +394,39 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
           propertyType,
           required,
         } = columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name];
-        const decoratorsCode = Object.entries(
-          omit(
-            {
-              ...decorators,
-              ...editModeDecorators,
-            },
-            'Required'
-          )
-        )
-          .map(([decoratorName, parameters]) => {
-            return `@${decoratorName}(${parameters.join(', ')})`;
-          })
-          .join('\n');
+        let propertyTypeCode = editablePropertyType || propertyType;
+        const allDecorators = omit(
+          {
+            ...decorators,
+            ...editModeDecorators,
+          },
+          'Required'
+        );
+        const decoratorsCode = [
+          ...Object.entries(allDecorators).map(
+            ([decoratorName, parameters]) => {
+              return `@${decoratorName}(${parameters.join(', ')})`;
+            }
+          ),
+          ...(() => {
+            if (!required) {
+              propertyTypeCode = `${propertyTypeCode} | null`;
+              const nullableModelCode = (() => {
+                if (allDecorators.Enum) {
+                  return 'String';
+                }
+                return (editablePropertyType || propertyType)
+                  .replace(/\[\]$/g, '')
+                  .toPascalCase();
+              })();
+              return [`@Nullable(${nullableModelCode})`];
+            }
+            return [];
+          })(),
+        ].join('\n');
         return `
             ${decoratorsCode}
-            ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
-          editablePropertyType || propertyType
-        }
+            ${accessModifier} ${propertyName}?: ${propertyTypeCode}
           `.trimIndent();
       })
       .join(';\n\n'),

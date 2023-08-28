@@ -4,6 +4,7 @@ import {
   Description,
   Enum,
   Example,
+  Nullable,
   Property,
   Required,
 } from '@tsed/schema';
@@ -411,6 +412,7 @@ export class PascalCaseEntityPatches {
 
   /* ENTITY_MODEL_PATCHABLE_FIELDS */
   @Property()
+  @Nullable(String)
   public name?: string;
 
   @Property()
