@@ -575,7 +575,7 @@ export const getAirtableRecordRequestValidationSchema = (
       id,
       fields: Object.keys(fields)
         .filter((key) => {
-          return fields[key] != null;
+          return fields[key] !== undefined;
         })
         .reduce((accumulator, key) => {
           const mapping = objectPropertyToColumnNameMapper[
@@ -594,11 +594,11 @@ export const getAirtableRecordRequestValidationSchema = (
               if (isMultipleRecordLinksField) {
                 if (Array.isArray(fields[key])) {
                   if (prefersSingleRecordLink) {
-                    return [fields[key][0].id];
+                    return [fields[key]?.[0]?.id];
                   }
                   return fields[key].map(({ id }: any) => id);
                 } else {
-                  return [fields[key].id];
+                  return [fields[key]?.id];
                 }
               }
               return fields[key];
