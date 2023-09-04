@@ -10,7 +10,8 @@ declare module '@infinite-debugger/axios-api-adapter' {
 
 export {
   IAPIAdapterConfiguration,
-  REDIRECTION_ERROR_MESSAGES,
+  CANCELLED_API_REQUEST_MESSAGE,
+  EXPIRED_SESSION_ERROR_MESSAGES,
   RequestOptions,
   ResponseProcessor,
 } from '@infinite-debugger/axios-api-adapter';
