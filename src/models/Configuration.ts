@@ -29,6 +29,18 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
 
   /**
+   * The serialized example value of the property. This is useful when you want to generate a TypeScript type.
+   *
+   * @example '1234'
+   * @example '"A word"'
+   * @example '["A word", "Another word"]'
+   * @example 'true'
+   * @example 'false'
+   * @example '{ id: "1234", name: "A word" }'
+   */
+  example?: string;
+
+  /**
    * Whether the lookup field should not be unwrapped to a single record when generating the TypeScript
    * type. This is useful when the lookup field is a many-to-many relationship.
    */

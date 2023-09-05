@@ -190,6 +190,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
   const { type, options: tableColumnOptions } = tableColumn;
   const {
     type: userDefinedType,
+    example: userDefinedExample,
     prefersSingleRecordLink,
     isLookupWithListOfValues,
   } = {
@@ -197,502 +198,524 @@ export const getTableColumnValidationSchemaTypeStrings = (
     ...lookupColumnNameToObjectPropertyMapper,
   }[tableColumn.name] || {};
 
-  switch (type) {
-    case 'singleCollaborator':
-    case 'multipleCollaborators':
-    case 'barcode':
-    case 'duration':
-    case 'createdBy':
-    case 'lastModifiedBy':
-    case 'externalSyncSource':
-      break;
+  const typeData = ((): TableColumnValidationSchemaTypeStringGroup => {
+    switch (type) {
+      case 'singleCollaborator':
+      case 'multipleCollaborators':
+      case 'barcode':
+      case 'duration':
+      case 'createdBy':
+      case 'lastModifiedBy':
+      case 'externalSyncSource':
+        break;
 
-    case 'multipleAttachments': {
-      airtableAPIModelImportsCollector.push(
-        `import {AirtableAttachmentValidationSchema, AirtableAttachment} from './Utils';`
-      );
-
-      return {
-        propertyName: camelCasePropertyName,
-        propertyType: `AirtableAttachment[]`,
-        accessModifier: 'public',
-        decorators: {
-          Property: [],
-          ArrayOf: ['AirtableAttachment'],
-        },
-        required: false,
-        airtableResponseValidationString: `z.array(AirtableAttachmentValidationSchema)`,
-        tableColumName: tableColumn.name,
-      };
-    }
-
-    case 'button': {
-      airtableAPIModelImportsCollector.push(
-        `import {AirtableButton, AirtableButtonValidationSchema} from './Utils';`
-      );
-
-      return {
-        propertyName: camelCasePropertyName,
-        propertyType: `AirtableButton`,
-        accessModifier: 'public',
-        decorators: {
-          Property: [],
-        },
-        required: false,
-        airtableResponseValidationString: `AirtableButtonValidationSchema`,
-        tableColumName: tableColumn.name,
-      };
-    }
-
-    case 'formula': {
-      airtableAPIModelImportsCollector.push(
-        `import {AirtableFormulaColumnErrorValidationSchema} from './Utils';`
-      );
-
-      const {
-        airtableResponseValidationString: baseAirtableResponseValidationString,
-        ...baseObjectModelPropertyType
-      } = getTableColumnValidationSchemaTypeStrings(
-        {
-          ...tableColumn,
-          type: tableColumn.options?.result?.type,
-        },
-        { ...options, camelCasePropertyName }
-      );
-
-      const airtableResponseValidationString: string = `z.union([${baseAirtableResponseValidationString}, AirtableFormulaColumnErrorValidationSchema])`;
-
-      return {
-        ...baseObjectModelPropertyType,
-        airtableResponseValidationString,
-        propertyType: `${baseObjectModelPropertyType.propertyType}`,
-      };
-    }
-
-    case 'rollup':
-      {
-        if (
-          tableColumn.options?.result?.type &&
-          [
-            'number',
-            'percent',
-            'currency',
-            'count',
-            'autoNumber',
-            'rating',
-            'singleLineText',
-          ].includes(tableColumn.options?.result?.type)
-        ) {
-          return {
-            ...getTableColumnValidationSchemaTypeStrings(
-              {
-                ...tableColumn,
-                type: tableColumn.options?.result?.type,
-              },
-              { ...options, camelCasePropertyName }
-            ),
-            airtableResponseValidationString: `z.any()`,
-          };
-        }
-      }
-      break;
-
-    // Dates
-    case 'date':
-    case 'dateTime':
-    case 'lastModifiedTime':
-    case 'createdTime': {
-      return {
-        propertyName: camelCasePropertyName,
-        propertyType: `string`,
-        accessModifier: 'public',
-        decorators: {
-          Property: [],
-          Example: [`'2023-01-05T19:00:44.544Z'`],
-        },
-        required: false,
-        airtableResponseValidationString: `z.string()`,
-        requestObjectPropertyTypeValidationString: `z.string()`,
-        tableColumName: tableColumn.name,
-      };
-    }
-
-    // Lists
-    case 'multipleRecordLinks': {
-      const airtableResponseValidationString = `z.array(z.string())`;
-      const objectModelPropertyType: ObjectModelProperty = (() => {
-        const pascalCasePropertyNameSingular = pluralize.singular(
-          pascalCasePropertyName
+      case 'multipleAttachments': {
+        airtableAPIModelImportsCollector.push(
+          `import {AirtableAttachmentValidationSchema, AirtableAttachment} from './Utils';`
         );
-        const modelClassName =
-          `${tableLabelSingular} ${pascalCasePropertyNameSingular}`.toPascalCase();
-        const modelClass: ModelClass = {
-          modelName: modelClassName,
-          modelProperties: [
-            {
-              accessModifier: 'public',
-              decorators: {
-                Property: [],
-                Required: [],
-                Description: [`'The unique identifer'`],
-                Example: [`'recO0FYb1Tccm9MZ2'`],
-              },
-              propertyName: 'id',
-              propertyType: 'string',
-              required: true,
-              airtableResponseValidationString,
-              tableColumName: tableColumn.name,
-            },
-            ...new Set(
-              lookupTableColumns
-                .filter((lookupTableColumn) => {
-                  return (
-                    lookupTableColumn.options?.recordLinkFieldId ===
-                    tableColumn.id
-                  );
-                })
-                .map((lookupTableColumn) => {
-                  const {
-                    airtableResponseValidationString,
-                    ...objectModelPropertyType
-                  } = getTableColumnValidationSchemaTypeStrings(
-                    lookupTableColumn,
-                    {
-                      ...options,
-                      camelCaseParentPropertyName: camelCasePropertyName,
-                    }
-                  );
-                  return {
-                    ...objectModelPropertyType,
-                    airtableResponseValidationString,
-                    tableColumName: lookupTableColumn.name,
-                  };
-                })
-            ),
-          ],
-          tableColumName: tableColumn.name,
-        };
-
-        const editableModelClassName = `Editable${modelClassName}`;
-        const editableModelClass: ModelClass = {
-          modelName: editableModelClassName,
-          modelProperties: [
-            {
-              accessModifier: 'public',
-              decorators: {
-                Property: [],
-                Required: [],
-                Description: [`'The unique identifer'`],
-                Example: [`'recO0FYb1Tccm9MZ2'`],
-              },
-              propertyName: 'id',
-              propertyType: 'string',
-              required: true,
-              airtableResponseValidationString,
-              tableColumName: tableColumn.name,
-            },
-          ],
-          tableColumName: tableColumn.name,
-        };
-
-        restAPIModelExtrasCollector.push(modelClass, editableModelClass);
-
-        if (
-          prefersSingleRecordLink ||
-          tableColumn.options?.prefersSingleRecordLink
-        ) {
-          return {
-            propertyName: camelCasePropertyName,
-            propertyType: modelClassName,
-            editablePropertyType: editableModelClassName,
-            accessModifier: 'public',
-            decorators: {
-              Property: [],
-            },
-            airtableResponseValidationString,
-            tableColumName: tableColumn.name,
-          } as ObjectModelProperty;
-        }
 
         return {
           propertyName: camelCasePropertyName,
-          propertyType: `${modelClassName}[]`,
-          editablePropertyType: `${editableModelClassName}[]`,
+          propertyType: `AirtableAttachment[]`,
           accessModifier: 'public',
           decorators: {
             Property: [],
-            ArrayOf: [modelClassName],
+            ArrayOf: ['AirtableAttachment'],
           },
-          editModeDecorators: {
-            ArrayOf: [editableModelClassName],
-          },
-          airtableResponseValidationString,
+          required: false,
+          airtableResponseValidationString: `z.array(AirtableAttachmentValidationSchema)`,
           tableColumName: tableColumn.name,
-        } as ObjectModelProperty;
-      })();
-      const requestObjectPropertyTypeValidationString = (() => {
-        const validationString = `z.object({\nid: z.string()\n})`;
-        if (
-          prefersSingleRecordLink ||
-          tableColumn.options?.prefersSingleRecordLink
-        ) {
-          return validationString;
-        }
-        return `z.array(${validationString})`;
-      })();
+        };
+      }
 
-      return {
-        ...objectModelPropertyType,
-        airtableResponseValidationString,
-        requestObjectPropertyTypeValidationString,
-      };
-    }
+      case 'button': {
+        airtableAPIModelImportsCollector.push(
+          `import {AirtableButton, AirtableButtonValidationSchema} from './Utils';`
+        );
 
-    case 'lookup':
-    case 'multipleLookupValues': {
-      const baseType = userDefinedType || 'string';
-      const {
-        airtableResponseValidationString: baseAirtableResponseValidationString,
-        ...baseObjectModelPropertyType
-      } = (() => {
-        if (rootField !== tableColumn) {
-          if (rootField.type === 'multipleRecordLinks') {
-            return {
-              airtableResponseValidationString: `z.string()`,
-              accessModifier: 'public',
-              decorators: {
-                Example: [getModelPropertyExampleString(baseType)],
-              },
-              propertyName: camelCasePropertyName,
-              propertyType: baseType,
-              tableColumName: tableColumn.name,
-            } as ObjectModelProperty;
-          }
-          return getTableColumnValidationSchemaTypeStrings(rootField, {
-            ...options,
-            camelCasePropertyName,
-          });
-        }
-        return getTableColumnValidationSchemaTypeStrings(
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: `AirtableButton`,
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+          },
+          required: false,
+          airtableResponseValidationString: `AirtableButtonValidationSchema`,
+          tableColumName: tableColumn.name,
+        };
+      }
+
+      case 'formula': {
+        airtableAPIModelImportsCollector.push(
+          `import {AirtableFormulaColumnErrorValidationSchema} from './Utils';`
+        );
+
+        const {
+          airtableResponseValidationString:
+            baseAirtableResponseValidationString,
+          ...baseObjectModelPropertyType
+        } = getTableColumnValidationSchemaTypeStrings(
           {
             ...tableColumn,
             type: tableColumn.options?.result?.type,
           },
           { ...options, camelCasePropertyName }
         );
-      })();
 
-      const airtableResponseValidationString: string = (() => {
-        if (!baseAirtableResponseValidationString.match(/^z\.array/g)) {
-          return `z.array(${baseAirtableResponseValidationString}.nullish())`;
-        }
-        return baseAirtableResponseValidationString;
-      })();
-      const objectModelPropertyType = ((): Omit<
-        ObjectModelProperty,
-        'airtableResponseValidationString'
-      > => {
-        if (
-          !baseObjectModelPropertyType.propertyName.match(/\[\]$/g) &&
-          isLookupWithListOfValues
-        ) {
-          if (baseObjectModelPropertyType.propertyType === 'string') {
-            baseObjectModelPropertyType.decorators['ArrayOf'] = ['String'];
-          }
-          Object.entries(baseObjectModelPropertyType.decorators).forEach(
-            ([decorator, parameters]) => {
-              if (decorator.match(/^Example$/g)) {
-                baseObjectModelPropertyType.decorators[decorator] = [
-                  `[${parameters[0]}]`,
-                ];
-              }
-            }
-          );
-          return {
-            ...baseObjectModelPropertyType,
-            propertyType: `(${baseObjectModelPropertyType.propertyType})[]`,
-          };
-        }
+        const airtableResponseValidationString: string = `z.union([${baseAirtableResponseValidationString}, AirtableFormulaColumnErrorValidationSchema])`;
+
         return {
           ...baseObjectModelPropertyType,
-          propertyType: `(${baseObjectModelPropertyType.propertyType})`,
+          airtableResponseValidationString,
+          propertyType: `${baseObjectModelPropertyType.propertyType}`,
         };
-      })();
+      }
 
-      return {
-        ...objectModelPropertyType,
-        airtableResponseValidationString,
-      };
-    }
-
-    // Numbers
-    case 'number':
-    case 'percent':
-    case 'currency':
-    case 'count':
-    case 'autoNumber':
-    case 'rating': {
-      return {
-        propertyName: camelCasePropertyName,
-        propertyType: userDefinedType || 'number',
-        accessModifier: 'public',
-        decorators: {
-          Property: [],
-          Example: [getModelPropertyExampleString(userDefinedType || 'number')],
-        },
-        airtableResponseValidationString: `z.number()`,
-        requestObjectPropertyTypeValidationString: `z.number()`,
-        tableColumName: tableColumn.name,
-      };
-    }
-
-    // Booleans
-    case 'checkbox': {
-      return {
-        propertyName: camelCasePropertyName,
-        propertyType: userDefinedType || 'boolean',
-        accessModifier: 'public',
-        decorators: {
-          Property: [],
-          Example: [
-            getModelPropertyExampleString(userDefinedType || 'boolean'),
-          ],
-        },
-        airtableResponseValidationString: `z.boolean()`,
-        requestObjectPropertyTypeValidationString: `z.boolean()`,
-        tableColumName: tableColumn.name,
-      };
-    }
-
-    // Special text
-    case 'email': {
-      return {
-        propertyName: camelCasePropertyName,
-        propertyType: userDefinedType || 'string',
-        accessModifier: 'public',
-        decorators: {
-          Property: [],
-          Example: [getModelPropertyExampleString(userDefinedType || 'email')],
-        },
-        airtableResponseValidationString: `z.string().trim().email()`,
-        requestObjectPropertyTypeValidationString: `z.string().trim().email()`,
-        tableColumName: tableColumn.name,
-      };
-    }
-
-    case 'url': {
-      return {
-        propertyName: camelCasePropertyName,
-        propertyType: userDefinedType || 'string',
-        accessModifier: 'public',
-        decorators: {
-          Property: [],
-          Example: [getModelPropertyExampleString(userDefinedType || 'url')],
-        },
-        airtableResponseValidationString: `z.string().trim().url()`,
-        requestObjectPropertyTypeValidationString: `z.string().trim().url()`,
-        tableColumName: tableColumn.name,
-      };
-    }
-
-    // Regular text
-    case 'singleLineText':
-    case 'multilineText':
-    case 'richText':
-    case 'phoneNumber': {
-      const baseType = userDefinedType || 'string';
-
-      return {
-        propertyName: camelCasePropertyName,
-        propertyType: baseType,
-        accessModifier: 'public',
-        decorators: {
-          Property: [],
-          Example: [getModelPropertyExampleString(baseType)],
-        },
-        airtableResponseValidationString: `z.string()`,
-        requestObjectPropertyTypeValidationString: `z.string()`,
-        tableColumName: tableColumn.name,
-      };
-    }
-    case 'singleSelect':
-    case 'multipleSelects': {
-      const pascalCasePropertyNameSingular = pluralize.singular(
-        camelCaseParentPropertyName || ''
-      );
-
-      const enumValuesVariableName =
-        `${tableLabelSingular} ${pascalCasePropertyNameSingular} ${pascalCasePropertyName} Options`.toCamelCase();
-
-      const enumTypeName =
-        `${tableLabelSingular} ${pascalCasePropertyNameSingular} ${pascalCasePropertyName} Option`.toPascalCase();
-
-      const enumValues = (() => {
-        if (tableColumnOptions?.choices) {
-          return tableColumnOptions.choices.map(({ name }) => {
-            if (name.includes('"') && !name.includes("'")) {
-              return `'${name}'`;
-            }
-            return `"${name.replace(/(['"])/g, '\\$1')}"`;
-          });
+      case 'rollup':
+        {
+          if (
+            tableColumn.options?.result?.type &&
+            [
+              'number',
+              'percent',
+              'currency',
+              'count',
+              'autoNumber',
+              'rating',
+              'singleLineText',
+            ].includes(tableColumn.options?.result?.type)
+          ) {
+            return {
+              ...getTableColumnValidationSchemaTypeStrings(
+                {
+                  ...tableColumn,
+                  type: tableColumn.options?.result?.type,
+                },
+                { ...options, camelCasePropertyName }
+              ),
+              airtableResponseValidationString: `z.any()`,
+            };
+          }
         }
-        return [`"A"`];
-      })();
+        break;
 
-      const enumValuesCode = `
-        export const ${enumValuesVariableName} = [${enumValues.join(
-        ', '
-      )}] as const;
-        export type ${enumTypeName} = (typeof ${enumValuesVariableName})[number];
-      `;
+      // Dates
+      case 'date':
+      case 'dateTime':
+      case 'lastModifiedTime':
+      case 'createdTime': {
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: `string`,
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+            Example: [`'2023-01-05T19:00:44.544Z'`],
+          },
+          required: false,
+          airtableResponseValidationString: `z.string()`,
+          requestObjectPropertyTypeValidationString: `z.string()`,
+          tableColumName: tableColumn.name,
+        };
+      }
 
-      const baseType =
-        userDefinedType ||
-        (() => {
+      // Lists
+      case 'multipleRecordLinks': {
+        const airtableResponseValidationString = `z.array(z.string())`;
+        const objectModelPropertyType: ObjectModelProperty = (() => {
+          const pascalCasePropertyNameSingular = pluralize.singular(
+            pascalCasePropertyName
+          );
+          const modelClassName =
+            `${tableLabelSingular} ${pascalCasePropertyNameSingular}`.toPascalCase();
+          const modelClass: ModelClass = {
+            modelName: modelClassName,
+            modelProperties: [
+              {
+                accessModifier: 'public',
+                decorators: {
+                  Property: [],
+                  Required: [],
+                  Description: [`'The unique identifer'`],
+                  Example: [`'recO0FYb1Tccm9MZ2'`],
+                },
+                propertyName: 'id',
+                propertyType: 'string',
+                required: true,
+                airtableResponseValidationString,
+                tableColumName: tableColumn.name,
+              },
+              ...new Set(
+                lookupTableColumns
+                  .filter((lookupTableColumn) => {
+                    return (
+                      lookupTableColumn.options?.recordLinkFieldId ===
+                      tableColumn.id
+                    );
+                  })
+                  .map((lookupTableColumn) => {
+                    const {
+                      airtableResponseValidationString,
+                      ...objectModelPropertyType
+                    } = getTableColumnValidationSchemaTypeStrings(
+                      lookupTableColumn,
+                      {
+                        ...options,
+                        camelCaseParentPropertyName: camelCasePropertyName,
+                      }
+                    );
+                    return {
+                      ...objectModelPropertyType,
+                      airtableResponseValidationString,
+                      tableColumName: lookupTableColumn.name,
+                    };
+                  })
+              ),
+            ],
+            tableColumName: tableColumn.name,
+          };
+
+          const editableModelClassName = `Editable${modelClassName}`;
+          const editableModelClass: ModelClass = {
+            modelName: editableModelClassName,
+            modelProperties: [
+              {
+                accessModifier: 'public',
+                decorators: {
+                  Property: [],
+                  Required: [],
+                  Description: [`'The unique identifer'`],
+                  Example: [`'recO0FYb1Tccm9MZ2'`],
+                },
+                propertyName: 'id',
+                propertyType: 'string',
+                required: true,
+                airtableResponseValidationString,
+                tableColumName: tableColumn.name,
+              },
+            ],
+            tableColumName: tableColumn.name,
+          };
+
+          restAPIModelExtrasCollector.push(modelClass, editableModelClass);
+
+          if (
+            prefersSingleRecordLink ||
+            tableColumn.options?.prefersSingleRecordLink
+          ) {
+            return {
+              propertyName: camelCasePropertyName,
+              propertyType: modelClassName,
+              editablePropertyType: editableModelClassName,
+              accessModifier: 'public',
+              decorators: {
+                Property: [],
+              },
+              airtableResponseValidationString,
+              tableColumName: tableColumn.name,
+            } as ObjectModelProperty;
+          }
+
+          return {
+            propertyName: camelCasePropertyName,
+            propertyType: `${modelClassName}[]`,
+            editablePropertyType: `${editableModelClassName}[]`,
+            accessModifier: 'public',
+            decorators: {
+              Property: [],
+              ArrayOf: [modelClassName],
+            },
+            editModeDecorators: {
+              ArrayOf: [editableModelClassName],
+            },
+            airtableResponseValidationString,
+            tableColumName: tableColumn.name,
+          } as ObjectModelProperty;
+        })();
+        const requestObjectPropertyTypeValidationString = (() => {
+          const validationString = `z.object({\nid: z.string()\n})`;
+          if (
+            prefersSingleRecordLink ||
+            tableColumn.options?.prefersSingleRecordLink
+          ) {
+            return validationString;
+          }
+          return `z.array(${validationString})`;
+        })();
+
+        return {
+          ...objectModelPropertyType,
+          airtableResponseValidationString,
+          requestObjectPropertyTypeValidationString,
+        };
+      }
+
+      case 'lookup':
+      case 'multipleLookupValues': {
+        const baseType = userDefinedType || 'string';
+        const {
+          airtableResponseValidationString:
+            baseAirtableResponseValidationString,
+          ...baseObjectModelPropertyType
+        } = (() => {
+          if (rootField !== tableColumn) {
+            if (rootField.type === 'multipleRecordLinks') {
+              return {
+                airtableResponseValidationString: `z.string()`,
+                accessModifier: 'public',
+                decorators: {
+                  Example: [getModelPropertyExampleString(baseType)],
+                },
+                propertyName: camelCasePropertyName,
+                propertyType: baseType,
+                tableColumName: tableColumn.name,
+              } as ObjectModelProperty;
+            }
+            return getTableColumnValidationSchemaTypeStrings(rootField, {
+              ...options,
+              camelCasePropertyName,
+            });
+          }
+          return getTableColumnValidationSchemaTypeStrings(
+            {
+              ...tableColumn,
+              type: tableColumn.options?.result?.type,
+            },
+            { ...options, camelCasePropertyName }
+          );
+        })();
+
+        const airtableResponseValidationString: string = (() => {
+          if (!baseAirtableResponseValidationString.match(/^z\.array/g)) {
+            return `z.array(${baseAirtableResponseValidationString}.nullish())`;
+          }
+          return baseAirtableResponseValidationString;
+        })();
+        const objectModelPropertyType = ((): Omit<
+          ObjectModelProperty,
+          'airtableResponseValidationString'
+        > => {
+          if (
+            !baseObjectModelPropertyType.propertyName.match(/\[\]$/g) &&
+            isLookupWithListOfValues
+          ) {
+            if (baseObjectModelPropertyType.propertyType === 'string') {
+              baseObjectModelPropertyType.decorators['ArrayOf'] = ['String'];
+            }
+            Object.entries(baseObjectModelPropertyType.decorators).forEach(
+              ([decorator, parameters]) => {
+                if (decorator.match(/^Example$/g)) {
+                  baseObjectModelPropertyType.decorators[decorator] = [
+                    `[${parameters[0]}]`,
+                  ];
+                }
+              }
+            );
+            return {
+              ...baseObjectModelPropertyType,
+              propertyType: `(${baseObjectModelPropertyType.propertyType})[]`,
+            };
+          }
+          return {
+            ...baseObjectModelPropertyType,
+            propertyType: `(${baseObjectModelPropertyType.propertyType})`,
+          };
+        })();
+
+        return {
+          ...objectModelPropertyType,
+          airtableResponseValidationString,
+        };
+      }
+
+      // Numbers
+      case 'number':
+      case 'percent':
+      case 'currency':
+      case 'count':
+      case 'autoNumber':
+      case 'rating': {
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: userDefinedType || 'number',
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+            Example: [
+              getModelPropertyExampleString(userDefinedType || 'number'),
+            ],
+          },
+          airtableResponseValidationString: `z.number()`,
+          requestObjectPropertyTypeValidationString: `z.number()`,
+          tableColumName: tableColumn.name,
+        };
+      }
+
+      // Booleans
+      case 'checkbox': {
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: userDefinedType || 'boolean',
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+            Example: [
+              getModelPropertyExampleString(userDefinedType || 'boolean'),
+            ],
+          },
+          airtableResponseValidationString: `z.boolean()`,
+          requestObjectPropertyTypeValidationString: `z.boolean()`,
+          tableColumName: tableColumn.name,
+        };
+      }
+
+      // Special text
+      case 'email': {
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: userDefinedType || 'string',
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+            Example: [
+              getModelPropertyExampleString(userDefinedType || 'email'),
+            ],
+          },
+          airtableResponseValidationString: `z.string().trim().email()`,
+          requestObjectPropertyTypeValidationString: `z.string().trim().email()`,
+          tableColumName: tableColumn.name,
+        };
+      }
+
+      case 'url': {
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: userDefinedType || 'string',
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+            Example: [getModelPropertyExampleString(userDefinedType || 'url')],
+          },
+          airtableResponseValidationString: `z.string().trim().url()`,
+          requestObjectPropertyTypeValidationString: `z.string().trim().url()`,
+          tableColumName: tableColumn.name,
+        };
+      }
+
+      // Regular text
+      case 'singleLineText':
+      case 'multilineText':
+      case 'richText':
+      case 'phoneNumber': {
+        const baseType = userDefinedType || 'string';
+
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: baseType,
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+            Example: [getModelPropertyExampleString(baseType)],
+          },
+          airtableResponseValidationString: `z.string()`,
+          requestObjectPropertyTypeValidationString: `z.string()`,
+          tableColumName: tableColumn.name,
+        };
+      }
+      case 'singleSelect':
+      case 'multipleSelects': {
+        const pascalCasePropertyNameSingular = pluralize.singular(
+          camelCaseParentPropertyName || ''
+        );
+
+        const enumValuesVariableName =
+          `${tableLabelSingular} ${pascalCasePropertyNameSingular} ${pascalCasePropertyName} Options`.toCamelCase();
+
+        const enumTypeName =
+          `${tableLabelSingular} ${pascalCasePropertyNameSingular} ${pascalCasePropertyName} Option`.toPascalCase();
+
+        const enumValues = (() => {
+          if (tableColumnOptions?.choices) {
+            return tableColumnOptions.choices.map(({ name }) => {
+              if (name.includes('"') && !name.includes("'")) {
+                return `'${name}'`;
+              }
+              return `"${name.replace(/(['"])/g, '\\$1')}"`;
+            });
+          }
+          return [`"A"`];
+        })();
+
+        const enumValuesCode = `
+          export const ${enumValuesVariableName} = [${enumValues.join(
+          ', '
+        )}] as const;
+          export type ${enumTypeName} = (typeof ${enumValuesVariableName})[number];
+        `;
+
+        const baseType =
+          userDefinedType ||
+          (() => {
+            switch (type) {
+              case 'multipleSelects':
+                return `${enumTypeName}[]`;
+              case 'singleSelect':
+              default:
+                return enumTypeName;
+            }
+          })();
+        const airtableResponseValidationString = (() => {
           switch (type) {
             case 'multipleSelects':
-              return `${enumTypeName}[]`;
+              return `z.array(z.enum(${enumValuesVariableName}))`;
             case 'singleSelect':
             default:
-              return enumTypeName;
+              return `z.enum(${enumValuesVariableName})`;
           }
         })();
-      const airtableResponseValidationString = (() => {
-        switch (type) {
-          case 'multipleSelects':
-            return `z.array(z.enum(${enumValuesVariableName}))`;
-          case 'singleSelect':
-          default:
-            return `z.enum(${enumValuesVariableName})`;
-        }
-      })();
 
-      return {
-        propertyName: camelCasePropertyName,
-        propertyType: baseType,
-        accessModifier: 'public',
-        decorators: {
-          Property: [],
-          Enum: [`...${enumValuesVariableName}`],
-        },
-        typeDefinitionSnippet: enumValuesCode,
-        airtableResponseValidationString,
-        requestObjectPropertyTypeValidationString:
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: baseType,
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+            Enum: [`...${enumValuesVariableName}`],
+          },
+          typeDefinitionSnippet: enumValuesCode,
           airtableResponseValidationString,
-        tableColumName: tableColumn.name,
-      };
+          requestObjectPropertyTypeValidationString:
+            airtableResponseValidationString,
+          tableColumName: tableColumn.name,
+        };
+      }
     }
+    const baseType = userDefinedType || 'any';
+    return {
+      propertyName: camelCasePropertyName,
+      propertyType: baseType,
+      accessModifier: 'public',
+      decorators: {
+        Property: [],
+      },
+      airtableResponseValidationString: `z.any()`,
+      tableColumName: tableColumn.name,
+    };
+  })();
+
+  if (userDefinedType === 'string[]') {
+    typeData.decorators['ArrayOf'] = ['String'];
   }
-  const baseType = userDefinedType || 'any';
-  return {
-    propertyName: camelCasePropertyName,
-    propertyType: baseType,
-    accessModifier: 'public',
-    decorators: {
-      Property: [],
-    },
-    airtableResponseValidationString: `z.any()`,
-    tableColumName: tableColumn.name,
-  };
+
+  if (userDefinedType === 'number[]') {
+    typeData.decorators['ArrayOf'] = ['Number'];
+  }
+
+  if (userDefinedExample) {
+    typeData.decorators.Example = [userDefinedExample];
+  }
+
+  return typeData;
 };
 //#endregion
