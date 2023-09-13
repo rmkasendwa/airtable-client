@@ -58,7 +58,3 @@ Contributions are welcome! If you encounter any issues or have suggestions for i
 ## License
 
 This package is licensed under the [MIT License](https://opensource.org/licenses/MIT). See the [LICENSE](./LICENSE) file for more details.
-
----
-
-Feel free to customize the above README.md file to fit your specific needs. Remember to provide comprehensive documentation to assist users in effectively utilizing your package.

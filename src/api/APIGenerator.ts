@@ -127,7 +127,7 @@ export const generateAirtableAPI = async ({
 
   const { bases } = await findAllAirtableBases(); // Loading all airtable bases accessible by the API key
 
-  // Filtering focus airtable base (Bases defined in user config)
+  //#region Filtering focus airtable base (Bases defined in user config)
   const workingBases = bases.filter(({ name, id }) => {
     return configBases.some(({ id: configBaseId, name: configBaseName }) => {
       return (
@@ -136,20 +136,23 @@ export const generateAirtableAPI = async ({
       );
     });
   });
+  //#endregion
 
   if (workingBases.length > 0) {
-    // Cleaning up output directory
+    //#region Clean up output directory
     if (existsSync(outputFolderPath)) {
       removeSync(outputFolderPath);
     }
     ensureDirSync(outputFolderPath);
+    //#endregion
 
-    // Processing each focus airtable base
+    //#region Processing each focus airtable base
     workingBases.forEach(async (workingBase) => {
       const { id: workingBaseId, name: workingBaseName } = workingBase;
 
       const { tables } = await findAllTablesByBaseId(workingBaseId); // Loading table in airtable base.
 
+      //#region Filter focus tables (Bases defined in user config)
       const filteredTables = tables.filter(({ name }) => {
         return (
           generateAllTables ||
@@ -164,8 +167,9 @@ export const generateAirtableAPI = async ({
           })
         );
       });
+      //#endregion
 
-      // Filter focus tables (tables defined in user config)
+      //#region Filter focus tables (tables defined in user config)
       if (filteredTables.length > 0) {
         console.log(
           `\nProcessing \x1b[34m${workingBaseName.trim()}\x1b[0m base...`
@@ -176,14 +180,15 @@ export const generateAirtableAPI = async ({
           `${outputFolderPath}/${pascalCaseBaseName}`
         );
 
-        // Permissions exports
+        //#region Permissions exports
         const permissionsImports: string[] = [];
         const permissionsExports: string[] = [];
         const permissionsObjectStrings: string[] = [];
+        //#endregion
 
         const moduleFiles: string[] = [];
 
-        // Processing each focus table.
+        //#region Processing each focus table.
         filteredTables.forEach((table) => {
           const { name: tableName, fields: columns, views } = table;
 
@@ -680,7 +685,7 @@ export const generateAirtableAPI = async ({
             return accumulator;
           }, {} as Record<string, TableColumnValidationSchemaTypeStringGroup>);
 
-          // Getting interpolation block replacement map
+          //#region Getting interpolation block replacement map
           const interpolationBlocks =
             getAirtableAPIGeneratorTemplateFileInterpolationBlocks({
               base: workingBase,
@@ -700,8 +705,9 @@ export const generateAirtableAPI = async ({
               includeAirtableSpecificQueryParameters,
               alternativeRecordIdColumns,
             });
+          //#endregion
 
-          // Getting interpolation string replacement map
+          //#region Getting interpolation string replacement map
           const interpolationLabels =
             getAirtableAPIGeneratorTemplateFileInterpolationLabels({
               currentTable: table,
@@ -722,6 +728,7 @@ export const generateAirtableAPI = async ({
               includeAirtableSpecificQueryParameters,
               alternativeRecordIdColumns,
             });
+          //#endregion
 
           // Replacing interpolation templates in template file contents
           const getInterpolatedString = (templateFileContents: string) => {
@@ -741,6 +748,7 @@ export const generateAirtableAPI = async ({
 
           moduleFiles.push(`./api/${labelPlural.toPascalCase()}`); // Adding api file to exportable files
 
+          //#region Write generated API files based on templates
           templateFilePaths.forEach((templateFilePath) => {
             const templateFileContents = readFileSync(
               templateFilePath,
@@ -752,20 +760,69 @@ export const generateAirtableAPI = async ({
                 ''
               )}`
             );
+            let fileContents = getInterpolatedString(templateFileContents);
+
+            //#region Replace tsed controller template variables
+            if (templateFilePath.match(/\Controller\.(ts|js)$/g)) {
+              const controllerTemplateVariables = {
+                TSED_CONTROLLER_FIND_FIRST_PAGE_DESCRIPTION_SUFFIX: '',
+                TSED_CONTROLLER_FIND_ALL_DESCRIPTION_SUFFIX: '',
+                TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX: '',
+              };
+              const findByIdDescriptionSuffixParts: string[] = [];
+              if (
+                alternativeRecordIdColumns &&
+                alternativeRecordIdColumns.length > 0
+              ) {
+                const alternativeRecordIdColumnsPhrase =
+                  alternativeRecordIdColumns
+                    .map((columnName) => {
+                      return (
+                        nonLookupColumnNameToObjectPropertyMapper[columnName]
+                          ?.propertyName || columnName
+                      );
+                    })
+                    .map((propertyName) => `\`${propertyName}\``)
+                    .join(', ');
+                findByIdDescriptionSuffixParts.push(
+                  `Besides the primary \`id\` field, the following fields can also be used on this path: ${alternativeRecordIdColumnsPhrase}.`
+                );
+              }
+              if (findByIdDescriptionSuffixParts.length > 0) {
+                controllerTemplateVariables.TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX = ` ${findByIdDescriptionSuffixParts.join(
+                  ' '
+                )}`;
+              }
+
+              if (alternativeRecordIdColumns) {
+                controllerTemplateVariables.TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX;
+              }
+
+              Object.entries(controllerTemplateVariables).forEach(
+                ([variable, value]) => {
+                  fileContents = fileContents.replaceAll(
+                    `%${variable}%`,
+                    value
+                  );
+                }
+              );
+              console.log(templateFilePath);
+            }
+            //#endregion
 
             ensureDirSync(dirname(filePath));
-
             writeFileSync(
               filePath,
-              prettier.format(getInterpolatedString(templateFileContents), {
+              prettier.format(fileContents, {
                 filepath: filePath,
                 ...prettierConfig,
               })
             );
           });
+          //#endregion
 
           // Permissions
-          // Accumulating all focus table permissions
+          //#region Accumulating all focus table permissions
           permissionsImports.push(
             getInterpolatedString(`
               import {
@@ -785,22 +842,30 @@ export const generateAirtableAPI = async ({
           permissionsObjectStrings.push(
             getInterpolatedString(
               `
-              // Entities Label Permissions.
-              ${modulePermissionsTemplate}
-            `.trimIndent()
+                // Entities Label Permissions.
+                ${modulePermissionsTemplate}
+              `.trimIndent()
             )
           );
+          //#endregion
         });
+        //#endregion
 
-        writeFileSync(
-          `${baseAPIOutputFolderPath}/index.ts`,
-          moduleFiles
-            .map((filePath) => {
-              return `export * from '${filePath}'`;
-            })
-            .join('\n')
-        );
+        //#region Write base index file
+        const indexFilePath = `${baseAPIOutputFolderPath}/index.ts`;
+        if (!existsSync(indexFilePath)) {
+          writeFileSync(
+            indexFilePath,
+            moduleFiles
+              .map((filePath) => {
+                return `export * from '${filePath}'`;
+              })
+              .join('\n')
+          );
+        }
+        //#endregion
 
+        //#region Write permissions index file
         const permissionsFilePath = `${baseAPIOutputFolderPath}/permissions/index.ts`;
         writeFileSync(
           permissionsFilePath,
@@ -819,11 +884,14 @@ export const generateAirtableAPI = async ({
             }
           )
         );
+        //#endregion
 
         console.log(
           `\n\x1b[32mAirtable [${workingBaseName.trim()}] base API generated here: ${baseAPIOutputFolderPath}\x1b[0m`
         );
       }
+      //#endregion
     });
+    //#endregion
   }
 };

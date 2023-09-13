@@ -69,7 +69,7 @@ export class PascalCaseEntityController {
   @Authorize(VIEW_ENTITIES_PERMISSION)
   @Summary('Find first page entities label')
   @Description(
-    'Finds the first page of entities label. Returns entities label first page matching query paramenters.'
+    'Finds the first page of entities label. Returns entities label first page matching query paramenters.%TSED_CONTROLLER_FIND_FIRST_PAGE_DESCRIPTION_SUFFIX%'
   )
   @Returns(200, FindFirstPagePascalCaseEntitiesReponse).Description(
     'The existing entities label on the first page'
@@ -85,7 +85,7 @@ export class PascalCaseEntityController {
   @Authorize(VIEW_ENTITIES_PERMISSION)
   @Summary('Find all entities label')
   @Description(
-    'Finds all entities label. Returns entities label matching query paramenters.'
+    'Finds all entities label. Returns entities label matching query paramenters.%TSED_CONTROLLER_FIND_ALL_DESCRIPTION_SUFFIX%'
   )
   @Returns(200, FindAllPascalCaseEntitiesReponse).Description(
     'The existing entities label'
@@ -117,7 +117,7 @@ export class PascalCaseEntityController {
   @Authorize(VIEW_ENTITY_DETAILS_PERMISSION)
   @Summary('Find entity label by id')
   @Description(
-    'Finds entity label by id. Returns entity label matching the given id.'
+    'Finds entity label by id. Returns entity label matching the given id.%TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX%'
   )
   @Returns(200, PascalCaseEntity).Description('The existing entity label')
   @Returns(404).Description('Not found')
