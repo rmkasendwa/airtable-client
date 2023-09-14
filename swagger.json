@@ -281,9 +281,45 @@
           "actionMetadata": {
             "$ref": "#/components/schemas/WebhookAction",
             "description": "The action responsible for the change. We may add additional sources or source metadata in the future and this will not be considered a breaking change. API consumers are expected to handle unknown sources gracefully."
+          },
+          "baseTransactionNumber": {
+            "description": "A number which can be used to determine all changes within a transaction.",
+            "type": "number"
+          },
+          "changedTablesById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTableChanged"
+            },
+            "type": "object"
+          },
+          "createdTablesById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTableCreated"
+            },
+            "type": "object"
+          },
+          "destroyedTableIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "payloadFormat": {
+            "description": "The payload format's version number. This is currently just v0, but it may be increased in the future for breaking payload changes.",
+            "enum": ["v0"],
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "The time the action occurred.",
+            "type": "string"
           }
         },
-        "required": ["actionMetadata"],
+        "required": [
+          "actionMetadata",
+          "baseTransactionNumber",
+          "payloadFormat",
+          "timestamp"
+        ],
         "type": "object"
       },
       "WebhookSpecification": {
@@ -415,6 +451,28 @@
           }
         },
         "required": ["viewId"],
+        "type": "object"
+      },
+      "WebhooksTableChanged": {
+        "properties": {
+          "destroyedFieldIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksTableCreated": {
+        "properties": {
+          "destroyedFieldIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
         "type": "object"
       },
       "WebhooksUser": {
