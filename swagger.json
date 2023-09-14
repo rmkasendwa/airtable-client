@@ -471,6 +471,13 @@
             "description": "The below object is keyed with a string",
             "type": "object"
           },
+          "changedRecordsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksViewChangedRecordsById"
+            },
+            "description": "The below object is keyed with a string",
+            "type": "object"
+          },
           "changedViewsById": {
             "additionalProperties": {
               "$ref": "#/components/schemas/WebhooksViewChanged"
