@@ -464,6 +464,13 @@
       },
       "WebhooksTableChanged": {
         "properties": {
+          "changedViewsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksViewChanged"
+            },
+            "description": "This is only included when recordChangeScope is a view id.\n\nThe below object is keyed with a string",
+            "type": "object"
+          },
           "destroyedFieldIds": {
             "items": {
               "type": "string"
@@ -595,6 +602,53 @@
           }
         },
         "required": ["id", "email", "permissionLevel"],
+        "type": "object"
+      },
+      "WebhooksViewChanged": {
+        "properties": {
+          "changedRecordsById": {
+            "$ref": "#/components/schemas/WebhooksViewChangedRecordsById",
+            "description": "Changed events are generated when a record in a view changes."
+          },
+          "createdRecordsById": {
+            "$ref": "#/components/schemas/WebhooksViewCreatedRecordsById",
+            "description": "Create events when a record is added or made visible to a view."
+          },
+          "destroyedRecordIds": {
+            "description": "Destroyed events are generated when a record is deleted or removed from a view.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksViewChangedRecordsById": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/TableField"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/TableField"
+          },
+          "unchanged": {
+            "$ref": "#/components/schemas/TableField"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksViewCreatedRecordsById": {
+        "properties": {
+          "cellValuesByFieldId": {
+            "$ref": "#/components/schemas/TableField"
+          },
+          "createdTime": {
+            "description": "A date timestamp in the ISO format, eg:\"2018-01-01T00:00:00.000Z\"",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
         "type": "object"
       }
     },
