@@ -63,6 +63,25 @@
         "required": ["message"],
         "type": "object"
       },
+      "RefreshWebhookResponse": {
+        "properties": {
+          "expirationTime": {
+            "description": "The new time when the webhook will expire and be disabled in the ISO format.",
+            "type": "string"
+          }
+        },
+        "required": ["expirationTime"],
+        "type": "object"
+      },
+      "ToggleWebhookRequestPayload": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          }
+        },
+        "required": ["enable"],
+        "type": "object"
+      },
       "Unauthorized": {
         "properties": {
           "errors": {
@@ -335,7 +354,6 @@
         "operationId": "findAllWebhooks",
         "parameters": [
           {
-            "description": "The ID of the base.",
             "in": "path",
             "name": "baseId",
             "required": true,
@@ -374,7 +392,6 @@
         "operationId": "createNewWebhook",
         "parameters": [
           {
-            "description": "The ID of the base.",
             "in": "path",
             "name": "baseId",
             "required": true,
@@ -415,6 +432,145 @@
           }
         },
         "summary": "Create New Webhook",
+        "tags": ["Webhooks"]
+      }
+    },
+    "/bases/{baseId}/webhooks/{webhookId}": {
+      "delete": {
+        "description": "Deletes a webhook.",
+        "operationId": "deleteExistingWebhook",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "baseId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "webhookId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "This endpoint returns an empty response on success."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Unauthorized"
+                }
+              }
+            },
+            "description": "A valid API key was not provided with the request. You must authenticate for all requests."
+          }
+        },
+        "summary": "Delete Existing Webhook",
+        "tags": ["Webhooks"]
+      }
+    },
+    "/bases/{baseId}/webhooks/{webhookId}/enableNotifications": {
+      "post": {
+        "description": "Enables or disables notification pings for a webhook. See [notification delivery](https://airtable.com/developers/web/api/webhooks-overview#webhook-notification-delivery).",
+        "operationId": "toggleWebhookNotifications",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "baseId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "webhookId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleWebhookRequestPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "This endpoint returns an empty response on success."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Unauthorized"
+                }
+              }
+            },
+            "description": "A valid API key was not provided with the request. You must authenticate for all requests."
+          }
+        },
+        "summary": "Toggle Webhook Notifications",
+        "tags": ["Webhooks"]
+      }
+    },
+    "/bases/{baseId}/webhooks/{webhookId}/refresh": {
+      "post": {
+        "description": "Extend the life of a webhook. The new expiration time will be 7 days after the refresh time.\n\nNote that this endpoint only applies to active webhooks with an expiration time.",
+        "operationId": "refreshWebhook",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "baseId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "webhookId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshWebhookResponse"
+                }
+              }
+            },
+            "description": "This endpoint returns an empty response on success."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Unauthorized"
+                }
+              }
+            },
+            "description": "A valid API key was not provided with the request. You must authenticate for all requests."
+          }
+        },
+        "summary": "Refresh Webhook",
         "tags": ["Webhooks"]
       }
     }
