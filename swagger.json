@@ -286,6 +286,7 @@
         "type": "object"
       },
       "WebhookPayload": {
+        "description": "The contents of a webhook payload depend on the webhook's specification and the action performed on the base. Each action can generate one or more payload depending on the tables, fields and records affected.\n\nFor example, consider a webhook subscribed to all dataTypes and changeTypes. If a user renames a table, that will generate a single payload. If another user later adds a field, that will generate a second payload. If the new field affects multiple records, such as a Formula field, then the second payload will contain both the field change and the records affected.\n\nSince many records may be affected, this action may be split across multiple payloads. The split payloads will have the same timestamp, baseTransactionNumber, and actionMetadata. Processing formula fields and updates from the API or sync are examples of a few other sources that can result in multiple payloads.",
         "properties": {
           "actionMetadata": {
             "$ref": "#/components/schemas/WebhookAction",
@@ -301,6 +302,11 @@
             },
             "type": "object"
           },
+          "code": {
+            "description": "Additional error codes may be introduced, and will not be considered a breaking change.\n\nIn addition INTERNAL_ERROR can be returned if an internal error is encountered",
+            "enum": ["INVALID_FILTERS", "INVALID_HOOK"],
+            "type": "string"
+          },
           "createdTablesById": {
             "additionalProperties": {
               "$ref": "#/components/schemas/WebhooksTableCreated"
@@ -312,6 +318,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "error": {
+            "type": "boolean"
           },
           "payloadFormat": {
             "description": "The payload format's version number. This is currently just v0, but it may be increased in the future for breaking payload changes.",

@@ -119,6 +119,210 @@ export interface ToggleWebhookRequestPayload {
 }
 //#endregion
 
+//#region WebhooksTableMetadata
+export const WebhooksTableMetadataValidationSchema = z.object({
+  description: z.string().optional(),
+  name: z.string(),
+});
+
+export interface WebhooksTableMetadata {
+  description?: string;
+
+  name: string;
+}
+//#endregion
+
+//#region TableField
+export const TableFieldValidationSchema = z.object({
+  type: z.literal('aiText').optional(),
+});
+
+export interface TableField {
+  type?: 'aiText';
+}
+//#endregion
+
+//#region WebhooksTableChangedMetadataField
+export const WebhooksTableChangedMetadataFieldValidationSchema = z.object({
+  description: z.string().optional(),
+  name: z.string().optional(),
+});
+
+export interface WebhooksTableChangedMetadataField {
+  description?: string;
+
+  name?: string;
+}
+//#endregion
+
+//#region WebhooksTableField
+export const webhooksTableFieldTypeOptions = [
+  'singleLineText',
+  'email',
+  'url',
+  'multilineText',
+  'number',
+  'percent',
+  'currency',
+  'singleSelect',
+  'multipleSelects',
+  'singleCollaborator',
+  'multipleCollaborators',
+  'multipleRecordLinks',
+  'date',
+  'dateTime',
+  'phoneNumber',
+  'multipleAttachments',
+  'checkbox',
+  'formula',
+  'createdTime',
+  'rollup',
+  'count',
+  'lookup',
+  'multipleLookupValues',
+  'autoNumber',
+  'barcode',
+  'rating',
+  'richText',
+  'duration',
+  'lastModifiedTime',
+  'button',
+  'createdBy',
+  'lastModifiedBy',
+  'externalSyncSource',
+  'aiText',
+] as const;
+
+export type WebhooksTableFieldType =
+  (typeof webhooksTableFieldTypeOptions)[number];
+
+export const WebhooksTableFieldValidationSchema = z.object({
+  name: z.string(),
+  type: z.enum(webhooksTableFieldTypeOptions),
+});
+
+export interface WebhooksTableField {
+  name: string;
+
+  type: WebhooksTableFieldType;
+}
+//#endregion
+
+//#region WebhookActionAutomationSourceMetadata
+export const WebhookActionAutomationSourceMetadataValidationSchema = z.object({
+  automationId: z.string(),
+});
+
+export interface WebhookActionAutomationSourceMetadata {
+  automationId: string;
+}
+//#endregion
+
+//#region WebhookActionFormSubmissionSourceMetadata
+export const WebhookActionFormSubmissionSourceMetadataValidationSchema =
+  z.object({ viewId: z.string() });
+
+export interface WebhookActionFormSubmissionSourceMetadata {
+  viewId: string;
+}
+//#endregion
+
+//#region WebhooksUser
+export const webhooksUserPermissionLevelOptions = [
+  'none',
+  'read',
+  'comment',
+  'edit',
+  'create',
+] as const;
+
+export type WebhooksUserPermissionLevel =
+  (typeof webhooksUserPermissionLevelOptions)[number];
+
+export const WebhooksUserValidationSchema = z.object({
+  email: z.string(),
+  id: z.string(),
+  name: z.string().optional(),
+  permissionLevel: z.enum(webhooksUserPermissionLevelOptions),
+  profilePicUrl: z.string().optional(),
+});
+
+export interface WebhooksUser {
+  email: string;
+
+  id: string;
+
+  name?: string;
+
+  permissionLevel: WebhooksUserPermissionLevel;
+
+  profilePicUrl?: string;
+}
+//#endregion
+
+//#region WebhookAction
+export const webhookActionSourceOptions = [
+  'client',
+  'publicApi',
+  'formSubmission',
+  'automation',
+  'system',
+  'sync',
+  'anonymousUser',
+] as const;
+
+export type WebhookActionSource = (typeof webhookActionSourceOptions)[number];
+
+export const WebhookActionValidationSchema = z.object({
+  source: z.enum(webhookActionSourceOptions),
+  sourceMetadata: z
+    .union([
+      WebhookActionClientSourceMetadataValidationSchema,
+      WebhookActionFormSubmissionSourceMetadataValidationSchema,
+      WebhookActionAutomationSourceMetadataValidationSchema,
+    ])
+    .optional(),
+});
+
+export interface WebhookAction {
+  source: WebhookActionSource;
+
+  sourceMetadata?:
+    | WebhookActionClientSourceMetadata
+    | WebhookActionFormSubmissionSourceMetadata
+    | WebhookActionAutomationSourceMetadata;
+}
+//#endregion
+
+//#region FindAllWebhookPayloadsQueryParams
+export const FindAllWebhookPayloadsQueryParamsValidationSchema = z.object({
+  cursor: z
+    .number()
+    .optional()
+    .describe(
+      'The first time this action is called, the cursor argument may be omitted from the request and will default to 1. After that, cursors should be saved between invocations of this action. When a client receives a ping, it should use the last cursor that this action returned when polling for new payloads, no matter how old that cursor value is. The cursor argument indicates the transaction number of the payload to start listing from.'
+    ),
+  limit: z
+    .number()
+    .optional()
+    .describe(
+      'If given the limit parameter specifies the maximum number of payloads to return in the response. A maximum of 50 payloads can be returned in a single request. A single payload can contain multiple updates.'
+    ),
+});
+
+export interface FindAllWebhookPayloadsQueryParams {
+  /**
+   * The first time this action is called, the cursor argument may be omitted from the request and will default to 1. After that, cursors should be saved between invocations of this action. When a client receives a ping, it should use the last cursor that this action returned when polling for new payloads, no matter how old that cursor value is. The cursor argument indicates the transaction number of the payload to start listing from.
+   */
+  cursor?: number;
+
+  /**
+   * If given the limit parameter specifies the maximum number of payloads to return in the response. A maximum of 50 payloads can be returned in a single request. A single payload can contain multiple updates.
+   */
+  limit?: number;
+}
+//#endregion
+
 //#region RefreshWebhookResponse
 export const RefreshWebhookResponseValidationSchema = z.object({
   expirationTime: z
@@ -521,5 +725,332 @@ export interface CreateWebhookRequestPayload {
    * A JSON object that describe the types of changes the webhook is interested in.
    */
   specification: WebhookSpecification;
+}
+//#endregion
+
+//#region WebhooksTableCreated
+export const WebhooksTableCreatedValidationSchema = z.object({
+  fieldsById: z
+    .record(WebhooksTableFieldValidationSchema)
+    .optional()
+    .describe('The below object is keyed with a string'),
+  metadata: WebhooksTableMetadataValidationSchema.optional(),
+  recordsById: z
+    .record(WebhooksTableRecordValidationSchema)
+    .optional()
+    .describe('The below object is keyed with a string'),
+});
+
+export interface WebhooksTableCreated {
+  /**
+   * The below object is keyed with a string
+   */
+  fieldsById?: Record<string, WebhooksTableField>;
+
+  metadata?: WebhooksTableMetadata;
+
+  /**
+   * The below object is keyed with a string
+   */
+  recordsById?: Record<string, WebhooksTableRecord>;
+}
+//#endregion
+
+//#region WebhooksTableRecord
+export const WebhooksTableRecordValidationSchema = z.object({
+  cellValuesByFieldId: TableFieldValidationSchema,
+  createdTime: z
+    .string()
+    .describe(
+      'A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"'
+    ),
+});
+
+export interface WebhooksTableRecord {
+  cellValuesByFieldId: TableField;
+
+  /**
+   * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
+   */
+  createdTime: string;
+}
+//#endregion
+
+//#region WebhooksViewCreatedRecordsById
+export const WebhooksViewCreatedRecordsByIdValidationSchema = z.object({
+  cellValuesByFieldId: z.record(TableFieldValidationSchema).optional(),
+  createdTime: z
+    .string()
+    .optional()
+    .describe(
+      'A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"'
+    ),
+});
+
+export interface WebhooksViewCreatedRecordsById {
+  cellValuesByFieldId?: Record<string, TableField>;
+
+  /**
+   * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
+   */
+  createdTime?: string;
+}
+//#endregion
+
+//#region WebhooksViewChanged
+export const WebhooksViewChangedValidationSchema = z.object({
+  changedRecordsById: z
+    .record(WebhooksViewChangedRecordsByIdValidationSchema)
+    .optional()
+    .describe('Changed events are generated when a record in a view changes.'),
+  createdRecordsById: z
+    .record(WebhooksViewCreatedRecordsByIdValidationSchema)
+    .optional()
+    .describe(
+      'Create events when a record is added or made visible to a view.'
+    ),
+  destroyedRecordIds: z
+    .array(z.string())
+    .optional()
+    .describe(
+      'Destroyed events are generated when a record is deleted or removed from a view.'
+    ),
+});
+
+export interface WebhooksViewChanged {
+  /**
+   * Changed events are generated when a record in a view changes.
+   */
+  changedRecordsById?: Record<string, WebhooksViewChangedRecordsById>;
+
+  /**
+   * Create events when a record is added or made visible to a view.
+   */
+  createdRecordsById?: Record<string, WebhooksViewCreatedRecordsById>;
+
+  /**
+   * Destroyed events are generated when a record is deleted or removed from a view.
+   */
+  destroyedRecordIds?: string[];
+}
+//#endregion
+
+//#region WebhooksViewChangedRecordsById
+export const WebhooksViewChangedRecordsByIdValidationSchema = z.object({
+  current: TableFieldValidationSchema.optional(),
+  previous: TableFieldValidationSchema.optional(),
+  unchanged: TableFieldValidationSchema.optional(),
+});
+
+export interface WebhooksViewChangedRecordsById {
+  current?: TableField;
+
+  previous?: TableField;
+
+  unchanged?: TableField;
+}
+//#endregion
+
+//#region WebhooksTableChangedMetadata
+export const WebhooksTableChangedMetadataValidationSchema = z.object({
+  current: WebhooksTableChangedMetadataFieldValidationSchema.optional(),
+  previous: WebhooksTableChangedMetadataFieldValidationSchema.optional(),
+});
+
+export interface WebhooksTableChangedMetadata {
+  current?: WebhooksTableChangedMetadataField;
+
+  previous?: WebhooksTableChangedMetadataField;
+}
+//#endregion
+
+//#region WebhooksTableChangedFields
+export const WebhooksTableChangedFieldsValidationSchema = z.object({
+  current: WebhooksTableFieldValidationSchema.optional(),
+  previous: WebhooksTableFieldValidationSchema.optional(),
+});
+
+export interface WebhooksTableChangedFields {
+  current?: WebhooksTableField;
+
+  previous?: WebhooksTableField;
+}
+//#endregion
+
+//#region WebhooksTableChanged
+export const WebhooksTableChangedValidationSchema = z.object({
+  changedFieldsById: z
+    .record(WebhooksTableChangedFieldsValidationSchema)
+    .optional()
+    .describe('The below object is keyed with a string'),
+  changedMetadata: WebhooksTableChangedMetadataValidationSchema.optional(),
+  changedRecordsById: z
+    .record(WebhooksViewChangedRecordsByIdValidationSchema)
+    .optional()
+    .describe('The below object is keyed with a string'),
+  changedViewsById: z
+    .record(WebhooksViewChangedValidationSchema)
+    .optional()
+    .describe(
+      'This is only included when recordChangeScope is a view id.\n\nThe below object is keyed with a string'
+    ),
+  createdFieldsById: z
+    .record(WebhooksTableFieldValidationSchema)
+    .optional()
+    .describe('The below object is keyed with a string'),
+  createdRecordsById: z
+    .record(WebhooksTableRecordValidationSchema)
+    .optional()
+    .describe('The below object is keyed with a string'),
+  destroyedFieldIds: z.array(z.string()).optional(),
+  destroyedRecordIds: z.array(z.string()).optional(),
+});
+
+export interface WebhooksTableChanged {
+  /**
+   * The below object is keyed with a string
+   */
+  changedFieldsById?: Record<string, WebhooksTableChangedFields>;
+
+  changedMetadata?: WebhooksTableChangedMetadata;
+
+  /**
+   * The below object is keyed with a string
+   */
+  changedRecordsById?: Record<string, WebhooksViewChangedRecordsById>;
+
+  /**
+   * This is only included when recordChangeScope is a view id.
+   *
+   * The below object is keyed with a string
+   */
+  changedViewsById?: Record<string, WebhooksViewChanged>;
+
+  /**
+   * The below object is keyed with a string
+   */
+  createdFieldsById?: Record<string, WebhooksTableField>;
+
+  /**
+   * The below object is keyed with a string
+   */
+  createdRecordsById?: Record<string, WebhooksTableRecord>;
+
+  destroyedFieldIds?: string[];
+
+  destroyedRecordIds?: string[];
+}
+//#endregion
+
+//#region WebhookActionClientSourceMetadata
+export const WebhookActionClientSourceMetadataValidationSchema = z.object({
+  user: WebhooksUserValidationSchema,
+});
+
+export interface WebhookActionClientSourceMetadata {
+  user: WebhooksUser;
+}
+//#endregion
+
+//#region WebhookPayload
+export const webhookPayloadCodeOptions = [
+  'INVALID_FILTERS',
+  'INVALID_HOOK',
+] as const;
+
+export type WebhookPayloadCode = (typeof webhookPayloadCodeOptions)[number];
+
+export const WebhookPayloadValidationSchema = z.object({
+  actionMetadata: WebhookActionValidationSchema.describe(
+    'The action responsible for the change. We may add additional sources or source metadata in the future and this will not be considered a breaking change. API consumers are expected to handle unknown sources gracefully.'
+  ),
+  baseTransactionNumber: z
+    .number()
+    .describe(
+      'A number which can be used to determine all changes within a transaction.'
+    ),
+  changedTablesById: z.record(WebhooksTableChangedValidationSchema).optional(),
+  code: z
+    .enum(webhookPayloadCodeOptions)
+    .optional()
+    .describe(
+      'Additional error codes may be introduced, and will not be considered a breaking change.\n\nIn addition INTERNAL_ERROR can be returned if an internal error is encountered'
+    ),
+  createdTablesById: z.record(WebhooksTableCreatedValidationSchema).optional(),
+  destroyedTableIds: z.array(z.string()).optional(),
+  error: z.boolean().optional(),
+  payloadFormat: z
+    .literal('v0')
+    .describe(
+      "The payload format's version number. This is currently just v0, but it may be increased in the future for breaking payload changes."
+    ),
+  timestamp: z.string().describe('The time the action occurred.'),
+});
+
+export interface WebhookPayload {
+  /**
+   * The action responsible for the change. We may add additional sources or source metadata in the future and this will not be considered a breaking change. API consumers are expected to handle unknown sources gracefully.
+   */
+  actionMetadata: WebhookAction;
+
+  /**
+   * A number which can be used to determine all changes within a transaction.
+   */
+  baseTransactionNumber: number;
+
+  changedTablesById?: Record<string, WebhooksTableChanged>;
+
+  /**
+   * Additional error codes may be introduced, and will not be considered a breaking change.
+   *
+   * In addition INTERNAL_ERROR can be returned if an internal error is encountered
+   */
+  code?: WebhookPayloadCode;
+
+  createdTablesById?: Record<string, WebhooksTableCreated>;
+
+  destroyedTableIds?: string[];
+
+  error?: boolean;
+
+  /**
+   * The payload format's version number. This is currently just v0, but it may be increased in the future for breaking payload changes.
+   */
+  payloadFormat: 'v0';
+
+  /**
+   * The time the action occurred.
+   */
+  timestamp: string;
+}
+//#endregion
+
+//#region FindAllWebhookPayloadsResponse
+export const FindAllWebhookPayloadsResponseValidationSchema = z.object({
+  cursor: z
+    .number()
+    .describe(
+      "The cursor field in the response indicates the transaction number of the payload that would immediately follow the last payload returned in this request. Payloads are returned in transaction order, so the last payload's transaction number is (cursor-1), the second-to-last payload's transaction number is (cursor-2), and so on. Each payload is associated with an incrementing cursor number. If there are no returned payloads, then the cursor in the response will be the same as the cursor specified in the request. The number of the next payload to be generated can be retrieved from cursorForNextPayload in [list webhooks](https://airtable.com/developers/web/api/list-webhooks). Payloads are deleted from Airtable's servers after 1 week whether or not the client has seen them. The cursor value for the next payload is never reset, even if payloads are deleted."
+    ),
+  mightHaveMore: z
+    .boolean()
+    .describe(
+      'Indicates whether or not there are additional payloads. If mightHaveMore is true, the client should send another request immediately and pass in the cursor from this response.'
+    ),
+  payloads: z.array(WebhookPayloadValidationSchema),
+});
+
+export interface FindAllWebhookPayloadsResponse {
+  /**
+   * The cursor field in the response indicates the transaction number of the payload that would immediately follow the last payload returned in this request. Payloads are returned in transaction order, so the last payload's transaction number is (cursor-1), the second-to-last payload's transaction number is (cursor-2), and so on. Each payload is associated with an incrementing cursor number. If there are no returned payloads, then the cursor in the response will be the same as the cursor specified in the request. The number of the next payload to be generated can be retrieved from cursorForNextPayload in [list webhooks](https://airtable.com/developers/web/api/list-webhooks). Payloads are deleted from Airtable's servers after 1 week whether or not the client has seen them. The cursor value for the next payload is never reset, even if payloads are deleted.
+   */
+  cursor: number;
+
+  /**
+   * Indicates whether or not there are additional payloads. If mightHaveMore is true, the client should send another request immediately and pass in the cursor from this response.
+   */
+  mightHaveMore: boolean;
+
+  payloads: WebhookPayload[];
 }
 //#endregion

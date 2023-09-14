@@ -12,6 +12,7 @@
 import { removeNullValues } from '@infinite-debugger/rmk-utils';
 import {
   TemplatePath,
+  addSearchParams,
   getInterpolatedPath,
 } from '@infinite-debugger/rmk-utils/paths';
 import { AxiosResponse } from 'axios';
@@ -20,6 +21,9 @@ import {
   CreateWebhookRequestPayload,
   CreateWebhookResponse,
   CreateWebhookResponseValidationSchema,
+  FindAllWebhookPayloadsQueryParams,
+  FindAllWebhookPayloadsResponse,
+  FindAllWebhookPayloadsResponseValidationSchema,
   FindAllWebhooksResponse,
   FindAllWebhooksResponseValidationSchema,
   RefreshWebhookResponse,
@@ -42,6 +46,10 @@ export const TOGGLE_WEBHOOK_NOTIFICATIONS_ENDPOINT_PATH: TemplatePath<{
   baseId: string;
   webhookId: string;
 }> = '/bases/{baseId}/webhooks/{webhookId}/enableNotifications';
+export const FIND_ALL_WEBHOOK_PAYLOADS_ENDPOINT_PATH: TemplatePath<{
+  baseId: string;
+  webhookId: string;
+}> = '/bases/{baseId}/webhooks/{webhookId}/payloads';
 export const REFRESH_WEBHOOK_ENDPOINT_PATH: TemplatePath<{
   baseId: string;
   webhookId: string;
@@ -58,7 +66,6 @@ export const WEBHOOKS_DATA_KEY = 'Webhooks';
  * Lists all webhooks that are registered for a base, along with their statuses.
  *
  * @param baseId
- * @param options The request options.
  * @returns The response that contains the list of webhooks.
  */
 export async function findAllWebhooks(
@@ -168,7 +175,6 @@ export async function findAllWebhooks(
  *
  * @param baseId
  * @param requestPayload
- * @param options The request options.
  * @returns The response that contains the list of webhooks.
  */
 export async function createNewWebhook(
@@ -299,7 +305,6 @@ export async function createNewWebhook(
  *
  * @param baseId
  * @param webhookId
- * @param options The request options.
  */
 export async function deleteExistingWebhook(
   baseId: string,
@@ -407,7 +412,6 @@ export async function deleteExistingWebhook(
  * @param baseId
  * @param webhookId
  * @param requestPayload
- * @param options The request options.
  */
 export async function toggleWebhookNotifications(
   baseId: string,
@@ -518,6 +522,164 @@ export async function toggleWebhookNotifications(
 }
 //#endregion
 
+//#region Find All Webhook Payloads
+/**
+ * Enumerate the update messages for a client to consume. Clients should call this after they receive a ping.
+ *
+ * The webhook payload format can be found [here](https://airtable.com/developers/web/api/model/webhooks-payload) and uses [V2 cell value format](https://airtable.com/developers/web/api/field-model).
+ *
+ * Calling this endpoint will also extend the life of the webhook if it is active with an expiration time. The new expiration time will be 7 days after the list payloads call.
+ *
+ * @param baseId
+ * @param webhookId
+ * @param queryParams
+ * @param queryParams
+ * @returns The response that contains the list of webhook payloads.
+ */
+export async function findAllWebhookPayloads(
+  baseId: string,
+  webhookId: string,
+  queryParams?: FindAllWebhookPayloadsQueryParams
+): Promise<FindAllWebhookPayloadsResponse>;
+
+/**
+ * Enumerate the update messages for a client to consume. Clients should call this after they receive a ping.
+ *
+ * The webhook payload format can be found [here](https://airtable.com/developers/web/api/model/webhooks-payload) and uses [V2 cell value format](https://airtable.com/developers/web/api/field-model).
+ *
+ * Calling this endpoint will also extend the life of the webhook if it is active with an expiration time. The new expiration time will be 7 days after the list payloads call.
+ *
+ * @param baseId
+ * @param webhookId
+ * @param queryParams
+ * @param queryParams
+ * @param options The request options.
+ * @returns The response that contains the list of webhook payloads.
+ */
+export async function findAllWebhookPayloads(
+  baseId: string,
+  webhookId: string,
+  queryParams?: FindAllWebhookPayloadsQueryParams,
+  options?: RequestOptions<FindAllWebhookPayloadsResponse> & {
+    unWrapResponse?: undefined;
+  }
+): Promise<FindAllWebhookPayloadsResponse>;
+
+/**
+ * Enumerate the update messages for a client to consume. Clients should call this after they receive a ping.
+ *
+ * The webhook payload format can be found [here](https://airtable.com/developers/web/api/model/webhooks-payload) and uses [V2 cell value format](https://airtable.com/developers/web/api/field-model).
+ *
+ * Calling this endpoint will also extend the life of the webhook if it is active with an expiration time. The new expiration time will be 7 days after the list payloads call.
+ *
+ * @param baseId
+ * @param webhookId
+ * @param queryParams
+ * @param queryParams
+ * @param options The request options.
+ * @returns The response that contains the list of webhook payloads.
+ */
+export async function findAllWebhookPayloads(
+  baseId: string,
+  webhookId: string,
+  queryParams?: FindAllWebhookPayloadsQueryParams,
+  options?: RequestOptions<FindAllWebhookPayloadsResponse> & {
+    unWrapResponse?: false;
+  }
+): Promise<AxiosResponse<FindAllWebhookPayloadsResponse>>;
+
+/**
+ * Enumerate the update messages for a client to consume. Clients should call this after they receive a ping.
+ *
+ * The webhook payload format can be found [here](https://airtable.com/developers/web/api/model/webhooks-payload) and uses [V2 cell value format](https://airtable.com/developers/web/api/field-model).
+ *
+ * Calling this endpoint will also extend the life of the webhook if it is active with an expiration time. The new expiration time will be 7 days after the list payloads call.
+ *
+ * @param baseId
+ * @param webhookId
+ * @param queryParams
+ * @param queryParams
+ * @param options The request options.
+ * @returns The response that contains the list of webhook payloads.
+ */
+export async function findAllWebhookPayloads(
+  baseId: string,
+  webhookId: string,
+  queryParams?: FindAllWebhookPayloadsQueryParams,
+  options?: RequestOptions<FindAllWebhookPayloadsResponse> & {
+    unWrapResponse?: true;
+  }
+): Promise<FindAllWebhookPayloadsResponse>;
+
+/**
+ * Enumerate the update messages for a client to consume. Clients should call this after they receive a ping.
+ *
+ * The webhook payload format can be found [here](https://airtable.com/developers/web/api/model/webhooks-payload) and uses [V2 cell value format](https://airtable.com/developers/web/api/field-model).
+ *
+ * Calling this endpoint will also extend the life of the webhook if it is active with an expiration time. The new expiration time will be 7 days after the list payloads call.
+ *
+ * @param baseId
+ * @param webhookId
+ * @param queryParams
+ * @param queryParams
+ * @param options The request options.
+ * @returns The response that contains the list of webhook payloads.
+ */
+export async function findAllWebhookPayloads(
+  baseId: string,
+  webhookId: string,
+  queryParams: FindAllWebhookPayloadsQueryParams = {},
+  {
+    unWrapResponse = true,
+    ...rest
+  }: RequestOptions<FindAllWebhookPayloadsResponse> & {
+    unWrapResponse?: boolean;
+  } = {}
+) {
+  if (rest.getStaleWhileRevalidate) {
+    const baseGetStaleWhileRevalidate = rest.getStaleWhileRevalidate;
+    rest.getStaleWhileRevalidate = (data) => {
+      return baseGetStaleWhileRevalidate(
+        FindAllWebhookPayloadsResponseValidationSchema.parse(
+          removeNullValues(data)
+        )
+      );
+    };
+  }
+
+  const response = await get(
+    addSearchParams(
+      getInterpolatedPath(FIND_ALL_WEBHOOK_PAYLOADS_ENDPOINT_PATH, {
+        baseId,
+        webhookId,
+      }),
+      { ...queryParams },
+      {
+        arrayParamStyle: 'append',
+      }
+    ),
+    {
+      label: 'Find All Webhook Payloads',
+      cacheId: WEBHOOKS_DATA_KEY,
+      ...rest,
+    }
+  );
+
+  const data = FindAllWebhookPayloadsResponseValidationSchema.parse(
+    removeNullValues(response.data)
+  );
+
+  if (unWrapResponse) {
+    return data;
+  }
+
+  return {
+    ...response,
+    data,
+  };
+}
+//#endregion
+
 //#region Refresh Webhook
 /**
  * Extend the life of a webhook. The new expiration time will be 7 days after the refresh time.
@@ -526,7 +688,6 @@ export async function toggleWebhookNotifications(
  *
  * @param baseId
  * @param webhookId
- * @param options The request options.
  * @returns This endpoint returns an empty response on success.
  */
 export async function refreshWebhook(
