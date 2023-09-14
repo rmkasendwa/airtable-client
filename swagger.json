@@ -93,6 +93,15 @@
         "required": ["expirationTime"],
         "type": "object"
       },
+      "TableField": {
+        "properties": {
+          "type": {
+            "enum": ["aiText"],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ToggleWebhookRequestPayload": {
         "properties": {
           "enable": {
@@ -460,19 +469,110 @@
               "type": "string"
             },
             "type": "array"
-          }
-        },
-        "type": "object"
-      },
-      "WebhooksTableCreated": {
-        "properties": {
-          "destroyedFieldIds": {
+          },
+          "destroyedRecordIds": {
             "items": {
               "type": "string"
             },
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "WebhooksTableCreated": {
+        "properties": {
+          "fieldsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTableField"
+            },
+            "description": "The below object is keyed with a string",
+            "type": "object"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/WebhooksTableMetadata"
+          },
+          "recordsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTableRecord"
+            },
+            "description": "The below object is keyed with a string",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksTableField": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "singleLineText",
+              "email",
+              "url",
+              "multilineText",
+              "number",
+              "percent",
+              "currency",
+              "singleSelect",
+              "multipleSelects",
+              "singleCollaborator",
+              "multipleCollaborators",
+              "multipleRecordLinks",
+              "date",
+              "dateTime",
+              "phoneNumber",
+              "multipleAttachments",
+              "checkbox",
+              "formula",
+              "createdTime",
+              "rollup",
+              "count",
+              "lookup",
+              "multipleLookupValues",
+              "autoNumber",
+              "barcode",
+              "rating",
+              "richText",
+              "duration",
+              "lastModifiedTime",
+              "button",
+              "createdBy",
+              "lastModifiedBy",
+              "externalSyncSource",
+              "aiText"
+            ],
+            "type": "string"
+          }
+        },
+        "required": ["type", "name"],
+        "type": "object"
+      },
+      "WebhooksTableMetadata": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "type": "object"
+      },
+      "WebhooksTableRecord": {
+        "properties": {
+          "cellValuesByFieldId": {
+            "$ref": "#/components/schemas/TableField"
+          },
+          "createdTime": {
+            "description": "A date timestamp in the ISO format, eg:\"2018-01-01T00:00:00.000Z\"",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["createdTime", "cellValuesByFieldId"],
         "type": "object"
       },
       "WebhooksUser": {
