@@ -1,3 +1,4 @@
 export * from './APIGenerator';
-export * from './Metadata';
+export * from './Bases';
+export * from './Tables';
 export * from './Utils';

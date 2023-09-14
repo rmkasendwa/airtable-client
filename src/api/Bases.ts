@@ -1,14 +1,21 @@
-import { getInterpolatedPath } from '@infinite-debugger/rmk-utils/paths';
-
 import {
-  FIND_AIRTABLE_BASE_BY_ID_ENDPOINT_PATH,
-  FIND_ALL_AIRTABLE_BASES_ENDPOINT_PATH,
-} from '../../endpoint-paths/Metadata';
+  TemplatePath,
+  getInterpolatedPath,
+} from '@infinite-debugger/rmk-utils/paths';
+
 import {
   FindAirtableBaseByIdResponseValidationSchema,
   FindAllAirtableBasesResponseValidationSchema,
-} from '../../models/Metadata/Bases';
-import { get } from '../Adapter';
+} from '../models/Bases';
+import { get } from './Adapter';
+
+//#region Endpoint Paths
+export const FIND_ALL_AIRTABLE_BASES_ENDPOINT_PATH = `/meta/bases`;
+
+export const FIND_AIRTABLE_BASE_BY_ID_ENDPOINT_PATH: TemplatePath<{
+  baseId: string;
+}> = `${FIND_ALL_AIRTABLE_BASES_ENDPOINT_PATH}/:baseId`;
+//#endregion
 
 /**
  * Finds all airtable bases.

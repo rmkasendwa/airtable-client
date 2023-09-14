@@ -1,2 +1,3 @@
-export * from './Metadata';
+export * from './Bases';
+export * from './Tables';
 export * from './Configuration';

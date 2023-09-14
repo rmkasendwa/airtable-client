@@ -23,19 +23,17 @@ import {
   DetailedColumnNameToObjectPropertyMapping,
   UserEditableDetailedColumnNameToObjectPropertyMapping,
 } from '../models';
-import {
-  cleanEmptyFoldersRecursively,
-  findAllAirtableBases,
-  findAllTablesByBaseId,
-  getGeneratedFileWarningComment,
-} from './Metadata';
+import { findAllAirtableBases } from './Bases';
+import { findAllTablesByBaseId } from './Tables';
 import {
   ModelClass,
   TableColumnValidationSchemaTypeStringGroup,
+  cleanEmptyFoldersRecursively,
   getAirtableAPIGeneratorTemplateFileInterpolationBlocks,
   getAirtableAPIGeneratorTemplateFileInterpolationLabels,
   getCamelCaseFieldPropertyName,
   getExpandedAirtableLookupColumn,
+  getGeneratedFileWarningComment,
   getTableColumnValidationSchemaTypeStrings,
 } from './Utils';
 
@@ -467,7 +465,9 @@ export const generateAirtableAPI = async ({
           );
 
           const nonLookupColumnNameToObjectPropertyMapper =
-            nonLookupTableColumns.reduce((accumulator, tableColumn) => {
+            nonLookupTableColumns.reduce<
+              Record<string, DetailedColumnNameToObjectPropertyMapping>
+            >((accumulator, tableColumn) => {
               accumulator[tableColumn.name] = {
                 ...configColumnNameToObjectPropertyMapper[tableColumn.name],
                 propertyName: (() => {
@@ -493,12 +493,14 @@ export const generateAirtableAPI = async ({
                     return { prefersSingleRecordLink };
                   }
                 })(),
-              };
+              } as DetailedColumnNameToObjectPropertyMapping;
               return accumulator;
-            }, {} as Record<string, DetailedColumnNameToObjectPropertyMapping>);
+            }, {});
 
           const lookupColumnNameToObjectPropertyMapper =
-            lookupTableColumns.reduce((accumulator, tableColumn) => {
+            lookupTableColumns.reduce<
+              Record<string, DetailedColumnNameToObjectPropertyMapping>
+            >((accumulator, tableColumn) => {
               const parentField = (() => {
                 const recordLinkFieldId =
                   tableColumn.options?.recordLinkFieldId;
@@ -603,9 +605,9 @@ export const generateAirtableAPI = async ({
                     };
                   }
                 })(),
-              };
+              } as DetailedColumnNameToObjectPropertyMapping;
               return accumulator;
-            }, {} as Record<string, DetailedColumnNameToObjectPropertyMapping>);
+            }, {});
 
           // Finding user defined queryable focus columns
           const queryableNonLookupFields = (focusColumnNames || [])
