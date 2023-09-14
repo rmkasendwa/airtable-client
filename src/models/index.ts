@@ -1,3 +1,4 @@
 export * from './Bases';
-export * from './Tables';
 export * from './Configuration';
+export * from './Tables';
+export * from './Webhooks';

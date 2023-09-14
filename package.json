@@ -34,6 +34,7 @@
     "publish": "npx env-cmd \"npm run build && cd ./dist && npm publish --registry https://npm.pkg.github.com\"",
     "publish:dev": "npm run build && cd ./dist && npm publish --registry http://localhost:4873",
     "start": "tsnd --inspect=9892 --ignore-watch node_modules --respawn --transpile-only src/__tests__/run.test.ts",
+    "swagger-to-ts:generate-client": "npm i -D @infinite-debugger/swagger-to-ts@latest && swagger-to-ts -o ./src -niTFVS",
     "tsc": "tsc --project tsconfig.compile.json",
     "version": "standard-version"
   },
@@ -49,6 +50,7 @@
     "@infinite-debugger/axios-api-adapter": "^0.1.0-alpha.19",
     "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.24",
     "@infinite-debugger/rmk-utils": "^0.1.0-alpha.9",
+    "@infinite-debugger/swagger-to-ts": "^0.1.0-alpha.67",
     "@tsed/ajv": "^7.9.0",
     "@tsed/common": "^7.9.0",
     "@tsed/core": "^7.9.0",
