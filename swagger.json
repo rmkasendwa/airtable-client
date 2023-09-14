@@ -471,6 +471,9 @@
             "description": "The below object is keyed with a string",
             "type": "object"
           },
+          "changedMetadata": {
+            "$ref": "#/components/schemas/WebhooksTableChangedMetadata"
+          },
           "changedRecordsById": {
             "additionalProperties": {
               "$ref": "#/components/schemas/WebhooksViewChangedRecordsById"
@@ -483,6 +486,20 @@
               "$ref": "#/components/schemas/WebhooksViewChanged"
             },
             "description": "This is only included when recordChangeScope is a view id.\n\nThe below object is keyed with a string",
+            "type": "object"
+          },
+          "createdFieldsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTableField"
+            },
+            "description": "The below object is keyed with a string",
+            "type": "object"
+          },
+          "createdRecordsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTableRecord"
+            },
+            "description": "The below object is keyed with a string",
             "type": "object"
           },
           "destroyedFieldIds": {
@@ -507,6 +524,28 @@
           },
           "previous": {
             "$ref": "#/components/schemas/WebhooksTableField"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksTableChangedMetadata": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/WebhooksTableChangedMetadataField"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/WebhooksTableChangedMetadataField"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksTableChangedMetadataField": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
           }
         },
         "type": "object"
