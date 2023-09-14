@@ -194,7 +194,7 @@ export const webhooksTableFieldTypeOptions = [
 ] as const;
 
 export type WebhooksTableFieldType =
-  (typeof webhooksTableFieldTypeOptions)[number];
+  typeof webhooksTableFieldTypeOptions[number];
 
 export const WebhooksTableFieldValidationSchema = z.object({
   name: z.string(),
@@ -237,7 +237,7 @@ export const webhooksUserPermissionLevelOptions = [
 ] as const;
 
 export type WebhooksUserPermissionLevel =
-  (typeof webhooksUserPermissionLevelOptions)[number];
+  typeof webhooksUserPermissionLevelOptions[number];
 
 export const WebhooksUserValidationSchema = z.object({
   email: z.string(),
@@ -260,6 +260,16 @@ export interface WebhooksUser {
 }
 //#endregion
 
+//#region WebhookActionClientSourceMetadata
+export const WebhookActionClientSourceMetadataValidationSchema = z.object({
+  user: WebhooksUserValidationSchema,
+});
+
+export interface WebhookActionClientSourceMetadata {
+  user: WebhooksUser;
+}
+//#endregion
+
 //#region WebhookAction
 export const webhookActionSourceOptions = [
   'client',
@@ -271,7 +281,7 @@ export const webhookActionSourceOptions = [
   'anonymousUser',
 ] as const;
 
-export type WebhookActionSource = (typeof webhookActionSourceOptions)[number];
+export type WebhookActionSource = typeof webhookActionSourceOptions[number];
 
 export const WebhookActionValidationSchema = z.object({
   source: z.enum(webhookActionSourceOptions),
@@ -359,7 +369,7 @@ export const webhookSpecificationOptionsFiltersChangeTypeOptions = [
 ] as const;
 
 export type WebhookSpecificationOptionsFiltersChangeType =
-  (typeof webhookSpecificationOptionsFiltersChangeTypeOptions)[number];
+  typeof webhookSpecificationOptionsFiltersChangeTypeOptions[number];
 
 export const webhookSpecificationOptionsFiltersDataTypeOptions = [
   'tableData',
@@ -368,7 +378,7 @@ export const webhookSpecificationOptionsFiltersDataTypeOptions = [
 ] as const;
 
 export type WebhookSpecificationOptionsFiltersDataType =
-  (typeof webhookSpecificationOptionsFiltersDataTypeOptions)[number];
+  typeof webhookSpecificationOptionsFiltersDataTypeOptions[number];
 
 export const webhookSpecificationOptionsFiltersFromSourceOptions = [
   'client',
@@ -382,7 +392,7 @@ export const webhookSpecificationOptionsFiltersFromSourceOptions = [
 ] as const;
 
 export type WebhookSpecificationOptionsFiltersFromSource =
-  (typeof webhookSpecificationOptionsFiltersFromSourceOptions)[number];
+  typeof webhookSpecificationOptionsFiltersFromSourceOptions[number];
 
 export const WebhookSpecificationOptionsFiltersValidationSchema = z.object({
   changeTypes: z
@@ -728,6 +738,26 @@ export interface CreateWebhookRequestPayload {
 }
 //#endregion
 
+//#region WebhooksTableRecord
+export const WebhooksTableRecordValidationSchema = z.object({
+  cellValuesByFieldId: TableFieldValidationSchema,
+  createdTime: z
+    .string()
+    .describe(
+      'A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"'
+    ),
+});
+
+export interface WebhooksTableRecord {
+  cellValuesByFieldId: TableField;
+
+  /**
+   * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
+   */
+  createdTime: string;
+}
+//#endregion
+
 //#region WebhooksTableCreated
 export const WebhooksTableCreatedValidationSchema = z.object({
   fieldsById: z
@@ -756,26 +786,6 @@ export interface WebhooksTableCreated {
 }
 //#endregion
 
-//#region WebhooksTableRecord
-export const WebhooksTableRecordValidationSchema = z.object({
-  cellValuesByFieldId: TableFieldValidationSchema,
-  createdTime: z
-    .string()
-    .describe(
-      'A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"'
-    ),
-});
-
-export interface WebhooksTableRecord {
-  cellValuesByFieldId: TableField;
-
-  /**
-   * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
-   */
-  createdTime: string;
-}
-//#endregion
-
 //#region WebhooksViewCreatedRecordsById
 export const WebhooksViewCreatedRecordsByIdValidationSchema = z.object({
   cellValuesByFieldId: z.record(TableFieldValidationSchema).optional(),
@@ -794,6 +804,22 @@ export interface WebhooksViewCreatedRecordsById {
    * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
    */
   createdTime?: string;
+}
+//#endregion
+
+//#region WebhooksViewChangedRecordsById
+export const WebhooksViewChangedRecordsByIdValidationSchema = z.object({
+  current: TableFieldValidationSchema.optional(),
+  previous: TableFieldValidationSchema.optional(),
+  unchanged: TableFieldValidationSchema.optional(),
+});
+
+export interface WebhooksViewChangedRecordsById {
+  current?: TableField;
+
+  previous?: TableField;
+
+  unchanged?: TableField;
 }
 //#endregion
 
@@ -832,22 +858,6 @@ export interface WebhooksViewChanged {
    * Destroyed events are generated when a record is deleted or removed from a view.
    */
   destroyedRecordIds?: string[];
-}
-//#endregion
-
-//#region WebhooksViewChangedRecordsById
-export const WebhooksViewChangedRecordsByIdValidationSchema = z.object({
-  current: TableFieldValidationSchema.optional(),
-  previous: TableFieldValidationSchema.optional(),
-  unchanged: TableFieldValidationSchema.optional(),
-});
-
-export interface WebhooksViewChangedRecordsById {
-  current?: TableField;
-
-  previous?: TableField;
-
-  unchanged?: TableField;
 }
 //#endregion
 
@@ -942,23 +952,13 @@ export interface WebhooksTableChanged {
 }
 //#endregion
 
-//#region WebhookActionClientSourceMetadata
-export const WebhookActionClientSourceMetadataValidationSchema = z.object({
-  user: WebhooksUserValidationSchema,
-});
-
-export interface WebhookActionClientSourceMetadata {
-  user: WebhooksUser;
-}
-//#endregion
-
 //#region WebhookPayload
 export const webhookPayloadCodeOptions = [
   'INVALID_FILTERS',
   'INVALID_HOOK',
 ] as const;
 
-export type WebhookPayloadCode = (typeof webhookPayloadCodeOptions)[number];
+export type WebhookPayloadCode = typeof webhookPayloadCodeOptions[number];
 
 export const WebhookPayloadValidationSchema = z.object({
   actionMetadata: WebhookActionValidationSchema.describe(

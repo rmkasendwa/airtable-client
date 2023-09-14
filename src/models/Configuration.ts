@@ -1,4 +1,5 @@
-import { AirtableBase, AirtableField, AirtableFieldOptions } from './Metadata';
+import { AirtableBase } from './Bases';
+import { AirtableField, AirtableFieldOptions } from './Tables';
 
 export type ConfigAirtableBase = Partial<Pick<AirtableBase, 'id' | 'name'>>;
 
