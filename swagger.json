@@ -33,6 +33,26 @@
         "required": ["id", "macSecretBase64"],
         "type": "object"
       },
+      "FindAllWebhookPayloadsResponse": {
+        "properties": {
+          "cursor": {
+            "description": "The cursor field in the response indicates the transaction number of the payload that would immediately follow the last payload returned in this request. Payloads are returned in transaction order, so the last payload's transaction number is (cursor-1), the second-to-last payload's transaction number is (cursor-2), and so on. Each payload is associated with an incrementing cursor number. If there are no returned payloads, then the cursor in the response will be the same as the cursor specified in the request. The number of the next payload to be generated can be retrieved from cursorForNextPayload in [list webhooks](https://airtable.com/developers/web/api/list-webhooks). Payloads are deleted from Airtable's servers after 1 week whether or not the client has seen them. The cursor value for the next payload is never reset, even if payloads are deleted.",
+            "type": "number"
+          },
+          "mightHaveMore": {
+            "description": "Indicates whether or not there are additional payloads. If mightHaveMore is true, the client should send another request immediately and pass in the cursor from this response.",
+            "type": "boolean"
+          },
+          "payloads": {
+            "items": {
+              "$ref": "#/components/schemas/WebhookPayload"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["cursor", "mightHaveMore", "payloads"],
+        "type": "object"
+      },
       "FindAllWebhooksResponse": {
         "properties": {
           "webhooks": {
@@ -164,6 +184,64 @@
         ],
         "type": "object"
       },
+      "WebhookAction": {
+        "properties": {
+          "source": {
+            "enum": [
+              "client",
+              "publicApi",
+              "formSubmission",
+              "automation",
+              "system",
+              "sync",
+              "anonymousUser"
+            ],
+            "type": "string"
+          },
+          "sourceMetadata": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WebhookActionClientSourceMetadata"
+              },
+              {
+                "$ref": "#/components/schemas/WebhookActionFormSubmissionSourceMetadata"
+              },
+              {
+                "$ref": "#/components/schemas/WebhookActionAutomationSourceMetadata"
+              }
+            ]
+          }
+        },
+        "required": ["source"],
+        "type": "object"
+      },
+      "WebhookActionAutomationSourceMetadata": {
+        "properties": {
+          "automationId": {
+            "type": "string"
+          }
+        },
+        "required": ["automationId"],
+        "type": "object"
+      },
+      "WebhookActionClientSourceMetadata": {
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/WebhooksUser"
+          }
+        },
+        "required": ["user"],
+        "type": "object"
+      },
+      "WebhookActionFormSubmissionSourceMetadata": {
+        "properties": {
+          "viewId": {
+            "type": "string"
+          }
+        },
+        "required": ["viewId"],
+        "type": "object"
+      },
       "WebhookNotification": {
         "properties": {
           "completionTimestamp": {
@@ -196,6 +274,16 @@
           "retryNumber",
           "success"
         ],
+        "type": "object"
+      },
+      "WebhookPayload": {
+        "properties": {
+          "actionMetadata": {
+            "$ref": "#/components/schemas/WebhookAction",
+            "description": "The action responsible for the change. We may add additional sources or source metadata in the future and this will not be considered a breaking change. API consumers are expected to handle unknown sources gracefully."
+          }
+        },
+        "required": ["actionMetadata"],
         "type": "object"
       },
       "WebhookSpecification": {
@@ -327,6 +415,28 @@
           }
         },
         "required": ["viewId"],
+        "type": "object"
+      },
+      "WebhooksUser": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "permissionLevel": {
+            "enum": ["none", "read", "comment", "edit", "create"],
+            "type": "string"
+          },
+          "profilePicUrl": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "email", "permissionLevel"],
         "type": "object"
       }
     },
@@ -523,6 +633,70 @@
           }
         },
         "summary": "Toggle Webhook Notifications",
+        "tags": ["Webhooks"]
+      }
+    },
+    "/bases/{baseId}/webhooks/{webhookId}/payloads": {
+      "get": {
+        "description": "Enumerate the update messages for a client to consume. Clients should call this after they receive a ping.\n\nThe webhook payload format can be found [here](https://airtable.com/developers/web/api/model/webhooks-payload) and uses [V2 cell value format](https://airtable.com/developers/web/api/field-model).\n\nCalling this endpoint will also extend the life of the webhook if it is active with an expiration time. The new expiration time will be 7 days after the list payloads call.",
+        "operationId": "findAllWebhookPayloads",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "baseId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "webhookId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The first time this action is called, the cursor argument may be omitted from the request and will default to 1. After that, cursors should be saved between invocations of this action. When a client receives a ping, it should use the last cursor that this action returned when polling for new payloads, no matter how old that cursor value is. The cursor argument indicates the transaction number of the payload to start listing from.",
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "description": "If given the limit parameter specifies the maximum number of payloads to return in the response. A maximum of 50 payloads can be returned in a single request. A single payload can contain multiple updates.",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindAllWebhookPayloadsResponse"
+                }
+              }
+            },
+            "description": "The response that contains the list of webhook payloads."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Unauthorized"
+                }
+              }
+            },
+            "description": "A valid API key was not provided with the request. You must authenticate for all requests."
+          }
+        },
+        "summary": "Find All Webhook Payloads",
         "tags": ["Webhooks"]
       }
     },
