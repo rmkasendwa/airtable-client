@@ -464,6 +464,13 @@
       },
       "WebhooksTableChanged": {
         "properties": {
+          "changedFieldsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTableChangedFields"
+            },
+            "description": "The below object is keyed with a string",
+            "type": "object"
+          },
           "changedViewsById": {
             "additionalProperties": {
               "$ref": "#/components/schemas/WebhooksViewChanged"
@@ -482,6 +489,17 @@
               "type": "string"
             },
             "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksTableChangedFields": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/WebhooksTableField"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/WebhooksTableField"
           }
         },
         "type": "object"
@@ -607,12 +625,18 @@
       "WebhooksViewChanged": {
         "properties": {
           "changedRecordsById": {
-            "$ref": "#/components/schemas/WebhooksViewChangedRecordsById",
-            "description": "Changed events are generated when a record in a view changes."
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksViewChangedRecordsById"
+            },
+            "description": "Changed events are generated when a record in a view changes.",
+            "type": "object"
           },
           "createdRecordsById": {
-            "$ref": "#/components/schemas/WebhooksViewCreatedRecordsById",
-            "description": "Create events when a record is added or made visible to a view."
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksViewCreatedRecordsById"
+            },
+            "description": "Create events when a record is added or made visible to a view.",
+            "type": "object"
           },
           "destroyedRecordIds": {
             "description": "Destroyed events are generated when a record is deleted or removed from a view.",
@@ -641,7 +665,10 @@
       "WebhooksViewCreatedRecordsById": {
         "properties": {
           "cellValuesByFieldId": {
-            "$ref": "#/components/schemas/TableField"
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TableField"
+            },
+            "type": "object"
           },
           "createdTime": {
             "description": "A date timestamp in the ISO format, eg:\"2018-01-01T00:00:00.000Z\"",
