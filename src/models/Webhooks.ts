@@ -476,7 +476,7 @@ export interface Unauthorized {
   /**
    * The error name
    *
-   * @example ```json"UNAUTHORIZED"```
+   * @example "UNAUTHORIZED"
    *
    * @default "UNAUTHORIZED"
    */
@@ -490,7 +490,7 @@ export interface Unauthorized {
   /**
    * The status code of the exception
    *
-   * @example ```json401```
+   * @example 401
    *
    * @default 401
    */
