@@ -1,0 +1,439 @@
+{
+  "components": {
+    "schemas": {
+      "CreateWebhookRequestPayload": {
+        "properties": {
+          "notificationUrl": {
+            "description": "An optional url that can receive notification pings. [See notification delivery](https://airtable.com/developers/web/api/webhooks-overview#webhook-notification-delivery).",
+            "type": "string"
+          },
+          "specification": {
+            "$ref": "#/components/schemas/WebhookSpecification",
+            "description": "A JSON object that describe the types of changes the webhook is interested in."
+          }
+        },
+        "required": ["specification"],
+        "type": "object"
+      },
+      "CreateWebhookResponse": {
+        "properties": {
+          "expirationTime": {
+            "description": "The time when the webhook expires and is disabled in the ISO format. The webhook will not expire if this is null (in the case User API keys are used)",
+            "type": "string"
+          },
+          "id": {
+            "description": "An identifier for the webhook (WebhookId).",
+            "type": "string"
+          },
+          "macSecretBase64": {
+            "description": "A MAC secret. The client should store this value to authenticate webhook pings. There is no way to retrieve this value after the initial creation of the webhook.",
+            "type": "string"
+          }
+        },
+        "required": ["id", "macSecretBase64"],
+        "type": "object"
+      },
+      "FindAllWebhooksResponse": {
+        "properties": {
+          "webhooks": {
+            "description": "An array of objects containing webhook objects.",
+            "items": {
+              "$ref": "#/components/schemas/Webhook"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["webhooks"],
+        "type": "object"
+      },
+      "GenericError": {
+        "additionalProperties": true,
+        "properties": {
+          "message": {
+            "description": "An error message",
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "description": "The error name",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": ["message"],
+        "type": "object"
+      },
+      "Unauthorized": {
+        "properties": {
+          "errors": {
+            "description": "A list of related errors",
+            "items": {
+              "$ref": "#/components/schemas/GenericError"
+            },
+            "type": "array"
+          },
+          "message": {
+            "description": "An error message",
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "default": "UNAUTHORIZED",
+            "description": "The error name",
+            "example": "UNAUTHORIZED",
+            "minLength": 1,
+            "type": "string"
+          },
+          "stack": {
+            "description": "The stack trace (only in development mode)",
+            "type": "string"
+          },
+          "status": {
+            "default": 401,
+            "description": "The status code of the exception",
+            "example": 401,
+            "type": "number"
+          }
+        },
+        "required": ["name", "message", "status"],
+        "type": "object"
+      },
+      "Webhook": {
+        "properties": {
+          "areNotificationsEnabled": {
+            "description": "Whether or not notifications are enabled for the webhook.",
+            "type": "boolean"
+          },
+          "cursorForNextPayload": {
+            "description": "The cursor associated with the next payload that will be generated. This cursor will increase every time a new payload is generated for this webhook.",
+            "type": "number"
+          },
+          "expirationTime": {
+            "description": "The time when the webhook expires and is disabled in the ISO format. The webhook will not expire if this is null (in the case User API keys are used)",
+            "type": "string"
+          },
+          "id": {
+            "description": "An identifier for the webhook (WebhookId).",
+            "type": "string"
+          },
+          "isHookEnabled": {
+            "description": "Whether or not the webhook is enabled. Webhooks may be turned off automatically such as when the specification becomes invalid. [See error codes](https://airtable.com/developers/web/api/model/webhooks-payload).",
+            "type": "boolean"
+          },
+          "lastNotificationResult": {
+            "$ref": "#/components/schemas/WebhookNotification"
+          },
+          "lastSuccessfulNotificationTime": {
+            "description": "An identifier for the created webhook.",
+            "type": "string"
+          },
+          "notificationUrl": {
+            "description": "The url registered with the webhook. May be null if none was given.",
+            "type": "string"
+          },
+          "specification": {
+            "$ref": "#/components/schemas/WebhookSpecification",
+            "description": "The specification registered with the webhook."
+          }
+        },
+        "required": [
+          "areNotificationsEnabled",
+          "cursorForNextPayload",
+          "id",
+          "isHookEnabled",
+          "specification"
+        ],
+        "type": "object"
+      },
+      "WebhookNotification": {
+        "properties": {
+          "completionTimestamp": {
+            "description": "The time of the most recent notification.",
+            "type": "string"
+          },
+          "durationMs": {
+            "description": "The roundtrip duration of the network call.",
+            "type": "number"
+          },
+          "error": {
+            "$ref": "#/components/schemas/GenericError",
+            "description": "Object containing the error message."
+          },
+          "retryNumber": {
+            "description": "The number of times the notification was retried. (0 = first try)",
+            "type": "number"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "willBeRetried": {
+            "description": "Whether or not Airtable will attempt to deliver a notification again.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "completionTimestamp",
+          "durationMs",
+          "retryNumber",
+          "success"
+        ],
+        "type": "object"
+      },
+      "WebhookSpecification": {
+        "description": "A single webhook may watch changes in a table, view, or base. The specification defines the types of the changes that are included in the webhook's payloads.\n\nNote that tables, fields, and views in the specification must be specified by ID rather than by name. You may find the IDs for each of these with the manage fields UI.\n\nRead [Webhooks specification](https://airtable.com/developers/web/api/model/webhooks-specification) to find out more",
+        "properties": {
+          "options": {
+            "$ref": "#/components/schemas/WebhookSpecificationOptions"
+          }
+        },
+        "required": ["options"],
+        "type": "object"
+      },
+      "WebhookSpecificationIncludes": {
+        "properties": {
+          "includeCellValuesInFieldIds": {
+            "description": "A list of fields to include in the payload regardless of whether or not they changed.",
+            "oneOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "enum": ["all"],
+                "type": "string"
+              }
+            ]
+          },
+          "includePreviousCellValues": {
+            "description": "If true, include the previous cell value in the payload.",
+            "type": "boolean"
+          },
+          "includePreviousFieldDefinitions": {
+            "description": "If true, include the previous field definition in the payload.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookSpecificationOptions": {
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/WebhookSpecificationOptionsFilters"
+          },
+          "includes": {
+            "$ref": "#/components/schemas/WebhookSpecificationIncludes"
+          }
+        },
+        "required": ["filters"],
+        "type": "object"
+      },
+      "WebhookSpecificationOptionsFilters": {
+        "properties": {
+          "changeTypes": {
+            "description": "Only generate payloads that contain changes of these types.",
+            "items": {
+              "enum": ["add", "remove", "update"],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dataTypes": {
+            "description": "Only generate payloads that contain changes affecting objects of these types.\n\ntableData: record and cell value changes\ntableFields: field changes\ntableMetadata: table name and description changes",
+            "items": {
+              "enum": ["tableData", "tableFields", "tableMetadata"],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "fromSources": {
+            "description": "Only generate payloads for changes from these sources. If omitted, changes from all sources are reported.\n\nclient: changes generated by a user through the web or mobile clients\npublicApi: changes generated through the Airtable API\nformSubmission: changes generated when a form is submitted\nautomation: changes generated through an automation action\nsystem: changes generated by system events, such as processing time function formulas\nsync: changes generated through Airtable Sync",
+            "items": {
+              "enum": [
+                "client",
+                "publicApi",
+                "formSubmission",
+                "automation",
+                "system",
+                "sync",
+                "anonymousUser",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "recordChangeScope": {
+            "description": "Only generate payloads for changes in the specified TableId or ViewId.",
+            "type": "string"
+          },
+          "sourceOptions": {
+            "description": "Additional options for source filtering. This allows users to filter form submissions by ViewId.",
+            "items": {
+              "$ref": "#/components/schemas/WebhookSpecificationSourceOptions"
+            },
+            "type": "array"
+          },
+          "watchDataInFieldIds": {
+            "description": "Only generate payloads for changes that modify values in cells in these fields. If omitted, all fields within the table/view/base are watched.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "watchSchemasOfFieldIds": {
+            "description": "Only generate payloads for changes that modify the schemas of these fields. If omitted, schemas of all fields within the table/view/base are watched.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["dataTypes"],
+        "type": "object"
+      },
+      "WebhookSpecificationSourceOptions": {
+        "properties": {
+          "formSubmission": {
+            "$ref": "#/components/schemas/WebhookSpecificationSourceOptionsFormSubmission"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookSpecificationSourceOptionsFormSubmission": {
+        "properties": {
+          "viewId": {
+            "type": "string"
+          }
+        },
+        "required": ["viewId"],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "apikeyAuth": {
+        "scheme": "apikey",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "# API Reference\nThis is the reference for the Airtable API. Use the sidebar to explore the API and learn about important concepts.\n\nThe Airtable API can be used to integrate your data in Airtable with any external system. The API closely follows REST semantics, uses JSON to encode objects, and relies on standard HTTP codes to signal operation outcomes.",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/license/mit/"
+    },
+    "title": "Airtable",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/bases/{baseId}/webhooks": {
+      "get": {
+        "description": "Lists all webhooks that are registered for a base, along with their statuses.",
+        "operationId": "findAllWebhooks",
+        "parameters": [
+          {
+            "description": "The ID of the base.",
+            "in": "path",
+            "name": "baseId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindAllWebhooksResponse"
+                }
+              }
+            },
+            "description": "The response that contains the list of webhooks."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Unauthorized"
+                }
+              }
+            },
+            "description": "A valid API key was not provided with the request. You must authenticate for all requests."
+          }
+        },
+        "summary": "Find All Webhooks",
+        "tags": ["Webhooks"]
+      },
+      "post": {
+        "description": "Creates a new webhook in the specified base. Payloads may be generated and the notification URL (if given) will get a ping shortly after this completes.\n\nThe number of webhooks per base is limited to 10. A single OAuth integration can create up to 2 webhooks per base.\n\nEach webhook created with OAuth or personal access token will expire and be disabled after 7 days. The webhook life can be extended while it is still active by calling refresh webhook or list webhook payloads. After a webhook has expired and been disabled, the webhook's metadata and past payloads can be accessed for an additional 7 days.",
+        "operationId": "createNewWebhook",
+        "parameters": [
+          {
+            "description": "The ID of the base.",
+            "in": "path",
+            "name": "baseId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWebhookRequestPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateWebhookResponse"
+                }
+              }
+            },
+            "description": "The response that contains the list of webhooks."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Unauthorized"
+                }
+              }
+            },
+            "description": "A valid API key was not provided with the request. You must authenticate for all requests."
+          }
+        },
+        "summary": "Create New Webhook",
+        "tags": ["Webhooks"]
+      }
+    }
+  },
+  "security": [
+    {
+      "apikeyAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Production server",
+      "url": "https://api.airtable.com/v0"
+    }
+  ],
+  "tags": [
+    {
+      "description": "Webhooks are a user-configurable way to get programmatic notifications when data is changed in an Airtable base.\n\nNote that we don't consider adding keys to response objects a breaking change, so the shape of objects may change without notice, but existing keys won't be changed or removed without notice.",
+      "name": "Webhooks"
+    }
+  ]
+}
