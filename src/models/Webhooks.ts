@@ -194,7 +194,7 @@ export const webhooksTableFieldTypeOptions = [
 ] as const;
 
 export type WebhooksTableFieldType =
-  typeof webhooksTableFieldTypeOptions[number];
+  (typeof webhooksTableFieldTypeOptions)[number];
 
 export const WebhooksTableFieldValidationSchema = z.object({
   name: z.string(),
@@ -237,7 +237,7 @@ export const webhooksUserPermissionLevelOptions = [
 ] as const;
 
 export type WebhooksUserPermissionLevel =
-  typeof webhooksUserPermissionLevelOptions[number];
+  (typeof webhooksUserPermissionLevelOptions)[number];
 
 export const WebhooksUserValidationSchema = z.object({
   email: z.string(),
@@ -257,50 +257,6 @@ export interface WebhooksUser {
   permissionLevel: WebhooksUserPermissionLevel;
 
   profilePicUrl?: string;
-}
-//#endregion
-
-//#region WebhookActionClientSourceMetadata
-export const WebhookActionClientSourceMetadataValidationSchema = z.object({
-  user: WebhooksUserValidationSchema,
-});
-
-export interface WebhookActionClientSourceMetadata {
-  user: WebhooksUser;
-}
-//#endregion
-
-//#region WebhookAction
-export const webhookActionSourceOptions = [
-  'client',
-  'publicApi',
-  'formSubmission',
-  'automation',
-  'system',
-  'sync',
-  'anonymousUser',
-] as const;
-
-export type WebhookActionSource = typeof webhookActionSourceOptions[number];
-
-export const WebhookActionValidationSchema = z.object({
-  source: z.enum(webhookActionSourceOptions),
-  sourceMetadata: z
-    .union([
-      WebhookActionClientSourceMetadataValidationSchema,
-      WebhookActionFormSubmissionSourceMetadataValidationSchema,
-      WebhookActionAutomationSourceMetadataValidationSchema,
-    ])
-    .optional(),
-});
-
-export interface WebhookAction {
-  source: WebhookActionSource;
-
-  sourceMetadata?:
-    | WebhookActionClientSourceMetadata
-    | WebhookActionFormSubmissionSourceMetadata
-    | WebhookActionAutomationSourceMetadata;
 }
 //#endregion
 
@@ -369,7 +325,7 @@ export const webhookSpecificationOptionsFiltersChangeTypeOptions = [
 ] as const;
 
 export type WebhookSpecificationOptionsFiltersChangeType =
-  typeof webhookSpecificationOptionsFiltersChangeTypeOptions[number];
+  (typeof webhookSpecificationOptionsFiltersChangeTypeOptions)[number];
 
 export const webhookSpecificationOptionsFiltersDataTypeOptions = [
   'tableData',
@@ -378,7 +334,7 @@ export const webhookSpecificationOptionsFiltersDataTypeOptions = [
 ] as const;
 
 export type WebhookSpecificationOptionsFiltersDataType =
-  typeof webhookSpecificationOptionsFiltersDataTypeOptions[number];
+  (typeof webhookSpecificationOptionsFiltersDataTypeOptions)[number];
 
 export const webhookSpecificationOptionsFiltersFromSourceOptions = [
   'client',
@@ -392,7 +348,7 @@ export const webhookSpecificationOptionsFiltersFromSourceOptions = [
 ] as const;
 
 export type WebhookSpecificationOptionsFiltersFromSource =
-  typeof webhookSpecificationOptionsFiltersFromSourceOptions[number];
+  (typeof webhookSpecificationOptionsFiltersFromSourceOptions)[number];
 
 export const WebhookSpecificationOptionsFiltersValidationSchema = z.object({
   changeTypes: z
@@ -952,13 +908,57 @@ export interface WebhooksTableChanged {
 }
 //#endregion
 
+//#region WebhookActionClientSourceMetadata
+export const WebhookActionClientSourceMetadataValidationSchema = z.object({
+  user: WebhooksUserValidationSchema,
+});
+
+export interface WebhookActionClientSourceMetadata {
+  user: WebhooksUser;
+}
+//#endregion
+
+//#region WebhookAction
+export const webhookActionSourceOptions = [
+  'client',
+  'publicApi',
+  'formSubmission',
+  'automation',
+  'system',
+  'sync',
+  'anonymousUser',
+] as const;
+
+export type WebhookActionSource = (typeof webhookActionSourceOptions)[number];
+
+export const WebhookActionValidationSchema = z.object({
+  source: z.enum(webhookActionSourceOptions),
+  sourceMetadata: z
+    .union([
+      WebhookActionClientSourceMetadataValidationSchema,
+      WebhookActionFormSubmissionSourceMetadataValidationSchema,
+      WebhookActionAutomationSourceMetadataValidationSchema,
+    ])
+    .optional(),
+});
+
+export interface WebhookAction {
+  source: WebhookActionSource;
+
+  sourceMetadata?:
+    | WebhookActionClientSourceMetadata
+    | WebhookActionFormSubmissionSourceMetadata
+    | WebhookActionAutomationSourceMetadata;
+}
+//#endregion
+
 //#region WebhookPayload
 export const webhookPayloadCodeOptions = [
   'INVALID_FILTERS',
   'INVALID_HOOK',
 ] as const;
 
-export type WebhookPayloadCode = typeof webhookPayloadCodeOptions[number];
+export type WebhookPayloadCode = (typeof webhookPayloadCodeOptions)[number];
 
 export const WebhookPayloadValidationSchema = z.object({
   actionMetadata: WebhookActionValidationSchema.describe(
