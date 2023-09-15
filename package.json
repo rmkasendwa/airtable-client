@@ -50,7 +50,7 @@
     "@infinite-debugger/axios-api-adapter": "^0.1.0-alpha.19",
     "@infinite-debugger/rmk-js-extensions": "^0.1.0-alpha.24",
     "@infinite-debugger/rmk-utils": "^0.1.0-alpha.9",
-    "@infinite-debugger/swagger-to-ts": "^0.1.0-alpha.72",
+    "@infinite-debugger/swagger-to-ts": "^0.1.0-alpha.73",
     "@tsed/ajv": "^7.9.0",
     "@tsed/common": "^7.9.0",
     "@tsed/core": "^7.9.0",

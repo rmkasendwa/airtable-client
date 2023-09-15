@@ -533,7 +533,6 @@ export async function toggleWebhookNotifications(
  * @param baseId
  * @param webhookId
  * @param queryParams
- * @param queryParams
  * @returns The response that contains the list of webhook payloads.
  */
 export async function findAllWebhookPayloads(
@@ -551,7 +550,6 @@ export async function findAllWebhookPayloads(
  *
  * @param baseId
  * @param webhookId
- * @param queryParams
  * @param queryParams
  * @param options The request options.
  * @returns The response that contains the list of webhook payloads.
@@ -575,7 +573,6 @@ export async function findAllWebhookPayloads(
  * @param baseId
  * @param webhookId
  * @param queryParams
- * @param queryParams
  * @param options The request options.
  * @returns The response that contains the list of webhook payloads.
  */
@@ -598,7 +595,6 @@ export async function findAllWebhookPayloads(
  * @param baseId
  * @param webhookId
  * @param queryParams
- * @param queryParams
  * @param options The request options.
  * @returns The response that contains the list of webhook payloads.
  */
@@ -620,7 +616,6 @@ export async function findAllWebhookPayloads(
  *
  * @param baseId
  * @param webhookId
- * @param queryParams
  * @param queryParams
  * @param options The request options.
  * @returns The response that contains the list of webhook payloads.
