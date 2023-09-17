@@ -3,4 +3,4 @@ export * from './Adapter';
 export * from './Bases';
 export * from './Tables';
 export * from './Utils';
-export * from './Webhooks';
+export * from '../template-files/Webhooks';

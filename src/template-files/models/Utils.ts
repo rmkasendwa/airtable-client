@@ -826,8 +826,20 @@ export class DeleteAirtableRecordsResponse {
 export const AIRTABLE_TABLE_ID_TO_ENTITY_MAP =
   /* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */ {
     tbl1: {
+      id: 'tbl1',
       tableName: 'Table 1',
       entityLabelPlural: 'entities',
       entityLabelSingular: 'entity',
     },
   } /* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */ as const;
+
+export const AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP =
+  /* AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP */ {
+    fld1: {
+      id: 'fld1',
+      columnName: 'Column 1',
+      entityPropertyName: 'name',
+      tableId: 'tbl1',
+      tableName: 'Table 1',
+    },
+  } /* AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP */ as const;

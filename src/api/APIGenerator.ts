@@ -482,6 +482,7 @@ export const generateAirtableAPI = async ({
             >((accumulator, tableColumn) => {
               accumulator[tableColumn.name] = {
                 ...configColumnNameToObjectPropertyMapper[tableColumn.name],
+                id: tableColumn.id,
                 propertyName: (() => {
                   // Extracting column object property name from user config.
                   if (
@@ -588,6 +589,7 @@ export const generateAirtableAPI = async ({
 
               accumulator[tableColumn.name] = {
                 ...configColumnNameToObjectPropertyMapper[tableColumn.name],
+                id: tableColumn.id,
                 propertyName: (() => {
                   // Extracting column object property name from user config.
                   const propertyName = (() => {
@@ -916,11 +918,42 @@ export const generateAirtableAPI = async ({
                       return [
                         id,
                         {
+                          id,
                           tableName: name,
                           labelPlural,
                           labelSingular,
                         },
                       ];
+                    }
+                  )
+                ),
+                null,
+                2
+              ),
+              ['/* AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP */']: JSON.stringify(
+                Object.fromEntries(
+                  filteredTablesConfigurations.flatMap(
+                    ({
+                      nonLookupColumnNameToObjectPropertyMapper,
+                      lookupColumnNameToObjectPropertyMapper,
+                      id: tableId,
+                      name: tableName,
+                    }) => {
+                      return Object.entries({
+                        ...nonLookupColumnNameToObjectPropertyMapper,
+                        ...lookupColumnNameToObjectPropertyMapper,
+                      }).map(([columnName, { id, propertyName }]) => {
+                        return [
+                          id,
+                          {
+                            id,
+                            columnName,
+                            entityPropertyName: propertyName,
+                            tableId,
+                            tableName,
+                          },
+                        ];
+                      });
                     }
                   )
                 ),

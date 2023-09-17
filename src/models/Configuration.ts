@@ -102,7 +102,12 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
 export type DetailedColumnNameToObjectPropertyMapping = Required<
   Pick<UserEditableDetailedColumnNameToObjectPropertyMapping, 'propertyName'>
 > &
-  Omit<UserEditableDetailedColumnNameToObjectPropertyMapping, 'propertyName'>;
+  Omit<
+    UserEditableDetailedColumnNameToObjectPropertyMapping,
+    'propertyName'
+  > & {
+    id: string;
+  };
 
 export type ConfigColumnNameToObjectPropertyMapper<FocusColumn extends string> =
   Partial<{
