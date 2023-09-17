@@ -24,17 +24,21 @@ import {
   UserEditableDetailedColumnNameToObjectPropertyMapping,
 } from '../models';
 import { findAllAirtableBases } from './Bases';
+import {
+  getEntityTemplateFileInterpolationBlocks,
+  getEntityTemplateFileInterpolationLabels,
+} from './InterpolationValuesGenerator';
 import { findAllTablesByBaseId } from './Tables';
 import {
   ModelClass,
   TableColumnValidationSchemaTypeStringGroup,
-  cleanEmptyFoldersRecursively,
-  getAirtableAPIGeneratorTemplateFileInterpolationBlocks,
-  getAirtableAPIGeneratorTemplateFileInterpolationLabels,
-  getCamelCaseFieldPropertyName,
   getExpandedAirtableLookupColumn,
-  getGeneratedFileWarningComment,
   getTableColumnValidationSchemaTypeStrings,
+} from './TypeGenerator';
+import {
+  cleanEmptyFoldersRecursively,
+  getCamelCaseFieldPropertyName,
+  getGeneratedFileWarningComment,
 } from './Utils';
 
 const prettierConfig: prettier.Options = {
@@ -116,13 +120,21 @@ export const generateAirtableAPI = async ({
 
   //#region Template files
   const templatesFolderPath = normalize(join(__dirname, '../template-files'));
-  const templateFilePaths = walk(templatesFolderPath, {
+  const airtableBaseScopedTemplateFiles = ['models/Utils.ts'].map(
+    (fileName) => {
+      return normalize(join(templatesFolderPath, fileName));
+    }
+  );
+  const airtableTableScopedTemplateFilePaths = walk(templatesFolderPath, {
     includeBasePath: true,
     directories: false,
   })
     .map((filePath) => normalize(filePath))
     .filter((filePath) => {
-      return !filePath.match(/\.(template|placeholder)\.\w+$/g);
+      return (
+        !filePath.match(/\.(template|placeholder)\.\w+$/g) &&
+        !airtableBaseScopedTemplateFiles.includes(filePath)
+      );
     });
   const modulePermissionsTemplate = readFileSync(
     join(
@@ -211,7 +223,7 @@ export const generateAirtableAPI = async ({
         const moduleFiles: string[] = [];
 
         //#region Processing each focus table.
-        filteredTables.forEach((table) => {
+        const filteredTablesConfigurations = filteredTables.map((table) => {
           const { name: tableName, fields: columns, views } = table;
 
           //#region User defined table configuration
@@ -564,7 +576,7 @@ export const generateAirtableAPI = async ({
                       [
                         'multipleLookupValues',
                         'multipleSelects',
-                      ] as typeof tablecolumnOneLevelUp.type[]
+                      ] as (typeof tablecolumnOneLevelUp.type)[]
                     ).includes(tablecolumnOneLevelUp.type)
                 );
               };
@@ -712,48 +724,46 @@ export const generateAirtableAPI = async ({
           }, {} as Record<string, TableColumnValidationSchemaTypeStringGroup>);
 
           //#region Getting interpolation block replacement map
-          const interpolationBlocks =
-            getAirtableAPIGeneratorTemplateFileInterpolationBlocks({
-              base: workingBase,
-              currentTable: table,
-              nonLookupTableColumns,
-              lookupTableColumns,
-              editableTableColumns,
-              tables,
-              nonLookupColumnNameToObjectPropertyMapper,
-              lookupColumnNameToObjectPropertyMapper,
-              airtableAPIModelImportsCollector,
-              restAPIModelImportsCollector,
-              queryableLookupFields,
-              queryableNonLookupFields,
-              restAPIModelExtrasCollector,
-              columnNameToValidationSchemaTypeStringGroupMapper,
-              includeAirtableSpecificQueryParameters,
-              alternativeRecordIdColumns,
-            });
+          const interpolationBlocks = getEntityTemplateFileInterpolationBlocks({
+            base: workingBase,
+            currentTable: table,
+            nonLookupTableColumns,
+            lookupTableColumns,
+            editableTableColumns,
+            tables,
+            nonLookupColumnNameToObjectPropertyMapper,
+            lookupColumnNameToObjectPropertyMapper,
+            airtableAPIModelImportsCollector,
+            restAPIModelImportsCollector,
+            queryableLookupFields,
+            queryableNonLookupFields,
+            restAPIModelExtrasCollector,
+            columnNameToValidationSchemaTypeStringGroupMapper,
+            includeAirtableSpecificQueryParameters,
+            alternativeRecordIdColumns,
+          });
           //#endregion
 
           //#region Getting interpolation string replacement map
-          const interpolationLabels =
-            getAirtableAPIGeneratorTemplateFileInterpolationLabels({
-              currentTable: table,
-              nonLookupTableColumns,
-              lookupTableColumns,
-              tables,
-              nonLookupColumnNameToObjectPropertyMapper,
-              lookupColumnNameToObjectPropertyMapper,
-              airtableAPIModelImportsCollector,
-              restAPIModelImportsCollector,
-              views: filteredViews,
-              labelPlural,
-              labelSingular,
-              queryableLookupFields,
-              queryableNonLookupFields,
-              restAPIModelExtrasCollector,
-              columnNameToValidationSchemaTypeStringGroupMapper,
-              includeAirtableSpecificQueryParameters,
-              alternativeRecordIdColumns,
-            });
+          const interpolationLabels = getEntityTemplateFileInterpolationLabels({
+            currentTable: table,
+            nonLookupTableColumns,
+            lookupTableColumns,
+            tables,
+            nonLookupColumnNameToObjectPropertyMapper,
+            lookupColumnNameToObjectPropertyMapper,
+            airtableAPIModelImportsCollector,
+            restAPIModelImportsCollector,
+            views: filteredViews,
+            labelPlural,
+            labelSingular,
+            queryableLookupFields,
+            queryableNonLookupFields,
+            restAPIModelExtrasCollector,
+            columnNameToValidationSchemaTypeStringGroupMapper,
+            includeAirtableSpecificQueryParameters,
+            alternativeRecordIdColumns,
+          });
           //#endregion
 
           // Replacing interpolation templates in template file contents
@@ -775,7 +785,7 @@ export const generateAirtableAPI = async ({
           moduleFiles.push(`./api/${labelPlural.toPascalCase()}`); // Adding api file to exportable files
 
           //#region Write generated API files based on templates
-          templateFilePaths.forEach((templateFilePath) => {
+          airtableTableScopedTemplateFilePaths.forEach((templateFilePath) => {
             const filePath = getInterpolatedString(
               `${baseAPIOutputFolderPath}${templateFilePath.replace(
                 templatesFolderPath,
@@ -878,6 +888,70 @@ export const generateAirtableAPI = async ({
             )
           );
           //#endregion
+
+          return {
+            ...table,
+            nonLookupColumnNameToObjectPropertyMapper,
+            lookupColumnNameToObjectPropertyMapper,
+            labelPlural,
+            labelSingular,
+          };
+        });
+
+        airtableBaseScopedTemplateFiles.forEach((templateFilePath) => {
+          const filePath = `${baseAPIOutputFolderPath}${templateFilePath.replace(
+            templatesFolderPath,
+            ''
+          )}`;
+          if (!existsSync(filePath)) {
+            const templateFileContents = readFileSync(
+              templateFilePath,
+              'utf-8'
+            );
+            const interpolationBlocks = {
+              ['/* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */']: JSON.stringify(
+                Object.fromEntries(
+                  filteredTablesConfigurations.map(
+                    ({ id, name, labelPlural, labelSingular }) => {
+                      return [
+                        id,
+                        {
+                          tableName: name,
+                          labelPlural,
+                          labelSingular,
+                        },
+                      ];
+                    }
+                  )
+                ),
+                null,
+                2
+              ),
+            };
+
+            let fileContents = `
+              ${autogeneratedFileWarningComment}\n
+              ${Object.entries(interpolationBlocks).reduce(
+                (fileContents, [key, interpolationValue]) => {
+                  const escapedKey = RegExp.escape(key);
+                  return fileContents.replace(
+                    new RegExp(`${escapedKey}([\\s\\S]*?)${escapedKey}`, 'g'),
+                    interpolationValue
+                  );
+                },
+                templateFileContents
+              )}
+            `.trimIndent();
+
+            ensureDirSync(dirname(filePath));
+            writeFileSync(
+              filePath,
+              prettier.format(fileContents, {
+                filepath: filePath,
+                ...prettierConfig,
+              })
+            );
+          }
         });
         //#endregion
 

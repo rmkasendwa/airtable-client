@@ -5,13 +5,13 @@ import {
   AirtableField,
   DetailedColumnNameToObjectPropertyMapping,
   Table,
-} from '../../models';
+} from '../models';
 import {
   ModelClass,
   TableColumnValidationSchemaTypeStringGroup,
 } from './TypeGenerator';
 
-export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
+export type GetEntityTemplateFileInterpolationOptions = {
   base: AirtableBase;
   currentTable: Table;
   nonLookupTableColumns: AirtableField[];
@@ -39,7 +39,7 @@ export type GetAirtableAPIGeneratorTemplateFileInterpolationOptions = {
   alternativeRecordIdColumns?: string[];
 };
 
-export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
+export const getEntityTemplateFileInterpolationBlocks = ({
   base,
   nonLookupTableColumns,
   lookupTableColumns,
@@ -51,7 +51,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   columnNameToValidationSchemaTypeStringGroupMapper,
   restAPIModelExtrasCollector,
   includeAirtableSpecificQueryParameters = true,
-}: GetAirtableAPIGeneratorTemplateFileInterpolationOptions) => {
+}: GetEntityTemplateFileInterpolationOptions) => {
   const { id: baseId } = base;
   const editableFieldsTypes = editableTableColumns.filter((tableColumn) => {
     return columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name]
@@ -441,7 +441,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationBlocks = ({
   } as Record<string, string>;
 };
 
-export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
+export const getEntityTemplateFileInterpolationLabels = ({
   currentTable,
   airtableAPIModelImportsCollector,
   restAPIModelImportsCollector,
@@ -454,7 +454,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
   nonLookupColumnNameToObjectPropertyMapper,
   alternativeRecordIdColumns,
 }: Omit<
-  GetAirtableAPIGeneratorTemplateFileInterpolationOptions,
+  GetEntityTemplateFileInterpolationOptions,
   'base' | 'editableTableColumns'
 > & {
   views: string[];
@@ -497,7 +497,7 @@ export const getAirtableAPIGeneratorTemplateFileInterpolationLabels = ({
           .reduce((accumulator, modelDefinition) => {
             accumulator.push(...modelDefinition.modelProperties);
             return accumulator;
-          }, [] as typeof restAPIModelExtrasCollector[number]['modelProperties'])
+          }, [] as (typeof restAPIModelExtrasCollector)[number]['modelProperties'])
           .filter(({ typeDefinitionSnippet }) => {
             return typeDefinitionSnippet;
           })

@@ -4,7 +4,7 @@ import {
   AirtableField,
   DetailedColumnNameToObjectPropertyMapping,
   Table,
-} from '../../models';
+} from '../models';
 
 //#region getExpandedAirtableLookupColumn
 export const getExpandedAirtableLookupColumn = (

@@ -2,8 +2,8 @@ import { join } from 'path';
 
 import { readdirSync, rmdirSync, statSync } from 'fs-extra';
 
-import { pkg } from '../../config';
-import { AirtableField } from '../../models';
+import { pkg } from '../config';
+import { AirtableField } from '../models';
 
 export const getCamelCaseFieldPropertyName = ({ name }: AirtableField) => {
   const camelCasePropertyName = name.toCamelCase();

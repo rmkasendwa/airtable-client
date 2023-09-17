@@ -47,7 +47,7 @@ export const airtableFieldTypes = [
   'externalSyncSource',
 ] as const;
 
-export type AirtableFieldType = typeof airtableFieldTypes[number];
+export type AirtableFieldType = (typeof airtableFieldTypes)[number];
 
 export class AirtableSortOption<Field extends string = string> {
   @Property()
@@ -822,3 +822,12 @@ export class DeleteAirtableRecordsResponse {
   @Description('The list of deleted items.')
   public records!: DeleteAirtableRecordResponse[];
 }
+
+export const AIRTABLE_TABLE_ID_TO_ENTITY_MAP =
+  /* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */ {
+    tbl1: {
+      tableName: 'Table 1',
+      entityLabelPlural: 'entities',
+      entityLabelSingular: 'entity',
+    },
+  } /* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */ as const;
