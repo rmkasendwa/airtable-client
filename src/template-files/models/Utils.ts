@@ -63,6 +63,7 @@ export class AirtableSortOption<Field extends string = string> {
   public direction?: 'asc' | 'desc';
 }
 
+//#region QueryParams
 export class FindAllRecordsQueryParams<
   Field extends string = string,
   View extends string = string
@@ -70,20 +71,20 @@ export class FindAllRecordsQueryParams<
   @Property()
   @Description(
     `
-    Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
-  `.trimIndent()
+  Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
+`.trimIndent()
   )
   public fields?: Field[];
 
   @Property()
   @Description(
     `
-    A [formula](https://support.airtable.com/docs/formula-field-reference) used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
+  A [formula](https://support.airtable.com/docs/formula-field-reference) used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
 
-    If combined with the view parameter, only records in that view which satisfy the formula will be returned.
-    
-    The formula must be encoded first before passing it as a value. You can use [this tool](https://codepen.io/rmkasendwa/full/qBQPBvJ) to not only encode the formula but also create the entire url you need.
-  `.trimIndent()
+  If combined with the view parameter, only records in that view which satisfy the formula will be returned.
+  
+  The formula must be encoded first before passing it as a value. You can use [this tool](https://codepen.io/rmkasendwa/full/qBQPBvJ) to not only encode the formula but also create the entire url you need.
+`.trimIndent()
   )
   public filterByFormula?: string;
 
@@ -104,10 +105,10 @@ export class FindAllRecordsQueryParams<
   @ArrayOf(AirtableSortOption)
   @Description(
     `
-    A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
+  A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
 
-    The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
-  `.trimIndent()
+  The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
+`.trimIndent()
   )
   public sort?: AirtableSortOption[];
 
@@ -126,12 +127,12 @@ export class FindAllRecordsQueryParams<
   @Enum('string', 'json')
   @Description(
     `
-    The format that should be used for cell values. Supported values are:
+  The format that should be used for cell values. Supported values are:
 
-    json: cells will be formatted as JSON, depending on the field type.
-  
-    string: cells will be formatted as user-facing strings, regardless of the field type. The timeZone and userLocale parameters are required when using string as the cellFormat.
-  `.trimIndent()
+  json: cells will be formatted as JSON, depending on the field type.
+
+  string: cells will be formatted as user-facing strings, regardless of the field type. The timeZone and userLocale parameters are required when using string as the cellFormat.
+`.trimIndent()
   )
   public cellFormat?: 'string' | 'json';
 
@@ -153,12 +154,12 @@ export class CountAllRecordsQueryParams<View extends string = string> {
   @Property()
   @Description(
     `
-    A [formula](https://support.airtable.com/docs/formula-field-reference) used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
+  A [formula](https://support.airtable.com/docs/formula-field-reference) used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
 
-    If combined with the view parameter, only records in that view which satisfy the formula will be returned.
-    
-    The formula must be encoded first before passing it as a value. You can use [this tool](https://codepen.io/rmkasendwa/full/qBQPBvJ) to not only encode the formula but also create the entire url you need.
-  `.trimIndent()
+  If combined with the view parameter, only records in that view which satisfy the formula will be returned.
+  
+  The formula must be encoded first before passing it as a value. You can use [this tool](https://codepen.io/rmkasendwa/full/qBQPBvJ) to not only encode the formula but also create the entire url you need.
+`.trimIndent()
   )
   public filterByFormula?: string;
 
@@ -168,6 +169,7 @@ export class CountAllRecordsQueryParams<View extends string = string> {
   )
   public view?: View;
 }
+//#endregion
 
 export class CountAllRecordsResponse {
   @Property()
@@ -179,6 +181,15 @@ export class CountAllRecordsResponse {
 export const DEFAULT_VIEW_NAME = 'Grid view';
 export const DEFAULT_VIEW_ALIAS = 'Default';
 
+//#region AirtableColumnMapping
+/**
+ * Converts the user provided column name to object property mapper to a column name to object property mapper.
+ *
+ * @param queryParams The query parameters to convert to airtable query parameters.
+ * @param objectPropertyToColumnNameMapper The object property to column name mapper.
+ * @param lookupObjectPropertyToColumnNameMapper The lookup object property to column name mapper.
+ * @returns The airtable query parameters.
+ */
 export const convertToAirtableFindAllRecordsQueryParams = <
   T extends FindAllRecordsQueryParams
 >(
@@ -290,7 +301,9 @@ export type GetAirtableRecordResponseValidationSchemaOptions = {
     AirtableColumnMapping<string>
   >;
 };
+//#endregion
 
+//#region AirtableRecordResponseValidationSchema
 export const getAirtableRecordResponseValidationSchema = <
   T extends Record<string, any>
 >({
@@ -562,7 +575,9 @@ export const getAirtableRecordResponseValidationSchema = <
       return removeNullValues(transformedRecord);
     });
 };
+//#endregion
 
+//#region AirtableRecordRequestValidationSchema
 export const getAirtableRecordRequestValidationSchema = (
   requestValidationSchema: AnyZodObject,
   objectPropertyToColumnNameMapper: Record<
@@ -609,20 +624,9 @@ export const getAirtableRecordRequestValidationSchema = (
     };
   });
 };
+//#endregion
 
-export const DeleteAirtableRecordResponseValidationSchema = z
-  .object({
-    records: z.array(
-      z.object({
-        id: z.string(),
-        deleted: z.boolean(),
-      })
-    ),
-  })
-  .transform(({ records }) => {
-    return records;
-  });
-
+//#region AirtableAttachment
 export const AirtableAttachmentThumbnailValidationSchema = z.object({
   url: z.string(),
   width: z.number(),
@@ -761,8 +765,9 @@ export class AirtableAttachment {
   })
   public thumbnails?: AirtableAttachmentThumbnailGroup;
 }
+//#endregion
 
-// Validates airtable formula column errors.
+//#region AirtableFormulaColumnError
 export const AirtableFormulaColumnErrorValidationSchema = z.object({
   specialValue: z.enum(['NaN'] as const).nullish(),
   error: z.string().nullish(),
@@ -779,7 +784,9 @@ export class AirtableFormulaColumnError {
   @Example('#Error!')
   public error?: string;
 }
+//#endregion
 
+//#region AirtableButton
 export const AirtableButtonValidationSchema = z.object({
   label: z.string(),
   url: z.string().url(),
@@ -800,6 +807,21 @@ export class AirtableButton {
   )
   public url!: string;
 }
+//#endregion
+
+//#region DeleteAirtableRecordResponse
+export const DeleteAirtableRecordResponseValidationSchema = z
+  .object({
+    records: z.array(
+      z.object({
+        id: z.string(),
+        deleted: z.boolean(),
+      })
+    ),
+  })
+  .transform(({ records }) => {
+    return records;
+  });
 
 export class DeleteAirtableRecordResponse {
   @Property()
@@ -822,7 +844,9 @@ export class DeleteAirtableRecordsResponse {
   @Description('The list of deleted items.')
   public records!: DeleteAirtableRecordResponse[];
 }
+//#endregion
 
+//#region Airtable Table Id to Entity Map
 export const AIRTABLE_TABLE_ID_TO_ENTITY_MAP =
   /* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */ {
     tbl1: {
@@ -832,14 +856,17 @@ export const AIRTABLE_TABLE_ID_TO_ENTITY_MAP =
       entityLabelSingular: 'entity',
     },
   } /* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */ as const;
+//#endregion
 
+//#region Airtable Table Column Id to Field Map
 export const AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP =
   /* AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP */ {
     fld1: {
       id: 'fld1',
       columnName: 'Column 1',
-      entityPropertyName: 'name',
+      entityPropertyPath: 'name',
       tableId: 'tbl1',
       tableName: 'Table 1',
     },
   } /* AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP */ as const;
+//#endregion

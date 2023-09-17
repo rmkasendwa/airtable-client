@@ -948,7 +948,7 @@ export const generateAirtableAPI = async ({
                           {
                             id,
                             columnName,
-                            entityPropertyName: propertyName,
+                            entityPropertyPath: propertyName,
                             tableId,
                             tableName,
                           },
