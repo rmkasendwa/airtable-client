@@ -895,6 +895,7 @@ export const generateAirtableAPI = async ({
             ...table,
             nonLookupColumnNameToObjectPropertyMapper,
             lookupColumnNameToObjectPropertyMapper,
+            lookupColumnNameToParentColumnNameMap,
             labelPlural,
             labelSingular,
           };
@@ -936,24 +937,46 @@ export const generateAirtableAPI = async ({
                     ({
                       nonLookupColumnNameToObjectPropertyMapper,
                       lookupColumnNameToObjectPropertyMapper,
+                      lookupColumnNameToParentColumnNameMap,
                       id: tableId,
                       name: tableName,
                     }) => {
-                      return Object.entries({
-                        ...nonLookupColumnNameToObjectPropertyMapper,
-                        ...lookupColumnNameToObjectPropertyMapper,
-                      }).map(([columnName, { id, propertyName }]) => {
-                        return [
-                          id,
-                          {
+                      return [
+                        ...Object.entries(
+                          nonLookupColumnNameToObjectPropertyMapper
+                        ).map(([columnName, { id, propertyName }]) => {
+                          return [
                             id,
-                            columnName,
-                            entityPropertyPath: propertyName,
-                            tableId,
-                            tableName,
-                          },
-                        ];
-                      });
+                            {
+                              id,
+                              columnName,
+                              entityPropertyPath: propertyName,
+                              tableId,
+                              tableName,
+                            },
+                          ];
+                        }),
+                        ...Object.entries(
+                          lookupColumnNameToObjectPropertyMapper
+                        ).map(([columnName, { id, propertyName }]) => {
+                          return [
+                            id,
+                            {
+                              id,
+                              columnName,
+                              entityPropertyPath: `"${
+                                nonLookupColumnNameToObjectPropertyMapper[
+                                  lookupColumnNameToParentColumnNameMap[
+                                    columnName
+                                  ]
+                                ].propertyName
+                              }.${propertyName}"`,
+                              tableId,
+                              tableName,
+                            },
+                          ];
+                        }),
+                      ];
                     }
                   )
                 ),
