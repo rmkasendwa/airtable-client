@@ -17,7 +17,6 @@ import {
 } from '@infinite-debugger/rmk-utils/paths';
 import { AxiosResponse } from 'axios';
 
-import { RequestOptions, _delete, get, post } from '../api/Adapter';
 import {
   CreateWebhookRequestPayload,
   CreateWebhookResponse,
@@ -31,6 +30,7 @@ import {
   RefreshWebhookResponseValidationSchema,
   ToggleWebhookRequestPayload,
 } from '../models/Webhooks';
+import { RequestOptions, _delete, get, post } from './Adapter';
 
 //#region Endpoint Paths
 export const FIND_ALL_WEBHOOKS_ENDPOINT_PATH: TemplatePath<{ baseId: string }> =
