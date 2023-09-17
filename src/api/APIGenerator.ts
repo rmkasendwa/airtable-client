@@ -915,14 +915,21 @@ export const generateAirtableAPI = async ({
               ['/* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */']: JSON.stringify(
                 Object.fromEntries(
                   filteredTablesConfigurations.map(
-                    ({ id, name, labelPlural, labelSingular }) => {
+                    ({
+                      id,
+                      name,
+                      labelPlural,
+                      labelSingular,
+                      primaryFieldId,
+                    }) => {
                       return [
                         id,
                         {
                           id,
                           tableName: name,
-                          labelPlural,
-                          labelSingular,
+                          entitiesPluralName: labelPlural.toPascalCase(),
+                          entitySingularName: labelSingular.toPascalCase(),
+                          primaryFieldId,
                         },
                       ];
                     }

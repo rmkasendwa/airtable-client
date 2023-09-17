@@ -852,8 +852,9 @@ export const AIRTABLE_TABLE_ID_TO_ENTITY_MAP =
     tbl1: {
       id: 'tbl1',
       tableName: 'Table 1',
-      entityLabelPlural: 'entities',
-      entityLabelSingular: 'entity',
+      entitiesPluralName: 'entities',
+      entitySingularName: 'entity',
+      primaryFieldId: 'fld1',
     },
   } /* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */ as const;
 //#endregion
