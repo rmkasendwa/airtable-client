@@ -93,15 +93,6 @@
         "required": ["expirationTime"],
         "type": "object"
       },
-      "TableField": {
-        "properties": {
-          "type": {
-            "enum": ["aiText"],
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
       "ToggleWebhookRequestPayload": {
         "properties": {
           "enable": {
@@ -298,7 +289,7 @@
           },
           "changedTablesById": {
             "additionalProperties": {
-              "$ref": "#/components/schemas/WebhooksTableChanged"
+              "$ref": "#/components/schemas/WebhooksTablesChanged"
             },
             "type": "object"
           },
@@ -471,92 +462,14 @@
         "required": ["viewId"],
         "type": "object"
       },
-      "WebhooksTableChanged": {
+      "WebhooksChangedFieldValuesById": {
         "properties": {
-          "changedFieldsById": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/WebhooksTableChangedFields"
-            },
-            "description": "The below object is keyed with a string",
+          "cellValuesByFieldId": {
+            "additionalProperties": {},
             "type": "object"
-          },
-          "changedMetadata": {
-            "$ref": "#/components/schemas/WebhooksTableChangedMetadata"
-          },
-          "changedRecordsById": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/WebhooksViewChangedRecordsById"
-            },
-            "description": "The below object is keyed with a string",
-            "type": "object"
-          },
-          "changedViewsById": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/WebhooksViewChanged"
-            },
-            "description": "This is only included when recordChangeScope is a view id.\n\nThe below object is keyed with a string",
-            "type": "object"
-          },
-          "createdFieldsById": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/WebhooksTableField"
-            },
-            "description": "The below object is keyed with a string",
-            "type": "object"
-          },
-          "createdRecordsById": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/WebhooksTableRecord"
-            },
-            "description": "The below object is keyed with a string",
-            "type": "object"
-          },
-          "destroyedFieldIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "destroyedRecordIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
           }
         },
-        "type": "object"
-      },
-      "WebhooksTableChangedFields": {
-        "properties": {
-          "current": {
-            "$ref": "#/components/schemas/WebhooksTableField"
-          },
-          "previous": {
-            "$ref": "#/components/schemas/WebhooksTableField"
-          }
-        },
-        "type": "object"
-      },
-      "WebhooksTableChangedMetadata": {
-        "properties": {
-          "current": {
-            "$ref": "#/components/schemas/WebhooksTableChangedMetadataField"
-          },
-          "previous": {
-            "$ref": "#/components/schemas/WebhooksTableChangedMetadataField"
-          }
-        },
-        "type": "object"
-      },
-      "WebhooksTableChangedMetadataField": {
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
+        "required": ["cellValuesByFieldId"],
         "type": "object"
       },
       "WebhooksTableCreated": {
@@ -573,12 +486,27 @@
           },
           "recordsById": {
             "additionalProperties": {
-              "$ref": "#/components/schemas/WebhooksTableRecord"
+              "$ref": "#/components/schemas/WebhooksTableCreatedRecordsById"
             },
             "description": "The below object is keyed with a string",
             "type": "object"
           }
         },
+        "type": "object"
+      },
+      "WebhooksTableCreatedRecordsById": {
+        "properties": {
+          "cellValuesByFieldId": {
+            "additionalProperties": {},
+            "type": "object"
+          },
+          "createdTime": {
+            "description": "A date timestamp in the ISO format, eg:\"2018-01-01T00:00:00.000Z\"",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["createdTime", "cellValuesByFieldId"],
         "type": "object"
       },
       "WebhooksTableField": {
@@ -644,7 +572,8 @@
       "WebhooksTableRecord": {
         "properties": {
           "cellValuesByFieldId": {
-            "$ref": "#/components/schemas/TableField"
+            "additionalProperties": {},
+            "type": "object"
           },
           "createdTime": {
             "description": "A date timestamp in the ISO format, eg:\"2018-01-01T00:00:00.000Z\"",
@@ -653,6 +582,94 @@
           }
         },
         "required": ["createdTime", "cellValuesByFieldId"],
+        "type": "object"
+      },
+      "WebhooksTablesChanged": {
+        "properties": {
+          "changedFieldsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTablesChangedFields"
+            },
+            "description": "The below object is keyed with a string",
+            "type": "object"
+          },
+          "changedMetadata": {
+            "$ref": "#/components/schemas/WebhooksTablesChangedMetadata"
+          },
+          "changedRecordsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksViewChangedRecordsById"
+            },
+            "description": "The below object is keyed with a string",
+            "type": "object"
+          },
+          "changedViewsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksViewChanged"
+            },
+            "description": "This is only included when recordChangeScope is a view id.\n\nThe below object is keyed with a string",
+            "type": "object"
+          },
+          "createdFieldsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTableField"
+            },
+            "description": "The below object is keyed with a string",
+            "type": "object"
+          },
+          "createdRecordsById": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WebhooksTableRecord"
+            },
+            "description": "The below object is keyed with a string",
+            "type": "object"
+          },
+          "destroyedFieldIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "destroyedRecordIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksTablesChangedFields": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/WebhooksTableField"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/WebhooksTableField"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksTablesChangedMetadata": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/WebhooksTablesChangedMetadataField"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/WebhooksTablesChangedMetadataField"
+          }
+        },
+        "type": "object"
+      },
+      "WebhooksTablesChangedMetadataField": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "WebhooksUser": {
@@ -706,23 +723,22 @@
       "WebhooksViewChangedRecordsById": {
         "properties": {
           "current": {
-            "$ref": "#/components/schemas/TableField"
+            "$ref": "#/components/schemas/WebhooksChangedFieldValuesById"
           },
           "previous": {
-            "$ref": "#/components/schemas/TableField"
+            "$ref": "#/components/schemas/WebhooksChangedFieldValuesById"
           },
           "unchanged": {
-            "$ref": "#/components/schemas/TableField"
+            "$ref": "#/components/schemas/WebhooksChangedFieldValuesById"
           }
         },
+        "required": ["current"],
         "type": "object"
       },
       "WebhooksViewCreatedRecordsById": {
         "properties": {
           "cellValuesByFieldId": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/TableField"
-            },
+            "additionalProperties": {},
             "type": "object"
           },
           "createdTime": {

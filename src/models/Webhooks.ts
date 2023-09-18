@@ -119,6 +119,26 @@ export interface ToggleWebhookRequestPayload {
 }
 //#endregion
 
+//#region WebhooksTableCreatedRecordsById
+export const WebhooksTableCreatedRecordsByIdValidationSchema = z.object({
+  cellValuesByFieldId: z.record(z.any()),
+  createdTime: z
+    .string()
+    .describe(
+      'A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"'
+    ),
+});
+
+export interface WebhooksTableCreatedRecordsById {
+  cellValuesByFieldId: Record<string, any>;
+
+  /**
+   * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
+   */
+  createdTime: string;
+}
+//#endregion
+
 //#region WebhooksTableMetadata
 export const WebhooksTableMetadataValidationSchema = z.object({
   description: z.string().optional(),
@@ -132,23 +152,64 @@ export interface WebhooksTableMetadata {
 }
 //#endregion
 
-//#region TableField
-export const TableFieldValidationSchema = z.object({
-  type: z.literal('aiText').optional(),
+//#region WebhooksTableRecord
+export const WebhooksTableRecordValidationSchema = z.object({
+  cellValuesByFieldId: z.record(z.any()),
+  createdTime: z
+    .string()
+    .describe(
+      'A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"'
+    ),
 });
 
-export interface TableField {
-  type?: 'aiText';
+export interface WebhooksTableRecord {
+  cellValuesByFieldId: Record<string, any>;
+
+  /**
+   * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
+   */
+  createdTime: string;
 }
 //#endregion
 
-//#region WebhooksTableChangedMetadataField
-export const WebhooksTableChangedMetadataFieldValidationSchema = z.object({
+//#region WebhooksViewCreatedRecordsById
+export const WebhooksViewCreatedRecordsByIdValidationSchema = z.object({
+  cellValuesByFieldId: z.record(z.any()).optional(),
+  createdTime: z
+    .string()
+    .optional()
+    .describe(
+      'A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"'
+    ),
+});
+
+export interface WebhooksViewCreatedRecordsById {
+  cellValuesByFieldId?: Record<string, any>;
+
+  /**
+   * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
+   */
+  createdTime?: string;
+}
+//#endregion
+
+//#region WebhooksChangedFieldValuesById
+export const WebhooksChangedFieldValuesByIdValidationSchema = z.object({
+  cellValuesByFieldId: z.record(z.any()),
+});
+
+export interface WebhooksChangedFieldValuesById {
+  cellValuesByFieldId: Record<string, any>;
+}
+//#endregion
+
+//#region WebhooksTablesChangedMetadataField
+export const WebhooksTablesChangedMetadataFieldValidationSchema = z.object({
   description: z.string().optional(),
   name: z.string().optional(),
 });
 
-export interface WebhooksTableChangedMetadataField {
+export interface WebhooksTablesChangedMetadataField {
   description?: string;
 
   name?: string;
@@ -694,26 +755,6 @@ export interface CreateWebhookRequestPayload {
 }
 //#endregion
 
-//#region WebhooksTableRecord
-export const WebhooksTableRecordValidationSchema = z.object({
-  cellValuesByFieldId: TableFieldValidationSchema,
-  createdTime: z
-    .string()
-    .describe(
-      'A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"'
-    ),
-});
-
-export interface WebhooksTableRecord {
-  cellValuesByFieldId: TableField;
-
-  /**
-   * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
-   */
-  createdTime: string;
-}
-//#endregion
-
 //#region WebhooksTableCreated
 export const WebhooksTableCreatedValidationSchema = z.object({
   fieldsById: z
@@ -722,7 +763,7 @@ export const WebhooksTableCreatedValidationSchema = z.object({
     .describe('The below object is keyed with a string'),
   metadata: WebhooksTableMetadataValidationSchema.optional(),
   recordsById: z
-    .record(WebhooksTableRecordValidationSchema)
+    .record(WebhooksTableCreatedRecordsByIdValidationSchema)
     .optional()
     .describe('The below object is keyed with a string'),
 });
@@ -738,44 +779,23 @@ export interface WebhooksTableCreated {
   /**
    * The below object is keyed with a string
    */
-  recordsById?: Record<string, WebhooksTableRecord>;
-}
-//#endregion
-
-//#region WebhooksViewCreatedRecordsById
-export const WebhooksViewCreatedRecordsByIdValidationSchema = z.object({
-  cellValuesByFieldId: z.record(TableFieldValidationSchema).optional(),
-  createdTime: z
-    .string()
-    .optional()
-    .describe(
-      'A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"'
-    ),
-});
-
-export interface WebhooksViewCreatedRecordsById {
-  cellValuesByFieldId?: Record<string, TableField>;
-
-  /**
-   * A date timestamp in the ISO format, eg:"2018-01-01T00:00:00.000Z"
-   */
-  createdTime?: string;
+  recordsById?: Record<string, WebhooksTableCreatedRecordsById>;
 }
 //#endregion
 
 //#region WebhooksViewChangedRecordsById
 export const WebhooksViewChangedRecordsByIdValidationSchema = z.object({
-  current: TableFieldValidationSchema.optional(),
-  previous: TableFieldValidationSchema.optional(),
-  unchanged: TableFieldValidationSchema.optional(),
+  current: WebhooksChangedFieldValuesByIdValidationSchema,
+  previous: WebhooksChangedFieldValuesByIdValidationSchema.optional(),
+  unchanged: WebhooksChangedFieldValuesByIdValidationSchema.optional(),
 });
 
 export interface WebhooksViewChangedRecordsById {
-  current?: TableField;
+  current: WebhooksChangedFieldValuesById;
 
-  previous?: TableField;
+  previous?: WebhooksChangedFieldValuesById;
 
-  unchanged?: TableField;
+  unchanged?: WebhooksChangedFieldValuesById;
 }
 //#endregion
 
@@ -817,39 +837,39 @@ export interface WebhooksViewChanged {
 }
 //#endregion
 
-//#region WebhooksTableChangedMetadata
-export const WebhooksTableChangedMetadataValidationSchema = z.object({
-  current: WebhooksTableChangedMetadataFieldValidationSchema.optional(),
-  previous: WebhooksTableChangedMetadataFieldValidationSchema.optional(),
+//#region WebhooksTablesChangedMetadata
+export const WebhooksTablesChangedMetadataValidationSchema = z.object({
+  current: WebhooksTablesChangedMetadataFieldValidationSchema.optional(),
+  previous: WebhooksTablesChangedMetadataFieldValidationSchema.optional(),
 });
 
-export interface WebhooksTableChangedMetadata {
-  current?: WebhooksTableChangedMetadataField;
+export interface WebhooksTablesChangedMetadata {
+  current?: WebhooksTablesChangedMetadataField;
 
-  previous?: WebhooksTableChangedMetadataField;
+  previous?: WebhooksTablesChangedMetadataField;
 }
 //#endregion
 
-//#region WebhooksTableChangedFields
-export const WebhooksTableChangedFieldsValidationSchema = z.object({
+//#region WebhooksTablesChangedFields
+export const WebhooksTablesChangedFieldsValidationSchema = z.object({
   current: WebhooksTableFieldValidationSchema.optional(),
   previous: WebhooksTableFieldValidationSchema.optional(),
 });
 
-export interface WebhooksTableChangedFields {
+export interface WebhooksTablesChangedFields {
   current?: WebhooksTableField;
 
   previous?: WebhooksTableField;
 }
 //#endregion
 
-//#region WebhooksTableChanged
-export const WebhooksTableChangedValidationSchema = z.object({
+//#region WebhooksTablesChanged
+export const WebhooksTablesChangedValidationSchema = z.object({
   changedFieldsById: z
-    .record(WebhooksTableChangedFieldsValidationSchema)
+    .record(WebhooksTablesChangedFieldsValidationSchema)
     .optional()
     .describe('The below object is keyed with a string'),
-  changedMetadata: WebhooksTableChangedMetadataValidationSchema.optional(),
+  changedMetadata: WebhooksTablesChangedMetadataValidationSchema.optional(),
   changedRecordsById: z
     .record(WebhooksViewChangedRecordsByIdValidationSchema)
     .optional()
@@ -872,13 +892,13 @@ export const WebhooksTableChangedValidationSchema = z.object({
   destroyedRecordIds: z.array(z.string()).optional(),
 });
 
-export interface WebhooksTableChanged {
+export interface WebhooksTablesChanged {
   /**
    * The below object is keyed with a string
    */
-  changedFieldsById?: Record<string, WebhooksTableChangedFields>;
+  changedFieldsById?: Record<string, WebhooksTablesChangedFields>;
 
-  changedMetadata?: WebhooksTableChangedMetadata;
+  changedMetadata?: WebhooksTablesChangedMetadata;
 
   /**
    * The below object is keyed with a string
@@ -969,7 +989,7 @@ export const WebhookPayloadValidationSchema = z.object({
     .describe(
       'A number which can be used to determine all changes within a transaction.'
     ),
-  changedTablesById: z.record(WebhooksTableChangedValidationSchema).optional(),
+  changedTablesById: z.record(WebhooksTablesChangedValidationSchema).optional(),
   code: z
     .enum(webhookPayloadCodeOptions)
     .optional()
@@ -998,7 +1018,7 @@ export interface WebhookPayload {
    */
   baseTransactionNumber: number;
 
-  changedTablesById?: Record<string, WebhooksTableChanged>;
+  changedTablesById?: Record<string, WebhooksTablesChanged>;
 
   /**
    * Additional error codes may be introduced, and will not be considered a breaking change.
