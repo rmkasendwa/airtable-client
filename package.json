@@ -39,7 +39,6 @@
     "version": "standard-version"
   },
   "dependencies": {
-    "base-64": "^1.0.0",
     "dotenv": "^16.0.3",
     "fs-extra": "^11.1.0",
     "pluralize": "^8.0.0",

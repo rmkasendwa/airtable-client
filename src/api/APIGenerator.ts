@@ -986,6 +986,46 @@ export const generateAirtableAPI = async ({
                 null,
                 2
               ),
+              ['/* PROPERTY_PATHS_BY_ENTITY_NAME */']: JSON.stringify(
+                Object.fromEntries(
+                  filteredTablesConfigurations
+                    .map(
+                      ({
+                        labelPlural,
+                        nonLookupColumnNameToObjectPropertyMapper,
+                        lookupColumnNameToObjectPropertyMapper,
+                        lookupColumnNameToParentColumnNameMap,
+                      }) => {
+                        return [
+                          labelPlural.toPascalCase(),
+                          [
+                            ...Object.entries(
+                              nonLookupColumnNameToObjectPropertyMapper
+                            ).map(([, { propertyName }]) => {
+                              return propertyName;
+                            }),
+                            ...Object.entries(
+                              lookupColumnNameToObjectPropertyMapper
+                            ).map(([columnName, { propertyName }]) => {
+                              return `${
+                                nonLookupColumnNameToObjectPropertyMapper[
+                                  lookupColumnNameToParentColumnNameMap[
+                                    columnName
+                                  ]
+                                ].propertyName
+                              }.${propertyName}`;
+                            }),
+                          ].sort(),
+                        ] as [string, string[]];
+                      }
+                    )
+                    .sort(([aEntityName], [bEntityName]) => {
+                      return aEntityName.localeCompare(bEntityName);
+                    })
+                ),
+                null,
+                2
+              ),
             };
 
             let fileContents = `
