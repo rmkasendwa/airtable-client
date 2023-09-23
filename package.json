@@ -25,8 +25,8 @@
     "build": "npm run tsc",
     "postbuild": "cp -r package.json ./src/template-files ./dist && node ./scripts/postbuild",
     "doc": "run-s doc:html && open-cli build/docs/index.html",
-    "doc:html": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --out build/docs",
-    "doc:json": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --json build/docs/typedoc.json",
+    "doc:html": "typedoc src/ --exclude \"**/*.spec.ts,**/__tests__/*\" --out build/docs",
+    "doc:json": "typedoc src/ --exclude **/*.spec.ts --json build/docs/typedoc.json",
     "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d build/docs",
     "eslint": "eslint --fix",
     "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,html,htm,json,css,scss,md}\"",
@@ -92,6 +92,7 @@
     "prettier-plugin-sort-json": "^0.0.3",
     "standard-version": "^9.5.0",
     "ts-node-dev": "^2.0.0",
+    "typedoc": "^0.25.1",
     "typescript": "^4.9.4",
     "zod": "^3.20.2"
   },

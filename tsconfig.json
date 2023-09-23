@@ -36,6 +36,7 @@
 
     "resolveJsonModule": true /* Include modules imported with .json extension. */,
 
+    "skipLibCheck": true /* Skip type checking of declaration files. */,
     "strict": true,
     "target": "esnext",
     /* Debugging Options */
