@@ -220,7 +220,7 @@ export const generateAirtableAPI = async ({
         const permissionsObjectStrings: string[] = [];
         //#endregion
 
-        //#region Processing each focus table.
+        //#region Processing each focus tables.
         const filteredTablesConfigurations = filteredTables.map((table) => {
           const { name: tableName, fields: columns, views } = table;
 
@@ -476,7 +476,12 @@ export const generateAirtableAPI = async ({
 
           const nonLookupColumnNameToObjectPropertyMapper =
             nonLookupTableColumns.reduce<
-              Record<string, DetailedColumnNameToObjectPropertyMapping>
+              Record<
+                string,
+                DetailedColumnNameToObjectPropertyMapping & {
+                  tableColumn: (typeof nonLookupTableColumns)[number];
+                }
+              >
             >((accumulator, tableColumn) => {
               accumulator[tableColumn.name] = {
                 ...configColumnNameToObjectPropertyMapper[tableColumn.name],
@@ -504,9 +509,37 @@ export const generateAirtableAPI = async ({
                     return { prefersSingleRecordLink };
                   }
                 })(),
-              } as DetailedColumnNameToObjectPropertyMapping;
+                tableColumn,
+              };
               return accumulator;
             }, {});
+
+          //#region Dependent table column ids.
+          const editableFieldsDependentTables = Object.values(
+            nonLookupColumnNameToObjectPropertyMapper
+          )
+            .filter(({ tableColumn: { type, options } }) => {
+              return (
+                type === 'multipleRecordLinks' &&
+                options?.linkedTableId &&
+                filteredTables.find(({ id }) => {
+                  return id === options.linkedTableId;
+                })
+              );
+            })
+            .reduce<
+              (typeof nonLookupColumnNameToObjectPropertyMapper)[string][]
+            >((accumulator, column) => {
+              if (
+                !accumulator.find(({ id }) => {
+                  return id === column.id;
+                })
+              ) {
+                accumulator.push(column);
+              }
+              return accumulator;
+            }, []);
+          //#endregion
 
           const lookupColumnNameToObjectPropertyMapper =
             lookupTableColumns.reduce<
@@ -898,6 +931,7 @@ export const generateAirtableAPI = async ({
             lookupColumnNameToParentColumnNameMap,
             labelPlural,
             labelSingular,
+            editableFieldsDependentTables,
           };
         });
 
@@ -1064,7 +1098,7 @@ export const generateAirtableAPI = async ({
         });
         //#endregion
 
-        //#region Write api index files
+        //#region Write api index file
         const apiModulesIndexFilePath = `${baseAPIOutputFolderPath}/api/index.ts`;
         if (!existsSync(apiModulesIndexFilePath)) {
           const fileContents = filteredTablesConfigurations
@@ -1088,7 +1122,7 @@ export const generateAirtableAPI = async ({
         }
         //#endregion
 
-        //#region Write models index files
+        //#region Write models index file
         const modelsIndexFilePath = `${baseAPIOutputFolderPath}/models/index.ts`;
         if (!existsSync(modelsIndexFilePath)) {
           const fileContents = [
@@ -1119,16 +1153,71 @@ export const generateAirtableAPI = async ({
 
         //#region Write permissions index file
         const permissionsFilePath = `${baseAPIOutputFolderPath}/permissions/index.ts`;
+        const permissionDependencies = filteredTablesConfigurations.reduce<
+          Record<string, string[]>
+        >((accumulator, { editableFieldsDependentTables, labelSingular }) => {
+          const [createPermissionDependencies, editPermissionDependencies] = [
+            editableFieldsDependentTables.filter(({ creatable = true }) => {
+              return creatable;
+            }),
+            editableFieldsDependentTables.filter(({ editable = true }) => {
+              return editable;
+            }),
+          ].map((fieldsDependentTables) => {
+            return fieldsDependentTables.flatMap(({ tableColumn }) => {
+              const dependentTableConfiguration =
+                filteredTablesConfigurations.find(
+                  ({ id: filteredTableId }) =>
+                    tableColumn.options?.linkedTableId === filteredTableId
+                )!;
+              return [
+                `VIEW_${dependentTableConfiguration.labelPlural
+                  .toUpperCase()
+                  .replace(/\s/g, '_')}_PERMISSION`,
+                `VIEW_${dependentTableConfiguration.labelSingular
+                  .toUpperCase()
+                  .replace(/\s/g, '_')}_DETAILS_PERMISSION`,
+              ];
+            });
+          });
+          if (createPermissionDependencies.length > 0) {
+            accumulator[
+              `CREATE_${labelSingular
+                .toUpperCase()
+                .replace(/\s/g, '_')}_PERMISSION`
+            ] = createPermissionDependencies;
+          }
+          if (editPermissionDependencies.length > 0) {
+            accumulator[
+              `UPDATE_${labelSingular
+                .toUpperCase()
+                .replace(/\s/g, '_')}_PERMISSION`
+            ] = editPermissionDependencies;
+          }
+          return accumulator;
+        }, {});
+
+        const dependentPermissionsObjectPropertiesCode = Object.entries(
+          permissionDependencies
+        )
+          .map(([permission, dependantPermissions]) => {
+            return `[${permission}]: [${dependantPermissions.join(', ')}]`;
+          })
+          .join(',\n');
+
         writeFileSync(
           permissionsFilePath,
           prettier.format(
             `
+            ${autogeneratedFileWarningComment}\n
             ${permissionsImports.join('\n')}
             ${permissionsExports.join('\n')}
 
             export const allPermissions = [\n${permissionsObjectStrings.join(
               ',\n'
             )}\n];
+
+            export const dependenciesPermissionsMap = {${dependentPermissionsObjectPropertiesCode}};
           `.trimIndent(),
             {
               filepath: permissionsFilePath,
