@@ -1166,9 +1166,11 @@ export const generateAirtableAPI = async ({
             { editableFieldsDependentTables, labelSingular, labelPlural }
           ) => {
             const [createPermissionDependencies, editPermissionDependencies] = [
-              editableFieldsDependentTables.filter(({ creatable = true }) => {
-                return creatable;
-              }),
+              editableFieldsDependentTables.filter(
+                ({ creatable = true, editable = true }) => {
+                  return creatable && editable;
+                }
+              ),
               editableFieldsDependentTables.filter(({ editable = true }) => {
                 return editable;
               }),
