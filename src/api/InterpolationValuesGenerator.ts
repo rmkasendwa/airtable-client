@@ -50,7 +50,6 @@ export const getEntityTemplateFileInterpolationBlocks = ({
   queryableLookupFields,
   columnNameToValidationSchemaTypeStringGroupMapper,
   restAPIModelExtrasCollector,
-  includeAirtableSpecificQueryParameters = true,
 }: GetEntityTemplateFileInterpolationOptions) => {
   const { id: baseId } = base;
   const editableFieldsTypes = editableTableColumns.filter((tableColumn) => {
@@ -177,7 +176,9 @@ export const getEntityTemplateFileInterpolationBlocks = ({
     ['/* QUERYABLE_FIELDS */']: [
       ...queryableNonLookupFields,
       ...queryableLookupFields,
-    ].join(', '),
+    ]
+      .sort()
+      .join(', '),
 
     ['/* BASE_ENTITY_MODEL_FIELDS */']: nonLookupTableColumns
       .map((tableColumn) => {
@@ -432,12 +433,6 @@ export const getEntityTemplateFileInterpolationBlocks = ({
       .join(';\n\n'),
 
     ['/* AUTH_IMPORTS */']: `import { Authenticate, Authorize } from '../../../../decorators';`,
-    ['/* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */']: (() => {
-      if (!includeAirtableSpecificQueryParameters) {
-        return '';
-      }
-      return '$1';
-    })(),
   } as Record<string, string>;
 };
 

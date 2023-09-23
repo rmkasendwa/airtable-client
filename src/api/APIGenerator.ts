@@ -908,6 +908,12 @@ export const generateAirtableAPI = async ({
               'utf-8'
             );
             const interpolationBlocks = {
+              ['/* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */']: (() => {
+                if (!includeAirtableSpecificQueryParameters) {
+                  return '';
+                }
+                return '$1';
+              })(),
               ['/* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */']: JSON.stringify(
                 Object.fromEntries(
                   filteredTablesConfigurations.map(
