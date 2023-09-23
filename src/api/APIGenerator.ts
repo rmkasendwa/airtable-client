@@ -36,9 +36,12 @@ import {
   getTableColumnValidationSchemaTypeStrings,
 } from './TypeGenerator';
 import {
+  ModuleImports,
+  addModuleImport,
   cleanEmptyFoldersRecursively,
   getCamelCaseFieldPropertyName,
   getGeneratedFileWarningComment,
+  getImportsCode,
 } from './Utils';
 
 const prettierConfig: prettier.Options = {
@@ -215,7 +218,7 @@ export const generateAirtableAPI = async ({
         );
 
         //#region Permissions exports
-        const permissionsImports: string[] = [];
+        const permissionsImports: ModuleImports = {};
         const permissionsExports: string[] = [];
         const permissionsObjectStrings: string[] = [];
         //#endregion
@@ -911,11 +914,13 @@ export const generateAirtableAPI = async ({
 
           // Permissions
           //#region Accumulating all focus table permissions
-          permissionsImports.push(
-            getInterpolatedString(
-              `import { allPascalCaseEntitiesPermissions } from './PascalCaseEntities';`
-            )
-          );
+          addModuleImport({
+            imports: permissionsImports,
+            importFilePath: getInterpolatedString(`./PascalCaseEntities`),
+            importName: getInterpolatedString(
+              `allPascalCaseEntitiesPermissions`
+            ),
+          });
           permissionsExports.push(
             getInterpolatedString(`export * from './PascalCaseEntities';`)
           );
@@ -1155,47 +1160,70 @@ export const generateAirtableAPI = async ({
         const permissionsFilePath = `${baseAPIOutputFolderPath}/permissions/index.ts`;
         const permissionDependencies = filteredTablesConfigurations.reduce<
           Record<string, string[]>
-        >((accumulator, { editableFieldsDependentTables, labelSingular }) => {
-          const [createPermissionDependencies, editPermissionDependencies] = [
-            editableFieldsDependentTables.filter(({ creatable = true }) => {
-              return creatable;
-            }),
-            editableFieldsDependentTables.filter(({ editable = true }) => {
-              return editable;
-            }),
-          ].map((fieldsDependentTables) => {
-            return fieldsDependentTables.flatMap(({ tableColumn }) => {
-              const dependentTableConfiguration =
-                filteredTablesConfigurations.find(
-                  ({ id: filteredTableId }) =>
-                    tableColumn.options?.linkedTableId === filteredTableId
-                )!;
-              return [
-                `VIEW_${dependentTableConfiguration.labelPlural
-                  .toUpperCase()
-                  .replace(/\s/g, '_')}_PERMISSION`,
-                `VIEW_${dependentTableConfiguration.labelSingular
-                  .toUpperCase()
-                  .replace(/\s/g, '_')}_DETAILS_PERMISSION`,
-              ];
+        >(
+          (
+            accumulator,
+            { editableFieldsDependentTables, labelSingular, labelPlural }
+          ) => {
+            const [createPermissionDependencies, editPermissionDependencies] = [
+              editableFieldsDependentTables.filter(({ creatable = true }) => {
+                return creatable;
+              }),
+              editableFieldsDependentTables.filter(({ editable = true }) => {
+                return editable;
+              }),
+            ].map((fieldsDependentTables) => {
+              return fieldsDependentTables.flatMap(({ tableColumn }) => {
+                const dependentTableConfiguration =
+                  filteredTablesConfigurations.find(
+                    ({ id: filteredTableId }) =>
+                      tableColumn.options?.linkedTableId === filteredTableId
+                  )!;
+                const permissons = [
+                  `VIEW_${dependentTableConfiguration.labelPlural
+                    .toUpperCase()
+                    .replace(/\s/g, '_')}_PERMISSION`,
+                  `VIEW_${dependentTableConfiguration.labelSingular
+                    .toUpperCase()
+                    .replace(/\s/g, '_')}_DETAILS_PERMISSION`,
+                ];
+
+                permissons.forEach((permission) => {
+                  addModuleImport({
+                    imports: permissionsImports,
+                    importFilePath: `./${dependentTableConfiguration.labelPlural.toPascalCase()}`,
+                    importName: permission,
+                  });
+                });
+                return permissons;
+              });
             });
-          });
-          if (createPermissionDependencies.length > 0) {
-            accumulator[
-              `CREATE_${labelSingular
+            if (createPermissionDependencies.length > 0) {
+              const createPermission = `CREATE_${labelSingular
                 .toUpperCase()
-                .replace(/\s/g, '_')}_PERMISSION`
-            ] = createPermissionDependencies;
-          }
-          if (editPermissionDependencies.length > 0) {
-            accumulator[
-              `UPDATE_${labelSingular
+                .replace(/\s/g, '_')}_PERMISSION`;
+              addModuleImport({
+                imports: permissionsImports,
+                importFilePath: `./${labelPlural.toPascalCase()}`,
+                importName: createPermission,
+              });
+              accumulator[createPermission] = createPermissionDependencies;
+            }
+            if (editPermissionDependencies.length > 0) {
+              const updatePermission = `UPDATE_${labelSingular
                 .toUpperCase()
-                .replace(/\s/g, '_')}_PERMISSION`
-            ] = editPermissionDependencies;
-          }
-          return accumulator;
-        }, {});
+                .replace(/\s/g, '_')}_PERMISSION`;
+              addModuleImport({
+                imports: permissionsImports,
+                importFilePath: `./${labelPlural.toPascalCase()}`,
+                importName: updatePermission,
+              });
+              accumulator[updatePermission] = editPermissionDependencies;
+            }
+            return accumulator;
+          },
+          {}
+        );
 
         const dependentPermissionsObjectPropertiesCode = Object.entries(
           permissionDependencies
@@ -1210,7 +1238,7 @@ export const generateAirtableAPI = async ({
           prettier.format(
             `
             ${autogeneratedFileWarningComment}\n
-            ${permissionsImports.join('\n')}
+            ${getImportsCode({ imports: permissionsImports }).join('\n')}
             ${permissionsExports.join('\n')}
 
             export const allPermissions = [\n${permissionsObjectStrings.join(
