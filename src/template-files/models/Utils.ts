@@ -1,11 +1,9 @@
 import { removeNullValues } from '@infinite-debugger/rmk-utils';
 import {
   ArrayOf,
-  Default,
   Description,
   Enum,
   Example,
-  Max,
   Property,
   Required,
 } from '@tsed/schema';
@@ -140,23 +138,6 @@ export class FindAllRecordsQueryParams<
   /* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */
 }
 
-export class FindFirstPageRecordsQueryParams<
-  Field extends string = string,
-  View extends string = string
-> extends FindAllRecordsQueryParams<Field, View> {
-  @Property()
-  @Description(
-    'The number of records returned in each request. Must be less than or equal to 100. Default is 100. See the Pagination section below for more.'
-  )
-  @Max(100)
-  @Default(100)
-  public pageSize?: number;
-
-  @Property()
-  @Description('The offset to load the next page.')
-  public offset?: string;
-}
-
 export class CountAllRecordsQueryParams<View extends string = string> {
   @Property()
   @Description(
@@ -198,13 +179,13 @@ export const DEFAULT_VIEW_ALIAS = 'Default';
  * @returns The airtable query parameters.
  */
 export const convertToAirtableFindAllRecordsQueryParams = <
-  T extends FindFirstPageRecordsQueryParams
+  T extends FindAllRecordsQueryParams
 >(
   queryParams: T,
   objectPropertyToColumnNameMapper: Record<string, string>,
   lookupObjectPropertyToColumnNameMapper: Record<string, string>
 ) => {
-  const airtableQueryParams: Omit<FindFirstPageRecordsQueryParams, 'fields'> & {
+  const airtableQueryParams: Omit<FindAllRecordsQueryParams, 'fields'> & {
     fields?: string[];
   } = {
     ...omit(queryParams, 'sort', 'fields', 'filterByFormula'),

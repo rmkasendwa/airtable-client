@@ -5,6 +5,7 @@ import {
   Description,
   Enum,
   Example,
+  Integer,
   Max,
   Nullable,
   Property,
@@ -17,7 +18,6 @@ import {
   AirtableSortOption,
   CountAllRecordsQueryParams,
   FindAllRecordsQueryParams,
-  FindFirstPageRecordsQueryParams,
   getAirtableRecordRequestValidationSchema,
   getAirtableRecordResponseValidationSchema,
 } from './Utils';
@@ -450,9 +450,9 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
   @ArrayOf(PascalCaseEntitiesSortOption)
   @Description(
     `
-    A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
+    A list of sort objects that specifies how the entities label will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
 
-    The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
+    The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of entities label is arbitrary.
   `.trimIndent()
   )
   public declare sort?: PascalCaseEntitiesSortOption[];
@@ -460,41 +460,17 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
   @Property()
   @Enum(...camelCaseEntityViews)
   @Description(
-    'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
+    'The name of a predefined data view. If set, only the entities label in that view will be returned. The entities label will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
   )
   public declare view?: PascalCaseEntityView;
 }
 
-export class FindFirstPagePascalCaseEntitiesQueryParams extends FindFirstPageRecordsQueryParams {
-  @Property()
-  @Enum(...camelCaseEntityQueryableFields)
-  @Description(
-    "Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred."
-  )
-  public declare fields?: PascalCaseEntityQueryableField[];
-
-  @Property()
-  @ArrayOf(PascalCaseEntitiesSortOption)
-  @Description(
-    `
-    A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
-
-    The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
-  `.trimIndent()
-  )
-  public declare sort?: PascalCaseEntitiesSortOption[];
-
-  @Property()
-  @Enum(...camelCaseEntityViews)
-  @Description(
-    'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
-  )
-  public declare view?: PascalCaseEntityView;
-
+export class FindFirstPagePascalCaseEntitiesQueryParams extends FindAllPascalCaseEntitiesQueryParams {
   @Property()
   @Description(
     'The number of entities label returned in each request. Must be less than or equal to 100. Default is 100. See the Pagination section below for more.'
   )
+  @Integer()
   @Max(100)
   @Default(100)
   public declare pageSize?: number;
@@ -510,7 +486,7 @@ export class CountAllPascalCaseEntitiesQueryParams extends CountAllRecordsQueryP
   @Property()
   @Enum(...camelCaseEntityViews)
   @Description(
-    'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
+    'The name of a predefined data view. If set, only the entities label in that view will be returned. The entities label will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
   )
   public declare view?: PascalCaseEntityView;
 }
