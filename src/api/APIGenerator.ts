@@ -1,7 +1,7 @@
 import '@infinite-debugger/rmk-js-extensions/RegExp';
 import '@infinite-debugger/rmk-js-extensions/String';
 
-import { dirname, join, normalize } from 'path';
+import { dirname, join, normalize, sep } from 'path';
 
 import {
   ensureDirSync,
@@ -847,6 +847,23 @@ export const generateAirtableAPI = async ({
               }
               //#endregion
 
+              //#region Add all entity permissions export
+              if (
+                templateFilePath.match(
+                  new RegExp(
+                    `${RegExp.escape(sep)}permissions${RegExp.escape(
+                      sep
+                    )}\\w+.(ts|js)$`,
+                    'g'
+                  )
+                )
+              ) {
+                fileContents += getInterpolatedString(
+                  `\n\nexport const allPascalCaseEntitiesPermissions = [\n${modulePermissionsTemplate}\n]`
+                );
+              }
+              //#endregion
+
               ensureDirSync(dirname(filePath));
               writeFileSync(
                 filePath,
@@ -862,28 +879,15 @@ export const generateAirtableAPI = async ({
           // Permissions
           //#region Accumulating all focus table permissions
           permissionsImports.push(
-            getInterpolatedString(`
-              import {
-                MANAGE_ENTITIES_PERMISSION,
-                CREATE_ENTITY_PERMISSION,
-                VIEW_ENTITIES_PERMISSION,
-                COUNT_ENTITIES_PERMISSION,
-                VIEW_ENTITY_DETAILS_PERMISSION,
-                UPDATE_ENTITY_PERMISSION,
-                DELETE_ENTITY_PERMISSION
-              } from './PascalCaseEntities';
-            `)
+            getInterpolatedString(
+              `import { allPascalCaseEntitiesPermissions } from './PascalCaseEntities';`
+            )
           );
           permissionsExports.push(
             getInterpolatedString(`export * from './PascalCaseEntities';`)
           );
           permissionsObjectStrings.push(
-            getInterpolatedString(
-              `
-                // Entities Label Permissions.
-                ${modulePermissionsTemplate}
-              `.trimIndent()
-            )
+            getInterpolatedString(`...allPascalCaseEntitiesPermissions`)
           );
           //#endregion
 
@@ -1122,9 +1126,9 @@ export const generateAirtableAPI = async ({
             ${permissionsImports.join('\n')}
             ${permissionsExports.join('\n')}
 
-            export const allPermissions = [${permissionsObjectStrings.join(
-              ',\n\n'
-            )}];
+            export const allPermissions = [\n${permissionsObjectStrings.join(
+              ',\n'
+            )}\n];
           `.trimIndent(),
             {
               filepath: permissionsFilePath,
