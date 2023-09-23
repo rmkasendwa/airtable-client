@@ -1,9 +1,11 @@
 import {
   ArrayOf,
   DateTime,
+  Default,
   Description,
   Enum,
   Example,
+  Max,
   Nullable,
   Property,
   Required,
@@ -15,6 +17,7 @@ import {
   AirtableSortOption,
   CountAllRecordsQueryParams,
   FindAllRecordsQueryParams,
+  FindFirstPageRecordsQueryParams,
   getAirtableRecordRequestValidationSchema,
   getAirtableRecordResponseValidationSchema,
 } from './Utils';
@@ -85,9 +88,9 @@ export const camelCaseEntitiesAirtableLookupColumns = [
 ] as const;
 
 export type PascalCaseEntitiesAirtableLookupColumn =
-  typeof camelCaseEntitiesAirtableLookupColumns[number] extends never
+  (typeof camelCaseEntitiesAirtableLookupColumns)[number] extends never
     ? string
-    : typeof camelCaseEntitiesAirtableLookupColumns[number];
+    : (typeof camelCaseEntitiesAirtableLookupColumns)[number];
 //#endregion
 
 //#region Alternative record id columns
@@ -131,9 +134,9 @@ export const camelCaseEntitiesAirtableColumns = [
 ] as const;
 
 export type PascalCaseEntitiesAirtableColumn =
-  typeof camelCaseEntitiesAirtableColumns[number] extends never
+  (typeof camelCaseEntitiesAirtableColumns)[number] extends never
     ? string
-    : typeof camelCaseEntitiesAirtableColumns[number];
+    : (typeof camelCaseEntitiesAirtableColumns)[number];
 //#endregion
 
 //#region Maps Entities Table non lookup columns to Entity Label properties.
@@ -175,7 +178,7 @@ export const camelCaseEntityQueryableFields = [
 ] as const;
 
 export type PascalCaseEntityQueryableField =
-  typeof camelCaseEntityQueryableFields[number];
+  (typeof camelCaseEntityQueryableFields)[number];
 //#endregion
 
 /********************* Airtable Entities Table views ***********************/
@@ -185,7 +188,7 @@ export const camelCaseEntityViews = [
   /* AIRTABLE_VIEWS */
 ] as const;
 
-export type PascalCaseEntityView = typeof camelCaseEntityViews[number];
+export type PascalCaseEntityView = (typeof camelCaseEntityViews)[number];
 //#endregion
 
 /********************* Validation Schemas ***********************/
@@ -460,6 +463,45 @@ export class FindAllPascalCaseEntitiesQueryParams extends FindAllRecordsQueryPar
     'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
   )
   public declare view?: PascalCaseEntityView;
+}
+
+export class FindFirstPagePascalCaseEntitiesQueryParams extends FindFirstPageRecordsQueryParams {
+  @Property()
+  @Enum(...camelCaseEntityQueryableFields)
+  @Description(
+    "Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred."
+  )
+  public declare fields?: PascalCaseEntityQueryableField[];
+
+  @Property()
+  @ArrayOf(PascalCaseEntitiesSortOption)
+  @Description(
+    `
+    A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
+
+    The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
+  `.trimIndent()
+  )
+  public declare sort?: PascalCaseEntitiesSortOption[];
+
+  @Property()
+  @Enum(...camelCaseEntityViews)
+  @Description(
+    'The name or ID of a view in the table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view unless the sort parameter is included, which overrides that order. Fields hidden in this view will be returned in the results. To only return a subset of fields, use the fields parameter.'
+  )
+  public declare view?: PascalCaseEntityView;
+
+  @Property()
+  @Description(
+    'The number of entities label returned in each request. Must be less than or equal to 100. Default is 100. See the Pagination section below for more.'
+  )
+  @Max(100)
+  @Default(100)
+  public declare pageSize?: number;
+
+  @Property()
+  @Description('The offset to load the next page.')
+  public declare offset?: string;
 }
 //#endregion
 

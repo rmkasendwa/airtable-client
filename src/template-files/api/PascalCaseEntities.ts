@@ -10,8 +10,8 @@ import {
   BasePascalCaseEntityCreationDetails,
   CountAllPascalCaseEntitiesQueryParams,
   CreateManyNewPascalCaseEntitiesRequestValidationSchema,
-  FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponseValidationSchema,
+  FindFirstPagePascalCaseEntitiesQueryParams,
   PascalCaseEntityAirtableResponseValidationSchema,
   PascalCaseEntityPatches,
   PascalCaseEntityPropertyToAirtableColumnNameMapper,
@@ -47,7 +47,7 @@ export const ENTITY_DELETE_ENDPOINT_PATH = FIND_ALL_ENTITIES_ENDPOINT_PATH;
  * @returns The entities label.
  */
 export const findFirstPagePascalCaseEntities = async (
-  queryParams: FindAllPascalCaseEntitiesQueryParams = {}
+  queryParams: FindFirstPagePascalCaseEntitiesQueryParams = {}
 ): Promise<{
   records: BasePascalCaseEntity[];
   offset?: string;
@@ -101,7 +101,7 @@ export const findFirstPagePascalCaseEntities = async (
  * @returns The entities label.
  */
 export const findAllPascalCaseEntities = async (
-  queryParams: FindAllPascalCaseEntitiesQueryParams = {}
+  queryParams: FindFirstPagePascalCaseEntitiesQueryParams = {}
 ) => {
   const records: BasePascalCaseEntity[] = [];
 

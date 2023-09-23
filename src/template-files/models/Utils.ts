@@ -5,6 +5,7 @@ import {
   Description,
   Enum,
   Example,
+  Max,
   Property,
   Required,
 } from '@tsed/schema';
@@ -71,44 +72,37 @@ export class FindAllRecordsQueryParams<
   @Property()
   @Description(
     `
-      Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
-    `.trimIndent()
+    Only data for fields whose names are in this list will be included in the result. If you don't need every field, you can use this parameter to reduce the amount of data transferred.
+  `.trimIndent()
   )
   public fields?: Field[];
 
   @Property()
   @Description(
     `
-      A [formula](https://support.airtable.com/docs/formula-field-reference) used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
+    A [formula](https://support.airtable.com/docs/formula-field-reference) used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response. We recommend testing your formula in the Formula field UI before using it in your API request.
 
-      If combined with the view parameter, only records in that view which satisfy the formula will be returned.
-      
-      The formula must be encoded first before passing it as a value. You can use [this tool](https://codepen.io/rmkasendwa/full/qBQPBvJ) to not only encode the formula but also create the entire url you need.
-    `.trimIndent()
+    If combined with the view parameter, only records in that view which satisfy the formula will be returned.
+    
+    The formula must be encoded first before passing it as a value. You can use [this tool](https://codepen.io/rmkasendwa/full/qBQPBvJ) to not only encode the formula but also create the entire url you need.
+  `.trimIndent()
   )
   public filterByFormula?: string;
 
   @Property()
   @Description(
-    'The maximum total number of records that will be returned in your requests. If this value is larger than pageSize (which is 100 by default), you may have to load multiple pages to reach this total. See the Pagination section below for more.'
+    'The maximum total number of records that will be returned in your requests.'
   )
   public maxRecords?: number;
-
-  @Property()
-  @Description(
-    'The number of records returned in each request. Must be less than or equal to 100. Default is 100. See the Pagination section below for more.'
-  )
-  @Default(100)
-  public pageSize?: number;
 
   @Property()
   @ArrayOf(AirtableSortOption)
   @Description(
     `
-      A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
+    A list of sort objects that specifies how the records will be ordered. Each sort object must have a field key specifying the name of the field to sort on, and an optional direction key that is either "asc" or "desc". The default direction is "asc".
 
-      The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
-    `.trimIndent()
+    The sort parameter overrides the sorting of the view specified in the view parameter. If neither the sort nor the view parameter is included, the order of records is arbitrary.
+  `.trimIndent()
   )
   public sort?: AirtableSortOption[];
 
@@ -118,21 +112,17 @@ export class FindAllRecordsQueryParams<
   )
   public view?: View;
 
-  @Property()
-  @Description('The airtable offset to load the next page.')
-  public offset?: string;
-
   /* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */
   @Property()
   @Enum('string', 'json')
   @Description(
     `
-      The format that should be used for cell values. Supported values are:
+    The format that should be used for cell values. Supported values are:
 
-      json: cells will be formatted as JSON, depending on the field type.
+    json: cells will be formatted as JSON, depending on the field type.
 
-      string: cells will be formatted as user-facing strings, regardless of the field type. The timeZone and userLocale parameters are required when using string as the cellFormat.
-    `.trimIndent()
+    string: cells will be formatted as user-facing strings, regardless of the field type. The timeZone and userLocale parameters are required when using string as the cellFormat.
+  `.trimIndent()
   )
   public cellFormat?: 'string' | 'json';
 
@@ -148,6 +138,23 @@ export class FindAllRecordsQueryParams<
   )
   public userLocale?: string;
   /* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */
+}
+
+export class FindFirstPageRecordsQueryParams<
+  Field extends string = string,
+  View extends string = string
+> extends FindAllRecordsQueryParams<Field, View> {
+  @Property()
+  @Description(
+    'The number of records returned in each request. Must be less than or equal to 100. Default is 100. See the Pagination section below for more.'
+  )
+  @Max(100)
+  @Default(100)
+  public pageSize?: number;
+
+  @Property()
+  @Description('The offset to load the next page.')
+  public offset?: string;
 }
 
 export class CountAllRecordsQueryParams<View extends string = string> {
@@ -191,13 +198,13 @@ export const DEFAULT_VIEW_ALIAS = 'Default';
  * @returns The airtable query parameters.
  */
 export const convertToAirtableFindAllRecordsQueryParams = <
-  T extends FindAllRecordsQueryParams
+  T extends FindFirstPageRecordsQueryParams
 >(
   queryParams: T,
   objectPropertyToColumnNameMapper: Record<string, string>,
   lookupObjectPropertyToColumnNameMapper: Record<string, string>
 ) => {
-  const airtableQueryParams: Omit<FindAllRecordsQueryParams, 'fields'> & {
+  const airtableQueryParams: Omit<FindFirstPageRecordsQueryParams, 'fields'> & {
     fields?: string[];
   } = {
     ...omit(queryParams, 'sort', 'fields', 'filterByFormula'),

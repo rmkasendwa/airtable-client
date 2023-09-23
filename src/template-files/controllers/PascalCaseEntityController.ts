@@ -39,6 +39,7 @@ import {
   CreateNewPascalCaseEntitiesReponse,
   FindAllPascalCaseEntitiesQueryParams,
   FindAllPascalCaseEntitiesReponse,
+  FindFirstPagePascalCaseEntitiesQueryParams,
   FindFirstPagePascalCaseEntitiesReponse,
   PascalCaseEntity,
   PascalCaseEntityCreationDetails,
@@ -76,7 +77,7 @@ export class PascalCaseEntityController {
   )
   async findFirstPagePascalCaseEntities(
     @QueryParams()
-    queryParams: FindAllPascalCaseEntitiesQueryParams
+    queryParams: FindFirstPagePascalCaseEntitiesQueryParams
   ) {
     return findFirstPagePascalCaseEntities(queryParams);
   }
