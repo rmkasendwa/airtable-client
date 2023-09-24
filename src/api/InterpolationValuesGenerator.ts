@@ -575,5 +575,8 @@ export const getEntityTemplateFileInterpolationLabels = ({
 
     ['kebab-case-entities']: labelPlural.toKebabCase(),
     ['kebab-case-entity']: labelSingular.toKebabCase(),
+
+    ['snake_case_entities']: labelPlural.replace(/\s/g, '_').toLowerCase(),
+    ['snake_case_entity']: labelSingular.replace(/\s/g, '_').toLowerCase(),
   } as Record<string, string>;
 };

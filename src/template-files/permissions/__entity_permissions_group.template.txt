@@ -1,6 +1,7 @@
 {
   "category": "Entities Label",
   "code": MANAGE_ENTITIES_PERMISSION,
+  "scope": "snake_case_entities",
   "description": "A user with this permission can perform all operations on Entities Label",
   "name": "Manage Entities Label",
   "parentPermissionCode": "ALL_FUNCTIONS"
@@ -8,6 +9,7 @@
 {
   "category": "Entities Label",
   "code": CREATE_ENTITY_PERMISSION,
+  "scope": "snake_case_entities.write",
   "description": "A user with this permission can create a new Entity Label",
   "name": "Create Entities Label",
   "parentPermissionCode": "MANAGE_ENTITIES"
@@ -15,6 +17,7 @@
 {
   "category": "Entities Label",
   "code": VIEW_ENTITIES_PERMISSION,
+  "scope": "snake_case_entities.read",
   "description": "A user with this permission can view a list of Entities Label",
   "name": "View Entities Label",
   "parentPermissionCode": "MANAGE_ENTITIES"
@@ -22,6 +25,7 @@
 {
   "category": "Entities Label",
   "code": COUNT_ENTITIES_PERMISSION,
+  "scope": "snake_case_entities.read",
   "description": "A user with this permission can view the count of Entities Label",
   "name": "Count Entities Label",
   "parentPermissionCode": "MANAGE_ENTITIES"
@@ -29,6 +33,7 @@
 {
   "category": "Entities Label",
   "code": VIEW_ENTITY_DETAILS_PERMISSION,
+  "scope": "snake_case_entities.read",
   "description": "A user with this permission can view Entity Label details",
   "name": "View Entity Label Details",
   "parentPermissionCode": "MANAGE_ENTITIES"
@@ -36,6 +41,7 @@
 {
   "category": "Entities Label",
   "code": UPDATE_ENTITY_PERMISSION,
+  "scope": "snake_case_entities.write",
   "description": "A user with this permission can update an existing Entity Label",
   "name": "Update Entity Label",
   "parentPermissionCode": "MANAGE_ENTITIES"
@@ -43,6 +49,7 @@
 {
   "category": "Entities Label",
   "code": DELETE_ENTITY_PERMISSION,
+  "scope": "snake_case_entities.write",
   "description": "A user with this permission can delete an existing Entity Label",
   "name": "Delete Entity Label",
   "parentPermissionCode": "MANAGE_ENTITIES"

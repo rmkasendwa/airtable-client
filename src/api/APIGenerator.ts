@@ -10,7 +10,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'fs-extra';
-import { pick } from 'lodash';
+import { isEmpty, pick } from 'lodash';
 import pluralize from 'pluralize';
 import prettier from 'prettier';
 import { default as walk, default as walkSync } from 'walk-sync';
@@ -1158,82 +1158,98 @@ export const generateAirtableAPI = async ({
 
         //#region Write permissions index file
         const permissionsFilePath = `${baseAPIOutputFolderPath}/permissions/index.ts`;
-        const permissionDependencies = filteredTablesConfigurations.reduce<
-          Record<string, string[]>
-        >(
-          (
-            accumulator,
-            { editableFieldsDependentTables, labelSingular, labelPlural }
-          ) => {
-            const [createPermissionDependencies, editPermissionDependencies] = [
-              editableFieldsDependentTables.filter(
-                ({ creatable = true, editable = true }) => {
-                  return creatable && editable;
-                }
-              ),
-              editableFieldsDependentTables.filter(({ editable = true }) => {
-                return editable;
-              }),
-            ].map((fieldsDependentTables) => {
-              return fieldsDependentTables.flatMap(({ tableColumn }) => {
-                const dependentTableConfiguration =
-                  filteredTablesConfigurations.find(
-                    ({ id: filteredTableId }) =>
-                      tableColumn.options?.linkedTableId === filteredTableId
-                  )!;
-                const permissons = [
-                  `VIEW_${dependentTableConfiguration.labelPlural
-                    .toUpperCase()
-                    .replace(/\s/g, '_')}_PERMISSION`,
-                  `VIEW_${dependentTableConfiguration.labelSingular
-                    .toUpperCase()
-                    .replace(/\s/g, '_')}_DETAILS_PERMISSION`,
-                ];
+        const permissionDependencies = filteredTablesConfigurations
+          .map(
+            ({ editableFieldsDependentTables, labelSingular, labelPlural }) => {
+              const permissionsDependencies: {
+                labelPlural: string;
+                map: Record<string, string[]>;
+              } = { labelPlural, map: {} };
+              const [createPermissionDependencies, editPermissionDependencies] =
+                [
+                  editableFieldsDependentTables.filter(
+                    ({ creatable = true, editable = true }) => {
+                      return creatable && editable;
+                    }
+                  ),
+                  editableFieldsDependentTables.filter(
+                    ({ editable = true }) => {
+                      return editable;
+                    }
+                  ),
+                ].map((fieldsDependentTables) => {
+                  return fieldsDependentTables.flatMap(({ tableColumn }) => {
+                    const dependentTableConfiguration =
+                      filteredTablesConfigurations.find(
+                        ({ id: filteredTableId }) =>
+                          tableColumn.options?.linkedTableId === filteredTableId
+                      )!;
+                    const permissons = [
+                      `VIEW_${dependentTableConfiguration.labelPlural
+                        .toUpperCase()
+                        .replace(/\s/g, '_')}_PERMISSION`,
+                      `VIEW_${dependentTableConfiguration.labelSingular
+                        .toUpperCase()
+                        .replace(/\s/g, '_')}_DETAILS_PERMISSION`,
+                    ];
 
-                permissons.forEach((permission) => {
-                  addModuleImport({
-                    imports: permissionsImports,
-                    importFilePath: `./${dependentTableConfiguration.labelPlural.toPascalCase()}`,
-                    importName: permission,
+                    permissons.forEach((permission) => {
+                      addModuleImport({
+                        imports: permissionsImports,
+                        importFilePath: `./${dependentTableConfiguration.labelPlural.toPascalCase()}`,
+                        importName: permission,
+                      });
+                    });
+                    return permissons;
                   });
                 });
-                return permissons;
-              });
-            });
-            if (createPermissionDependencies.length > 0) {
-              const createPermission = `CREATE_${labelSingular
-                .toUpperCase()
-                .replace(/\s/g, '_')}_PERMISSION`;
-              addModuleImport({
-                imports: permissionsImports,
-                importFilePath: `./${labelPlural.toPascalCase()}`,
-                importName: createPermission,
-              });
-              accumulator[createPermission] = createPermissionDependencies;
+              if (createPermissionDependencies.length > 0) {
+                const createPermission = `CREATE_${labelSingular
+                  .toUpperCase()
+                  .replace(/\s/g, '_')}_PERMISSION`;
+                addModuleImport({
+                  imports: permissionsImports,
+                  importFilePath: `./${labelPlural.toPascalCase()}`,
+                  importName: createPermission,
+                });
+                permissionsDependencies.map[createPermission] =
+                  createPermissionDependencies;
+              }
+              if (editPermissionDependencies.length > 0) {
+                const updatePermission = `UPDATE_${labelSingular
+                  .toUpperCase()
+                  .replace(/\s/g, '_')}_PERMISSION`;
+                addModuleImport({
+                  imports: permissionsImports,
+                  importFilePath: `./${labelPlural.toPascalCase()}`,
+                  importName: updatePermission,
+                });
+                permissionsDependencies.map[updatePermission] =
+                  editPermissionDependencies;
+              }
+              return permissionsDependencies;
             }
-            if (editPermissionDependencies.length > 0) {
-              const updatePermission = `UPDATE_${labelSingular
-                .toUpperCase()
-                .replace(/\s/g, '_')}_PERMISSION`;
-              addModuleImport({
-                imports: permissionsImports,
-                importFilePath: `./${labelPlural.toPascalCase()}`,
-                importName: updatePermission,
-              });
-              accumulator[updatePermission] = editPermissionDependencies;
-            }
-            return accumulator;
-          },
-          {}
-        );
+          )
+          .filter(({ map }) => {
+            return !isEmpty(map);
+          });
 
-        const dependentPermissionsObjectPropertiesCode = Object.entries(
-          permissionDependencies
-        )
-          .map(([permission, dependantPermissions]) => {
-            return `[${permission}]: [${dependantPermissions.join(', ')}]`;
+        const dependentPermissionsObjectPropertiesCode = permissionDependencies
+          .map(({ labelPlural, map: entityPermissionDependencies }) => {
+            const permissionDependenciesCodeBlock = Object.entries(
+              entityPermissionDependencies
+            )
+              .map(([permission, dependantPermissions]) => {
+                return `[${permission}]: [${dependantPermissions.join(', ')}],`;
+              })
+              .join('\n');
+            return `
+              //#region ${labelPlural} Permissions
+              ${permissionDependenciesCodeBlock}
+              //#endregion
+            `.trimIndent();
           })
-          .join(',\n');
+          .join('\n\n');
 
         writeFileSync(
           permissionsFilePath,
@@ -1243,11 +1259,15 @@ export const generateAirtableAPI = async ({
             ${getImportsCode({ imports: permissionsImports }).join('\n')}
             ${permissionsExports.join('\n')}
 
+            //#region All Permissions
             export const allPermissions = [\n${permissionsObjectStrings.join(
               ',\n'
             )}\n];
+            //#endregion
 
-            export const dependenciesPermissionsMap = {${dependentPermissionsObjectPropertiesCode}};
+            //#region Permission Dependencies Map
+            export const dependenciesPermissionsMap = {\n${dependentPermissionsObjectPropertiesCode}\n};
+            //#endregion
           `.trimIndent(),
             {
               filepath: permissionsFilePath,
