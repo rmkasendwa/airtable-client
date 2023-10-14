@@ -30,6 +30,16 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
 
   /**
+   * The array item separator of the property. This is only applicable to array properties.
+   * The array item separator is used to split the string value of the property into an array.
+   * For example, if the array item separator is set to ', ', the string value of the property
+   * 'A word, Another word' will be converted to ['A word', 'Another word'].
+   *
+   * @default ', '
+   */
+  arrayItemSeparator?: string;
+
+  /**
    * The serialized example value of the property. This is useful when you want to generate a TypeScript type.
    *
    * @example '1234'
