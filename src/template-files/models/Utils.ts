@@ -626,8 +626,16 @@ export const getAirtableRecordRequestValidationSchema = (
               propertyName,
               prefersSingleRecordLink,
               isMultipleRecordLinksField,
+              type,
+              arrayItemSeparator,
             } = mapping;
             (accumulator as any)[propertyName] = (() => {
+              if (
+                type === 'string[]' ||
+                (type === 'number[]' && Array.isArray(fields[key]))
+              ) {
+                return fields[key].join(arrayItemSeparator || ', ');
+              }
               if (isMultipleRecordLinksField) {
                 if (Array.isArray(fields[key])) {
                   if (prefersSingleRecordLink) {
