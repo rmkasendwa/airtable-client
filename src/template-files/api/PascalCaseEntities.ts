@@ -3,6 +3,7 @@ import {
   addSearchParams,
   getInterpolatedPath,
 } from '@infinite-debugger/rmk-utils/paths';
+import { $log } from '@tsed/logger';
 
 import { AIRTABLE_BASE_ID } from '../config';
 import {
@@ -52,13 +53,9 @@ export const findFirstPagePascalCaseEntities = async (
   records: BasePascalCaseEntity[];
   offset?: string;
 }> => {
-  console.log(
-    `\nLoading entities label with the following input:\x1b[2m\n${JSON.stringify(
-      queryParams,
-      null,
-      2
-    )}\x1b[0m`
-  );
+  $log.info(`Loading entities label`, {
+    queryParams,
+  });
 
   if (
     !queryParams.fields &&
@@ -79,13 +76,10 @@ export const findFirstPagePascalCaseEntities = async (
 
   const requestUrl = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/listRecords`;
 
-  console.log(
-    `\nSending entities label POST request to airtable to the following URL:\x1b[2m\n${requestUrl}\x1b[0m\nWith the following payload: \x1b[2m\n${JSON.stringify(
-      requestPayload,
-      null,
-      2
-    )}\x1b[0m`
-  );
+  $log.info(`Sending entities label POST request to airtable`, {
+    requestUrl,
+    requestPayload,
+  });
 
   const { data } = await post(requestUrl, {
     data: requestPayload,
@@ -147,9 +141,7 @@ export const countAllPascalCaseEntities = async (
 export const findPascalCaseEntityById = async (
   camelCaseEntityId: string
 ): Promise<BasePascalCaseEntity> => {
-  console.log(
-    `\nLoading entity label by id: \x1b[2m${camelCaseEntityId}\x1b[0m`
-  );
+  $log.info(`Loading entity label by id`, { camelCaseEntityId });
   if (camelCaseEntityId.match(/^rec/)) {
     const { data } = await get(
       getInterpolatedPath(FIND_ENTITY_BY_ID_ENPOINT_PATH, {
@@ -199,13 +191,7 @@ export const createNewPascalCaseEntity = async (
 export const createManyNewPascalCaseEntities = async (
   records: BasePascalCaseEntityCreationDetails[]
 ) => {
-  console.log(
-    `\nCreating entities label with the following input:\x1b[2m\n${JSON.stringify(
-      records,
-      null,
-      2
-    )}\x1b[0m`
-  );
+  $log.info(`Creating entities label`, { records });
 
   const createdRecords: BasePascalCaseEntity[] = [];
 
@@ -222,13 +208,9 @@ export const createManyNewPascalCaseEntities = async (
         ),
     };
 
-    console.log(
-      `\nSending entities label POST request to airtable with the following input:\x1b[2m\n${JSON.stringify(
-        airtableRequestData,
-        null,
-        2
-      )}\x1b[0m`
-    );
+    $log.info(`Sending entities label POST request to airtable`, {
+      airtableRequestData,
+    });
 
     const { data } = await post(ENTITY_CREATE_ENDPOINT_PATH, {
       data: airtableRequestData,
@@ -275,25 +257,15 @@ export const updatePascalCaseEntity = async (
 export const updateManyPascalCaseEntities = async (
   records: PascalCaseEntityUpdates[]
 ) => {
-  console.log(
-    `\nUpdating entities label with the following input:\x1b[2m\n${JSON.stringify(
-      records,
-      null,
-      2
-    )}\x1b[0m`
-  );
+  $log.info(`Updating entities label`, { records });
 
   const airtableRequestData = {
     records: UpdateManyPascalCaseEntitiesRequestValidationSchema.parse(records),
   };
 
-  console.log(
-    `\nSending entities label POST request to airtable with the following input:\n\x1b[2m${JSON.stringify(
-      airtableRequestData,
-      null,
-      2
-    )}\x1b[0m`
-  );
+  $log.info(`Sending entities label POST request to airtable`, {
+    airtableRequestData,
+  });
 
   const { data } = await post(ENTITY_UPDATE_ENDPOINT_PATH, {
     data: airtableRequestData,
@@ -324,13 +296,7 @@ export const patchPascalCaseEntity = async (
 export const patchManyPascalCaseEntities = async (
   records: PascalCaseEntityPatches[]
 ) => {
-  console.log(
-    `\nUpdating entities label with the following input:\n\x1b[2m${JSON.stringify(
-      records,
-      null,
-      2
-    )}\x1b[0m`
-  );
+  $log.info(`Updating entities label`, { records });
 
   const updatedRecords: BasePascalCaseEntity[] = [];
 
@@ -347,13 +313,9 @@ export const patchManyPascalCaseEntities = async (
         ),
     };
 
-    console.log(
-      `\nSending entities label PATCH request to airtable with the following input:\x1b[2m\n${JSON.stringify(
-        airtableRequestData,
-        null,
-        2
-      )}\x1b[0m`
-    );
+    $log.info(`Sending entities label PATCH request to airtable`, {
+      airtableRequestData,
+    });
 
     const { data } = await patch(ENTITY_UPDATE_ENDPOINT_PATH, {
       data: airtableRequestData,
@@ -395,13 +357,7 @@ export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
  * @returns Deleted records response.
  */
 export const deleteManyPascalCaseEntities = async (recordIds: string[]) => {
-  console.log(
-    `\nDeleting entities label with the following input:\n\x1b[2m${JSON.stringify(
-      recordIds,
-      null,
-      2
-    )}\x1b[0m`
-  );
+  $log.info(`Deleting entities label`, { recordIds });
 
   const deletedRecordsResponse: { id: string; deleted: boolean }[] = [];
 
