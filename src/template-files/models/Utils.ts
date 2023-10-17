@@ -631,8 +631,8 @@ export const getAirtableRecordRequestValidationSchema = (
             } = mapping;
             (accumulator as any)[propertyName] = (() => {
               if (
-                type === 'string[]' ||
-                (type === 'number[]' && Array.isArray(fields[key]))
+                (type === 'string[]' || type === 'number[]') &&
+                Array.isArray(fields[key])
               ) {
                 return fields[key].join(arrayItemSeparator || ', ');
               }
