@@ -207,12 +207,12 @@ export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
         return [
           propertyName,
           {
-            propertyName: key,
             ...(() => {
               if (typeof value !== 'string') {
                 return { ...value };
               }
             })(),
+            propertyName: key,
           },
         ];
       }
