@@ -301,7 +301,21 @@ export const getTableColumnValidationSchemaTypeStrings = (
         break;
 
       // Dates
-      case 'date':
+      case 'date': {
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: `string`,
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+            Example: [`'2023-01-05'`],
+          },
+          required: false,
+          airtableResponseValidationString: `z.string()`,
+          requestObjectPropertyTypeValidationString: `z.string()`,
+          tableColumName: tableColumn.name,
+        };
+      }
       case 'dateTime':
       case 'lastModifiedTime':
       case 'createdTime': {
@@ -311,9 +325,17 @@ export const getTableColumnValidationSchemaTypeStrings = (
           accessModifier: 'public',
           decorators: {
             Property: [],
+            ...(() => {
+              if (type === 'createdTime' || type === 'lastModifiedTime') {
+                return {
+                  Required: [],
+                };
+              }
+            })(),
+            DateTime: [],
             Example: [`'2023-01-05T19:00:44.544Z'`],
           },
-          required: false,
+          required: type === 'createdTime' || type === 'lastModifiedTime',
           airtableResponseValidationString: `z.string()`,
           requestObjectPropertyTypeValidationString: `z.string()`,
           tableColumName: tableColumn.name,
