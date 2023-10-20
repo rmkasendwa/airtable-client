@@ -326,7 +326,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
           decorators: {
             Property: [],
             ...(() => {
-              if (type === 'createdTime' || type === 'lastModifiedTime') {
+              if (type === 'createdTime') {
                 return {
                   Required: [],
                 };
