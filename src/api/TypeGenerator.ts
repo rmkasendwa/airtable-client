@@ -335,7 +335,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
             DateTime: [],
             Example: [`'2023-01-05T19:00:44.544Z'`],
           },
-          required: type === 'createdTime',
+          required: type === 'createdTime' || type === 'lastModifiedTime',
           airtableResponseValidationString: `z.string()`,
           requestObjectPropertyTypeValidationString: `z.string()`,
           tableColumName: tableColumn.name,
