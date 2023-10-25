@@ -314,8 +314,8 @@ export const getAirtableRecordResponseValidationSchema = <
         ...Object.entries(fields)
           .map(([key, value]) => {
             if (
-              nonLookupColumnNameToObjectPropertyMapper[key].tableColumnType ===
-                'lastModifiedTime' &&
+              nonLookupColumnNameToObjectPropertyMapper[key]
+                ?.tableColumnType === 'lastModifiedTime' &&
               value == null
             ) {
               return [key, createdTime];
