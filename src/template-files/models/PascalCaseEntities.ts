@@ -105,7 +105,10 @@ export const PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper: Rec
   AirtableColumnMapping<string>
 > = {
   /* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */
-  ['Name']: 'name',
+  ['Name']: {
+    propertyName: 'name',
+    tableColumnType: 'singleLineText',
+  },
   /* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */
 };
 //#endregion
@@ -147,6 +150,7 @@ export const PascalCaseEntityAirtableColumnToObjectPropertyMapper: Record<
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
   ['Name']: {
     propertyName: 'name',
+    tableColumnType: 'singleLineText',
   },
   /* AIRTABLE_ENTITY_FIELD_TO_PROPERTY_MAPPINGS */
 };
@@ -207,6 +211,10 @@ export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
         return [
           propertyName,
           {
+            tableColumnType:
+              typeof value !== 'string'
+                ? value.tableColumnType
+                : 'singleLineText',
             propertyName: key,
             ...(() => {
               if (typeof value !== 'string' && value.prefersSingleRecordLink) {

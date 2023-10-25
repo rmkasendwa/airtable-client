@@ -300,8 +300,22 @@ export const getTableColumnValidationSchemaTypeStrings = (
         }
         break;
 
-      // Dates
-      case 'date':
+      //#region Dates
+      case 'date': {
+        return {
+          propertyName: camelCasePropertyName,
+          propertyType: `string`,
+          accessModifier: 'public',
+          decorators: {
+            Property: [],
+            Example: [`'2023-01-05'`],
+          },
+          required: false,
+          airtableResponseValidationString: `z.string()`,
+          requestObjectPropertyTypeValidationString: `z.string()`,
+          tableColumName: tableColumn.name,
+        };
+      }
       case 'dateTime':
       case 'lastModifiedTime':
       case 'createdTime': {
@@ -311,16 +325,25 @@ export const getTableColumnValidationSchemaTypeStrings = (
           accessModifier: 'public',
           decorators: {
             Property: [],
+            ...(() => {
+              if (type === 'createdTime' || type === 'lastModifiedTime') {
+                return {
+                  Required: [],
+                };
+              }
+            })(),
+            DateTime: [],
             Example: [`'2023-01-05T19:00:44.544Z'`],
           },
-          required: false,
+          required: type === 'createdTime',
           airtableResponseValidationString: `z.string()`,
           requestObjectPropertyTypeValidationString: `z.string()`,
           tableColumName: tableColumn.name,
         };
       }
+      //#endregion
 
-      // Lists
+      //#region Lists
       case 'multipleRecordLinks': {
         const airtableResponseValidationString = `z.array(z.string())`;
         const objectModelPropertyType: ObjectModelProperty = (() => {
@@ -528,8 +551,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
           airtableResponseValidationString,
         };
       }
+      //#endregion
 
-      // Numbers
+      //#region Numbers
       case 'number':
       case 'percent':
       case 'currency':
@@ -551,8 +575,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
           tableColumName: tableColumn.name,
         };
       }
+      //#endregion
 
-      // Booleans
+      //#region Booleans
       case 'checkbox': {
         return {
           propertyName: camelCasePropertyName,
@@ -569,8 +594,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
           tableColumName: tableColumn.name,
         };
       }
+      //#endregion
 
-      // Special text
+      //#region Special text
       case 'email': {
         return {
           propertyName: camelCasePropertyName,
@@ -602,8 +628,9 @@ export const getTableColumnValidationSchemaTypeStrings = (
           tableColumName: tableColumn.name,
         };
       }
+      //#endregion
 
-      // Regular text
+      //#region Regular text
       case 'singleLineText':
       case 'multilineText':
       case 'richText':
@@ -648,11 +675,11 @@ export const getTableColumnValidationSchemaTypeStrings = (
         })();
 
         const enumValuesCode = `
-          export const ${enumValuesVariableName} = [${enumValues.join(
+            export const ${enumValuesVariableName} = [${enumValues.join(
           ', '
         )}] as const;
-          export type ${enumTypeName} = (typeof ${enumValuesVariableName})[number];
-        `;
+            export type ${enumTypeName} = (typeof ${enumValuesVariableName})[number];
+          `;
 
         const baseType =
           userDefinedType ||
@@ -690,6 +717,7 @@ export const getTableColumnValidationSchemaTypeStrings = (
           tableColumName: tableColumn.name,
         };
       }
+      //#endregion
     }
     const baseType = userDefinedType || 'any';
     return {

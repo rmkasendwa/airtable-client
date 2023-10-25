@@ -262,6 +262,7 @@ export const convertToAirtableFindAllRecordsQueryParams = <
 
 export type AirtableColumnConfigMapping<ObjectPropertyName extends string> = {
   propertyName: ObjectPropertyName;
+  tableColumnType: AirtableFieldType;
   isMultipleRecordLinksField?: boolean;
   prefersSingleRecordLink?: boolean;
   isLookupWithListOfValues?: boolean;
@@ -274,8 +275,7 @@ export type AirtableColumnConfigMapping<ObjectPropertyName extends string> = {
 };
 
 export type AirtableColumnMapping<ObjectPropertyName extends string> =
-  | AirtableColumnConfigMapping<ObjectPropertyName>
-  | ObjectPropertyName;
+  AirtableColumnConfigMapping<ObjectPropertyName>;
 
 export type GetAirtableRecordResponseValidationSchemaOptions = {
   responseFieldsValidationSchema: AnyZodObject;
@@ -310,33 +310,32 @@ export const getAirtableRecordResponseValidationSchema = <
       const transformedRecord = {
         id,
         created: createdTime,
-        ...Object.keys(fields)
-          .filter((key) => {
-            return fields[key] != null;
+        ...Object.entries(fields)
+          .map(([key, value]) => {
+            if (
+              nonLookupColumnNameToObjectPropertyMapper[key].tableColumnType ===
+                'lastModifiedTime' &&
+              value == null
+            ) {
+              return [key, createdTime];
+            }
+            return [key, value];
+          })
+          .filter(([, value]) => {
+            return value != null;
           })
           .sort()
-          .reduce((accumulator, key) => {
-            if (fields[key] != null) {
+          .reduce((accumulator, [key, value]) => {
+            if (value != null) {
               const nonLookupColumMapping =
                 nonLookupColumnNameToObjectPropertyMapper[key];
 
               // Check if the field is a lookup column.
               if (lookupColumnNameToObjectPropertyMapper[key]) {
-                const [refPropertyName, lookupPropertyName] = (() => {
-                  if (
-                    typeof lookupColumnNameToObjectPropertyMapper[key] ===
-                    'string'
-                  ) {
-                    return lookupColumnNameToObjectPropertyMapper[
-                      key
-                    ] as string;
-                  }
-                  return (
-                    lookupColumnNameToObjectPropertyMapper[
-                      key
-                    ] as AirtableColumnConfigMapping<string>
-                  ).propertyName;
-                })().split('.');
+                const [refPropertyName, lookupPropertyName] =
+                  lookupColumnNameToObjectPropertyMapper[
+                    key
+                  ].propertyName.split('.');
 
                 // Find parent field
                 const nonLookupFieldMap =
@@ -356,26 +355,24 @@ export const getAirtableRecordResponseValidationSchema = <
                             ] as AirtableColumnConfigMapping<string>
                           ).isLookupWithListOfValues
                         ) {
-                          if (!Array.isArray(fields[key])) {
-                            return [fields[key]];
+                          if (!Array.isArray(value)) {
+                            return [value];
                           }
-                          return fields[key];
+                          return value;
                         }
-                        return fields[key][0];
+                        return value[0];
                       })();
                   } else {
                     accumulator[refPropertyName] ||
                       ((accumulator as any)[refPropertyName] = []);
-                    if (Array.isArray(fields[key])) {
-                      (fields[key] as any[]).forEach(
-                        (lookupFieldValue, index) => {
-                          (accumulator as any)[refPropertyName][index] ||
-                            ((accumulator as any)[refPropertyName][index] = {});
-                          (accumulator as any)[refPropertyName][index][
-                            lookupPropertyName
-                          ] = lookupFieldValue;
-                        }
-                      );
+                    if (Array.isArray(value)) {
+                      (value as any[]).forEach((lookupFieldValue, index) => {
+                        (accumulator as any)[refPropertyName][index] ||
+                          ((accumulator as any)[refPropertyName][index] = {});
+                        (accumulator as any)[refPropertyName][index][
+                          lookupPropertyName
+                        ] = lookupFieldValue;
+                      });
                     }
                     (accumulator as any)[refPropertyName][lookupPropertyName] =
                       (() => {
@@ -386,34 +383,30 @@ export const getAirtableRecordResponseValidationSchema = <
                             ] as AirtableColumnConfigMapping<string>
                           ).isLookupWithListOfValues
                         ) {
-                          if (!Array.isArray(fields[key])) {
-                            return [fields[key]];
+                          if (!Array.isArray(value)) {
+                            return [value];
                           }
-                          return fields[key];
+                          return value;
                         }
-                        return fields[key][0];
+                        return value[0];
                       })();
                   }
                 }
               } else if (typeof nonLookupColumMapping === 'string') {
                 // Check if the field is not an airtable error
-                if (
-                  fields[key] != null &&
-                  !fields[key].specialValue &&
-                  !fields[key].error
-                ) {
-                  (accumulator as any)[nonLookupColumMapping] = fields[key];
+                if (value != null && !value.specialValue && !value.error) {
+                  (accumulator as any)[nonLookupColumMapping] = value;
                 }
               } else if (nonLookupColumMapping.isMultipleRecordLinksField) {
                 // Check if reference field
-                if (fields[key] != null && Array.isArray(fields[key])) {
-                  const linkFieldValue = fields[key] as string[];
+                if (value != null && Array.isArray(value)) {
+                  const linkFieldValue = value as string[];
                   const { propertyName, prefersSingleRecordLink } =
                     nonLookupColumMapping;
                   if (prefersSingleRecordLink) {
                     accumulator[propertyName] ||
                       ((accumulator as any)[propertyName] = {});
-                    (accumulator as any)[propertyName].id = fields[key][0];
+                    (accumulator as any)[propertyName].id = value[0];
                   } else {
                     accumulator[propertyName] ||
                       ((accumulator as any)[propertyName] = []);
@@ -431,7 +424,7 @@ export const getAirtableRecordResponseValidationSchema = <
               } else {
                 const { type } = nonLookupColumMapping;
                 (accumulator as any)[nonLookupColumMapping.propertyName] =
-                  fields[key];
+                  value;
 
                 if (type) {
                   switch (type) {
@@ -576,17 +569,17 @@ export const getAirtableRecordRequestValidationSchema = (
   return requestValidationSchema.transform(({ id, ...fields }) => {
     return {
       id,
-      fields: Object.keys(fields)
-        .filter((key) => {
-          return fields[key] !== undefined;
+      fields: Object.entries(fields)
+        .filter(([, value]) => {
+          return value !== undefined;
         })
-        .reduce((accumulator, key) => {
+        .reduce((accumulator, [key, value]) => {
           const mapping = objectPropertyToColumnNameMapper[
             key
           ] as AirtableColumnMapping<string>;
 
           if (typeof mapping === 'string') {
-            (accumulator as any)[mapping] = fields[key];
+            (accumulator as any)[mapping] = value;
           } else {
             const {
               propertyName,
@@ -595,16 +588,16 @@ export const getAirtableRecordRequestValidationSchema = (
             } = mapping;
             (accumulator as any)[propertyName] = (() => {
               if (isMultipleRecordLinksField) {
-                if (Array.isArray(fields[key])) {
+                if (Array.isArray(value)) {
                   if (prefersSingleRecordLink) {
-                    return [fields[key]?.[0]?.id];
+                    return [value?.[0]?.id];
                   }
-                  return fields[key].map(({ id }: any) => id);
+                  return value.map(({ id }: any) => id);
                 } else {
-                  return [fields[key]?.id];
+                  return [value?.id];
                 }
               }
-              return fields[key];
+              return value;
             })();
           }
           return accumulator;

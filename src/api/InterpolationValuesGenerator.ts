@@ -77,6 +77,7 @@ export const getEntityTemplateFileInterpolationBlocks = ({
         return `["${name}"]: ${(() => {
           const obj: any = {
             propertyName: camelCasePropertyName,
+            tableColumnType: type,
             ...(() => {
               return pick(
                 nonLookupColumnNameToObjectPropertyMapper[name],
@@ -93,17 +94,14 @@ export const getEntityTemplateFileInterpolationBlocks = ({
           if (type === 'multipleRecordLinks') {
             obj.isMultipleRecordLinksField = true;
           }
-          if (Object.keys(obj).length > 1 || type === 'multipleRecordLinks') {
-            return JSON.stringify(obj);
-          }
-          return `"${obj.propertyName}"`;
+          return JSON.stringify(obj);
         })()}`;
       })
       .join(',\n'),
 
     ['/* AIRTABLE_LOOKUP_COLUMN_TO_OBJECT_PROPERTY_MAPPINGS */']:
       lookupTableColumns
-        .map(({ name, options }) => {
+        .map(({ name, type, options }) => {
           const parentColumn = nonLookupTableColumns.find(
             ({ id }) => id === options?.recordLinkFieldId
           );
@@ -118,6 +116,7 @@ export const getEntityTemplateFileInterpolationBlocks = ({
                     lookupColumnNameToObjectPropertyMapper[name].propertyName
                   }`;
                 })(),
+                tableColumnType: type,
                 ...(() => {
                   return pick(
                     lookupColumnNameToObjectPropertyMapper[name],
@@ -144,10 +143,7 @@ export const getEntityTemplateFileInterpolationBlocks = ({
                   }
                 })(),
               };
-              if (Object.keys(obj).length > 1) {
-                return JSON.stringify(obj);
-              }
-              return `"${obj.propertyName}"`;
+              return JSON.stringify(obj);
             })()}`;
           }
         })
