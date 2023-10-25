@@ -734,10 +734,12 @@ export const getTableColumnValidationSchemaTypeStrings = (
 
   if (userDefinedType === 'string[]') {
     typeData.decorators['ArrayOf'] = ['String'];
+    typeData.requestObjectPropertyTypeValidationString = `z.array(z.string())`;
   }
 
   if (userDefinedType === 'number[]') {
     typeData.decorators['ArrayOf'] = ['Number'];
+    typeData.requestObjectPropertyTypeValidationString = `z.array(z.number())`;
   }
 
   if (userDefinedExample) {

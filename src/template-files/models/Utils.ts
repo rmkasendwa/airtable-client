@@ -272,6 +272,7 @@ export type AirtableColumnConfigMapping<ObjectPropertyName extends string> = {
   minLength?: number;
   maxLength?: number;
   type?: 'boolean' | 'number' | 'number[]' | 'string' | 'string[]';
+  arrayItemSeparator?: string;
 };
 
 export type AirtableColumnMapping<ObjectPropertyName extends string> =
@@ -460,6 +461,27 @@ export const getAirtableRecordResponseValidationSchema = <
                     case 'number[]':
                       {
                         if (
+                          typeof (accumulator as any)[
+                            nonLookupColumMapping.propertyName
+                          ] === 'string'
+                        ) {
+                          (accumulator as any)[
+                            nonLookupColumMapping.propertyName
+                          ] = (
+                            (accumulator as any)[
+                              nonLookupColumMapping.propertyName
+                            ] as string
+                          )
+                            .split(
+                              nonLookupColumMapping.arrayItemSeparator || ', '
+                            )
+                            .map((value) => {
+                              return parseFloat(value);
+                            })
+                            .filter((value) => {
+                              return !isNaN(value);
+                            });
+                        } else if (
                           Array.isArray(
                             (accumulator as any)[
                               nonLookupColumMapping.propertyName
@@ -498,6 +520,18 @@ export const getAirtableRecordResponseValidationSchema = <
                     case 'string[]':
                       {
                         if (
+                          typeof (accumulator as any)[
+                            nonLookupColumMapping.propertyName
+                          ] === 'string'
+                        ) {
+                          (accumulator as any)[
+                            nonLookupColumMapping.propertyName
+                          ] = (accumulator as any)[
+                            nonLookupColumMapping.propertyName
+                          ].split(
+                            nonLookupColumMapping.arrayItemSeparator || ', '
+                          );
+                        } else if (
                           Array.isArray(
                             (accumulator as any)[
                               nonLookupColumMapping.propertyName
@@ -585,8 +619,16 @@ export const getAirtableRecordRequestValidationSchema = (
               propertyName,
               prefersSingleRecordLink,
               isMultipleRecordLinksField,
+              type,
+              arrayItemSeparator,
             } = mapping;
             (accumulator as any)[propertyName] = (() => {
+              if (
+                (type === 'string[]' || type === 'number[]') &&
+                Array.isArray(fields[key])
+              ) {
+                return fields[key].join(arrayItemSeparator || ', ');
+              }
               if (isMultipleRecordLinksField) {
                 if (Array.isArray(value)) {
                   if (prefersSingleRecordLink) {

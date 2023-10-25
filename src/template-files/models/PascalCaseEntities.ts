@@ -215,24 +215,12 @@ export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
               typeof value !== 'string'
                 ? value.tableColumnType
                 : 'singleLineText',
+            ...(() => {
+              if (typeof value !== 'string') {
+                return { ...value };
+              }
+            })(),
             propertyName: key,
-            ...(() => {
-              if (typeof value !== 'string' && value.prefersSingleRecordLink) {
-                return {
-                  prefersSingleRecordLink: true,
-                };
-              }
-            })(),
-            ...(() => {
-              if (
-                typeof value !== 'string' &&
-                value.isMultipleRecordLinksField
-              ) {
-                return {
-                  isMultipleRecordLinksField: true,
-                };
-              }
-            })(),
           },
         ];
       }
