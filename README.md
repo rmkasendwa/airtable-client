@@ -47,6 +47,15 @@ export default defineConfig({
 
 Feel free to modify the provided example to suit your needs and make any necessary adjustments to fit your project structure.
 
+## Configuration
+
+Library is configurable via environment variables:
+
+| Name               | Description                                 | Examples       | Required |
+| ------------------ | ------------------------------------------- | -------------- | -------- |
+| `AIRTABLE_API_KEY` | API key for accessing the Airtable service. | `your-api-key` | ✓        |
+| `NODE_AUTH_TOKEN`  | GitHub Token with access to packages.       | `your-token`   | ✓        |
+
 ## Documentation
 
 TBD
