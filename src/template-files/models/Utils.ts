@@ -433,20 +433,12 @@ export const getAirtableRecordResponseValidationSchema = <
                       {
                         (accumulator as any)[
                           nonLookupColumMapping.propertyName
-                        ] = Boolean(
-                          (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ]
-                        );
+                        ] = Boolean(value);
                       }
                       break;
                     case 'number':
                       {
-                        const num = parseFloat(
-                          (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ]
-                        );
+                        const num = parseFloat(value);
                         if (!isNaN(num)) {
                           (accumulator as any)[
                             nonLookupColumMapping.propertyName
@@ -460,18 +452,10 @@ export const getAirtableRecordResponseValidationSchema = <
                       break;
                     case 'number[]':
                       {
-                        if (
-                          typeof (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ] === 'string'
-                        ) {
+                        if (typeof value === 'string') {
                           (accumulator as any)[
                             nonLookupColumMapping.propertyName
-                          ] = (
-                            (accumulator as any)[
-                              nonLookupColumMapping.propertyName
-                            ] as string
-                          )
+                          ] = (value as string)
                             .split(
                               nonLookupColumMapping.arrayItemSeparator || ', '
                             )
@@ -481,18 +465,10 @@ export const getAirtableRecordResponseValidationSchema = <
                             .filter((value) => {
                               return !isNaN(value);
                             });
-                        } else if (
-                          Array.isArray(
-                            (accumulator as any)[
-                              nonLookupColumMapping.propertyName
-                            ]
-                          )
-                        ) {
-                          [
-                            ...(accumulator as any)[
-                              nonLookupColumMapping.propertyName
-                            ],
-                          ]
+                        } else if (Array.isArray(value)) {
+                          (accumulator as any)[
+                            nonLookupColumMapping.propertyName
+                          ] = value
                             .filter((value) => {
                               return !isNaN(parseFloat(value));
                             })
@@ -510,39 +486,21 @@ export const getAirtableRecordResponseValidationSchema = <
                       {
                         (accumulator as any)[
                           nonLookupColumMapping.propertyName
-                        ] = String(
-                          (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ]
-                        );
+                        ] = String(value);
                       }
                       break;
                     case 'string[]':
                       {
-                        if (
-                          typeof (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ] === 'string'
-                        ) {
+                        if (typeof value === 'string') {
                           (accumulator as any)[
                             nonLookupColumMapping.propertyName
-                          ] = (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ].split(
+                          ] = value.split(
                             nonLookupColumMapping.arrayItemSeparator || ', '
                           );
-                        } else if (
-                          Array.isArray(
-                            (accumulator as any)[
-                              nonLookupColumMapping.propertyName
-                            ]
-                          )
-                        ) {
-                          [
-                            ...(accumulator as any)[
-                              nonLookupColumMapping.propertyName
-                            ],
-                          ].map((value) => {
+                        } else if (Array.isArray(value)) {
+                          (accumulator as any)[
+                            nonLookupColumMapping.propertyName
+                          ] = value.map((value) => {
                             return String(value);
                           });
                         } else {

@@ -517,6 +517,22 @@ export const generateAirtableAPI = async ({
               return accumulator;
             }, {});
 
+          //#region Sorting non lookup table columns
+          nonLookupTableColumns.sort(({ name: aName }, { name: bName }) => {
+            if (
+              nonLookupColumnNameToObjectPropertyMapper[aName]?.propertyName &&
+              nonLookupColumnNameToObjectPropertyMapper[bName]?.propertyName
+            ) {
+              return nonLookupColumnNameToObjectPropertyMapper[
+                aName
+              ].propertyName.localeCompare(
+                nonLookupColumnNameToObjectPropertyMapper[bName].propertyName
+              );
+            }
+            return 0;
+          });
+          //#endregion
+
           //#region Dependent table column ids.
           const editableFieldsDependentTables = Object.values(
             nonLookupColumnNameToObjectPropertyMapper
