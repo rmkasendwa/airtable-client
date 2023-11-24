@@ -180,11 +180,17 @@ export const DEFAULT_VIEW_ALIAS = 'Default';
  */
 export const convertToAirtableFindAllRecordsQueryParams = <
   T extends FindAllRecordsQueryParams
->(
-  queryParams: T,
-  objectPropertyToColumnNameMapper: Record<string, string>,
-  lookupObjectPropertyToColumnNameMapper: Record<string, string>
-) => {
+>({
+  queryParams,
+  objectPropertyToColumnNameMapper,
+  lookupObjectPropertyToColumnNameMapper,
+  requiredFields,
+}: {
+  queryParams: T;
+  objectPropertyToColumnNameMapper: Record<string, string>;
+  lookupObjectPropertyToColumnNameMapper: Record<string, string>;
+  requiredFields: string[];
+}) => {
   const airtableQueryParams: Omit<FindAllRecordsQueryParams, 'fields'> & {
     fields?: string[];
   } = {
@@ -210,7 +216,17 @@ export const convertToAirtableFindAllRecordsQueryParams = <
     ...(() => {
       if (queryParams.fields) {
         return {
-          fields: queryParams.fields
+          fields: [
+            ...new Set([
+              ...queryParams.fields.flatMap((field) => {
+                if (field.includes('.')) {
+                  return [field, field.split('.')[0]];
+                }
+                return field;
+              }),
+              ...requiredFields,
+            ]),
+          ]
             .filter((field) => {
               if (field.includes('.')) {
                 return lookupObjectPropertyToColumnNameMapper[field];

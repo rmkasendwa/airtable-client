@@ -21,6 +21,7 @@ import {
   UpdateManyPascalCaseEntitiesRequestValidationSchema,
   camelCaseEntitiesAirtableAlternativeRecordIdColumns,
   camelCaseEntityQueryableFields,
+  camelCaseEntityRequiredProperties,
 } from '../models/PascalCaseEntities';
 import {
   DeleteAirtableRecordResponseValidationSchema,
@@ -68,11 +69,14 @@ export const findFirstPagePascalCaseEntities = async (
     };
   }
 
-  const requestPayload = convertToAirtableFindAllRecordsQueryParams(
+  const requestPayload = convertToAirtableFindAllRecordsQueryParams({
     queryParams,
-    PascalCaseEntityPropertyToAirtableColumnNameMapper,
-    PascalCaseEntityPropertyToAirtableLookupColumnNameMapper
-  );
+    lookupObjectPropertyToColumnNameMapper:
+      PascalCaseEntityPropertyToAirtableLookupColumnNameMapper,
+    objectPropertyToColumnNameMapper:
+      PascalCaseEntityPropertyToAirtableColumnNameMapper,
+    requiredFields: camelCaseEntityRequiredProperties,
+  });
 
   const requestUrl = `${FIND_ALL_ENTITIES_ENDPOINT_PATH}/listRecords`;
 

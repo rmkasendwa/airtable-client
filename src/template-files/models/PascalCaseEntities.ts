@@ -163,13 +163,10 @@ export const camelCaseEntityRequiredProperties = [
     PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper
   ),
 ]
-  .filter(([, value]) => {
-    return typeof value === 'object' && value.required;
+  .filter(([, { required, tableColumnType }]) => {
+    return required || tableColumnType === 'lastModifiedTime';
   })
   .map(([, value]) => {
-    if (typeof value === 'string') {
-      return value;
-    }
     return value.propertyName;
   });
 //#endregion
