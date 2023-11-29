@@ -430,7 +430,7 @@ export const getEntityTemplateFileInterpolationBlocks = ({
       })
       .join(';\n\n'),
 
-    ['/* AUTH_IMPORTS */']: `import { Authenticate, Authorize } from '../../../../decorators';`,
+    ['/* TSED_CONTROLLER_DECORATOR_IMPORTS */']: `import { Authenticate, Authorize, RegisterMutation } from '../../../../decorators';`,
   } as Record<string, string>;
 };
 

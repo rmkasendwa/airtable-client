@@ -30,10 +30,11 @@ import {
   updateManyPascalCaseEntities,
   updatePascalCaseEntity,
 } from '../api/PascalCaseEntities';
-/* AUTH_IMPORTS */
+/* TSED_CONTROLLER_DECORATOR_IMPORTS */
 import { Authenticate } from '../decorators/Authenticate.placeholder';
 import { Authorize } from '../decorators/Authorize.placeholder';
-/* AUTH_IMPORTS */
+import { RegisterMutation } from '../decorators/RegisterMutation.placeholder';
+/* TSED_CONTROLLER_DECORATOR_IMPORTS */
 import {
   CountAllPascalCaseEntitiesQueryParams,
   CreateNewPascalCaseEntitiesReponse,
@@ -132,6 +133,10 @@ export class PascalCaseEntityController {
 
   @Post()
   @Authorize(CREATE_ENTITY_PERMISSION)
+  @RegisterMutation({
+    entityGroupName: 'PascalCaseEntities',
+    event: 'create',
+  })
   @Summary('Create new entity label')
   @Description('Creates new entity label. Returns the created entity label.')
   @Returns(200, PascalCaseEntity).Description('The created entity label')
@@ -145,6 +150,10 @@ export class PascalCaseEntityController {
 
   @Post('/batch')
   @Authorize(CREATE_ENTITY_PERMISSION)
+  @RegisterMutation({
+    entityGroupName: 'PascalCaseEntities',
+    event: 'create',
+  })
   @Summary('Create many new entities label')
   @Description(
     'Creates many new entities label. Returns the created entities label.'
@@ -164,6 +173,10 @@ export class PascalCaseEntityController {
 
   @Put()
   @Authorize(UPDATE_ENTITY_PERMISSION)
+  @RegisterMutation({
+    entityGroupName: 'PascalCaseEntities',
+    event: 'update',
+  })
   @Summary('Update existing entity label')
   @Description(
     'Updates an existing entity label. Returns the updated entity label. Null values will wipe database fields.'
@@ -179,6 +192,10 @@ export class PascalCaseEntityController {
 
   @Put('/batch')
   @Authorize(UPDATE_ENTITY_PERMISSION)
+  @RegisterMutation({
+    entityGroupName: 'PascalCaseEntities',
+    event: 'update',
+  })
   @Summary('Update many existing entities label')
   @Description(
     'Updates many existing entities label. Returns the updated entities label. Null values will wipe database table fields.'
@@ -198,6 +215,10 @@ export class PascalCaseEntityController {
 
   @Patch()
   @Authorize(UPDATE_ENTITY_PERMISSION)
+  @RegisterMutation({
+    entityGroupName: 'PascalCaseEntities',
+    event: 'update',
+  })
   @Summary('Patch existing entity label')
   @Description(
     'Patches an existing entity label. Returns the patched entity label.'
@@ -213,6 +234,10 @@ export class PascalCaseEntityController {
 
   @Patch('/batch')
   @Authorize(UPDATE_ENTITY_PERMISSION)
+  @RegisterMutation({
+    entityGroupName: 'PascalCaseEntities',
+    event: 'update',
+  })
   @Summary('Patch many existing entities label')
   @Description(
     'Patches many existing entities label. Returns the patched entities label.'
@@ -232,6 +257,10 @@ export class PascalCaseEntityController {
 
   @Delete('/batch')
   @Authorize(DELETE_ENTITY_PERMISSION)
+  @RegisterMutation({
+    entityGroupName: 'PascalCaseEntities',
+    event: 'destroy',
+  })
   @Summary('Delete many existing entities label')
   @Description(
     'Deletes many existing entities label. Returns ids of the deleted entities label.'
@@ -255,6 +284,10 @@ export class PascalCaseEntityController {
 
   @Delete('/:camelCaseEntityId')
   @Authorize(DELETE_ENTITY_PERMISSION)
+  @RegisterMutation({
+    entityGroupName: 'PascalCaseEntities',
+    event: 'destroy',
+  })
   @Summary('Delete existing entity label by id')
   @Description(
     'Deletes an existing entity label by id. Returns id of the deleted entity label.'
