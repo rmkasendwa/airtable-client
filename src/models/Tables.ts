@@ -36,7 +36,7 @@ export const airtableFieldTypes = [
   'externalSyncSource',
 ] as const;
 
-export type AirtableFieldType = typeof airtableFieldTypes[number];
+export type AirtableFieldType = (typeof airtableFieldTypes)[number];
 
 export const AirtableFieldResultSchema = z.object({
   type: z.enum(airtableFieldTypes),
@@ -109,7 +109,7 @@ export const airtableViewTypes = [
   'levels',
 ] as const;
 
-export type AirtableViewType = typeof airtableViewTypes[number];
+export type AirtableViewType = (typeof airtableViewTypes)[number];
 
 export const AirtableViewSchema = z.object({
   id: z.string(),
@@ -133,3 +133,7 @@ export type Table = z.infer<typeof TableValidationSchema>;
 export const TablesResponseValidationSchema = z.object({
   tables: z.array(TableValidationSchema),
 });
+
+export type TableResponse = {
+  tables: Table[];
+};
