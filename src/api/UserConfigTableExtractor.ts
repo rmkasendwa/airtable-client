@@ -12,6 +12,12 @@ export interface ExtractUserDefinedBasesAndTablesInput {
   generateAllTables?: boolean;
 }
 
+/**
+ * Extracts the bases and tables that are defined in the user config
+ *
+ * @param input The input object
+ * @returns The bases and tables that are defined in the user config
+ */
 export const extractUserDefinedBasesAndTables = async ({
   userConfig,
   generateAllTables = false,
@@ -91,7 +97,14 @@ export const extractUserDefinedBasesAndTables = async ({
   };
 };
 
-export const generateUserConfig = () => {
+/**
+ * Reads the airtable-api.config file from the current working directory
+ * and returns the user's airtable API configuration. If the file does not
+ * exist, it returns undefined.
+ *
+ * @returns The user's airtable API configuration
+ */
+export const getUserConfig = () => {
   const currentWorkingDirectory = process.cwd();
   const userConfigFilePath = `${currentWorkingDirectory}/airtable-api.config`;
   if (
@@ -113,11 +126,17 @@ export const generateUserConfig = () => {
   }
 };
 
+/**
+ * Finds all the fields that reference the given field
+ *
+ * @param input The input object
+ * @returns All the fields that reference the given field
+ */
 export const findAllTableFieldReferences = async ({
   baseIdOrName,
   tableIdOrName,
   fieldIdOrName,
-  userConfig = generateUserConfig(),
+  userConfig = getUserConfig(),
 }: {
   baseIdOrName: string;
   tableIdOrName: string;

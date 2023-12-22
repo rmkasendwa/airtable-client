@@ -5,7 +5,7 @@ import { join, normalize } from 'path';
 
 import { existsSync } from 'fs-extra';
 
-import { generateAirtableAPI, generateUserConfig } from './api';
+import { generateAirtableAPI, getUserConfig } from './api';
 
 const currentWorkingDirectory = process.cwd();
 
@@ -23,7 +23,7 @@ const args = process.argv;
 
 if (args.includes('-G') || args.includes('--generate')) {
   const generateAllTables = args.includes('--all');
-  const userConfig = generateUserConfig();
+  const userConfig = getUserConfig();
 
   if (userConfig) {
     const outputRootPath = (() => {
