@@ -3,7 +3,7 @@ import '@infinite-debugger/rmk-js-extensions/String';
 
 import { existsSync } from 'fs-extra';
 
-import { AirtableField, Config } from '../models';
+import { Config } from '../models';
 import { findAllAirtableBases } from './Bases';
 import { findAllTablesByBaseId } from './Tables';
 
@@ -124,7 +124,11 @@ export const findAllTableFieldReferences = async ({
   fieldIdOrName: string;
   userConfig?: Config<string>;
 }) => {
-  const fieldReferences: AirtableField[] = [];
+  const fieldReferences: {
+    tableName: string;
+    fieldName: string;
+    type?: string;
+  }[] = [];
   if (userConfig) {
     const { bases } = await extractUserDefinedBasesAndTables({
       userConfig,
@@ -147,7 +151,10 @@ export const findAllTableFieldReferences = async ({
           base.name.trim() === baseIdOrName.trim()
         ) {
           for (const table of base.tables) {
-            if (table.id === tableIdOrName || table.name === tableIdOrName) {
+            if (
+              table.id.trim() === tableIdOrName.trim() ||
+              table.name.trim() === tableIdOrName.trim()
+            ) {
               for (const field of table.fields) {
                 if (
                   field.id === fieldIdOrName ||
@@ -163,23 +170,22 @@ export const findAllTableFieldReferences = async ({
     })();
 
     if (base && field) {
-      const searchableFields = base.tables.reduce<AirtableField[]>(
-        (accumulator, table) => {
-          accumulator.push(...table.fields);
-          return accumulator;
-        },
-        []
-      );
-      searchableFields.forEach((searchableField) => {
-        if (
-          searchableField.options?.recordLinkFieldId === field.id ||
-          searchableField.options?.inverseLinkFieldId === field.id ||
-          searchableField.options?.fieldIdInLinkedTable === field.id ||
-          searchableField.options?.linkedTableId === field.id ||
-          searchableField.options?.referencedFieldIds?.includes(field.id)
-        ) {
-          fieldReferences.push(searchableField);
-        }
+      base.tables.forEach((table) => {
+        table.fields.forEach(({ name, options, type }) => {
+          if (
+            options?.recordLinkFieldId === field.id ||
+            options?.inverseLinkFieldId === field.id ||
+            options?.fieldIdInLinkedTable === field.id ||
+            options?.linkedTableId === field.id ||
+            options?.referencedFieldIds?.includes(field.id)
+          ) {
+            fieldReferences.push({
+              tableName: table.name,
+              fieldName: name,
+              type,
+            });
+          }
+        });
       });
     }
   }
