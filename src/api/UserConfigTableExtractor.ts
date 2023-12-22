@@ -3,7 +3,7 @@ import '@infinite-debugger/rmk-js-extensions/String';
 
 import { existsSync } from 'fs-extra';
 
-import { Config } from '../models';
+import { AirtableField, Config } from '../models';
 import { findAllAirtableBases } from './Bases';
 import { findAllTablesByBaseId } from './Tables';
 
@@ -163,7 +163,7 @@ export const findAllTableFieldReferences = async ({
         }
       }
     })();
-    const field = (() => {
+    const targetField = (() => {
       for (const base of bases) {
         if (
           base.id.trim() === baseIdOrName.trim() ||
@@ -188,16 +188,55 @@ export const findAllTableFieldReferences = async ({
       }
     })();
 
-    if (base && field) {
+    if (base && targetField) {
+      //#region Build fields map
+      const baseTableFieldsById = base.tables.reduce<{
+        [fieldId: string]: AirtableField;
+      }>((fieldIdToTypeMap, table) => {
+        table.fields.forEach((field) => {
+          fieldIdToTypeMap[field.id] = field;
+        });
+        return fieldIdToTypeMap;
+      }, {});
+      //#endregion
+
+      const fieldReferencesTargetField = (
+        field: AirtableField,
+        visitedFieldIds: string[] = []
+      ): boolean => {
+        const referencedFieldIds = [
+          field.options?.recordLinkFieldId,
+          field.options?.inverseLinkFieldId,
+          field.options?.fieldIdInLinkedTable,
+          field.options?.linkedTableId,
+          ...(field.options?.referencedFieldIds || []),
+        ].filter((id) => {
+          return id && !visitedFieldIds.includes(id);
+        }) as string[];
+
+        if (referencedFieldIds.includes(targetField.id)) {
+          return true;
+        }
+        visitedFieldIds.push(field.id);
+        if (referencedFieldIds.length > 0) {
+          return referencedFieldIds.some((referencedFieldId) => {
+            const referencedField = baseTableFieldsById[referencedFieldId];
+            if (referencedField) {
+              return fieldReferencesTargetField(
+                referencedField,
+                visitedFieldIds
+              );
+            }
+            return false;
+          });
+        }
+        return false;
+      };
+
       base.tables.forEach((table) => {
-        table.fields.forEach(({ name, options, type }) => {
-          if (
-            options?.recordLinkFieldId === field.id ||
-            options?.inverseLinkFieldId === field.id ||
-            options?.fieldIdInLinkedTable === field.id ||
-            options?.linkedTableId === field.id ||
-            options?.referencedFieldIds?.includes(field.id)
-          ) {
+        table.fields.forEach((field) => {
+          if (fieldReferencesTargetField(field)) {
+            const { name, type } = field;
             fieldReferences.push({
               tableName: table.name,
               fieldName: name,
