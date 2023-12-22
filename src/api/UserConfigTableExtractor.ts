@@ -7,13 +7,27 @@ import pluralize from 'pluralize';
 
 import {
   AirtableField,
+  AirtableFieldType,
   Config,
   ConfigDetailedColumnNameToObjectPropertyMapper,
+  DetailedColumnNameToObjectPropertyMapping,
+  Table,
   UserEditableDetailedColumnNameToObjectPropertyMapping,
 } from '../models';
 import { findAllAirtableBases } from './Bases';
 import { findAllTablesByBaseId } from './Tables';
+import {
+  ModelClass,
+  TableColumnValidationSchemaTypeStringGroup,
+  getExpandedAirtableLookupColumn,
+  getTableColumnValidationSchemaTypeStrings,
+} from './TypeGenerator';
+import { getCamelCaseFieldPropertyName } from './Utils';
 
+const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
+  'lookup',
+  'multipleLookupValues',
+];
 export const DEFAULT_VIEW_NAME = 'Grid view';
 export const DEFAULT_VIEW_ALIAS = 'Default';
 
@@ -80,7 +94,8 @@ export const extractUserDefinedBasesAndTables = async ({
     workingBases.map(async (workingBase) => {
       const { id: workingBaseId, name: workingBaseName } = workingBase;
       const { tables } = await findAllTablesByBaseId(workingBaseId);
-      const userDefinedTables = tables
+
+      const filteredTables = tables
         .filter(({ name }) => {
           return (
             generateAllTables ||
@@ -265,6 +280,426 @@ export const extractUserDefinedBasesAndTables = async ({
             ...table,
           };
         });
+
+      const userDefinedTables = filteredTables.map((table) => {
+        const {
+          name: tableName,
+          fields: columns,
+          userDefinedTableColumns,
+          labelSingular,
+          focusColumnNames,
+          configColumnNameToObjectPropertyMapper,
+        } = table;
+
+        const nonLookupTableColumns = userDefinedTableColumns
+          .filter(({ type }) => {
+            return !type || !LOOKUP_TABLE_COLUMN_TYPES.includes(type);
+          })
+          .reduce<typeof userDefinedTableColumns>((accumulator, field) => {
+            // Filtering columns with similar names.
+            if (!accumulator.find(({ name }) => name === field.name)) {
+              accumulator.push(field);
+            }
+            return accumulator;
+          }, []);
+
+        const lookupTableColumns = userDefinedTableColumns
+          .filter(({ type, options }) => {
+            // Making sure the lookup column has a parent field on the table.
+            return (
+              type === 'multipleLookupValues' &&
+              options?.recordLinkFieldId &&
+              userDefinedTableColumns.find(
+                ({ id }) => id === options?.recordLinkFieldId
+              ) != null
+            );
+          })
+          .reduce((accumulator, field) => {
+            // Filtering lookup columns with similar references.
+            if (
+              !accumulator.find(({ options }) => {
+                return (
+                  options?.recordLinkFieldId &&
+                  options?.fieldIdInLinkedTable &&
+                  field.options?.recordLinkFieldId &&
+                  field.options?.fieldIdInLinkedTable &&
+                  options.recordLinkFieldId ===
+                    field.options.recordLinkFieldId &&
+                  options.fieldIdInLinkedTable ===
+                    field.options.fieldIdInLinkedTable
+                );
+              })
+            ) {
+              accumulator.push(field);
+            }
+            return accumulator;
+          }, [] as typeof columns);
+
+        // Lookup column name to parent column name map
+        const lookupColumnNameToParentColumnNameMap = lookupTableColumns.reduce(
+          (accumulator, { name, options }) => {
+            const parentColumn = columns.find(
+              ({ id }) => id === options?.recordLinkFieldId
+            );
+            if (parentColumn) {
+              accumulator[name] = parentColumn.name;
+            } else {
+              console.log(`No parent column found for ${name}`);
+            }
+            return accumulator;
+          },
+          {} as Record<string, string>
+        );
+
+        // Finding editable table columns
+        const editableTableColumns = nonLookupTableColumns.filter(
+          ({ type }) => {
+            switch (type) {
+              case 'singleLineText':
+              case 'multilineText':
+              case 'richText':
+              case 'phoneNumber':
+              case 'singleSelect':
+              case 'url':
+              case 'email':
+              case 'number':
+              case 'percent':
+              case 'currency':
+              case 'rating':
+              case 'checkbox':
+              case 'multipleRecordLinks':
+              case 'date':
+              case 'dateTime':
+              case 'multipleSelects':
+                return true;
+            }
+            return false;
+          }
+        );
+
+        // TODO: Make imports objects with setting keys as paths and values as a list of import objects.
+        const airtableAPIModelImportsCollector: string[] = [];
+        const restAPIModelImportsCollector: string[] = [];
+        const restAPIModelExtrasCollector: ModelClass[] = [];
+
+        console.log(
+          `  -> Processing \x1b[34m${workingBaseName.trim()}/${JSON.stringify(
+            tableName
+          )}\x1b[0m table...`
+        );
+
+        const nonLookupColumnNameToObjectPropertyMapper =
+          nonLookupTableColumns.reduce<
+            Record<
+              string,
+              DetailedColumnNameToObjectPropertyMapping & {
+                tableColumn: (typeof nonLookupTableColumns)[number];
+              }
+            >
+          >((accumulator, tableColumn) => {
+            accumulator[tableColumn.name] = {
+              ...configColumnNameToObjectPropertyMapper[tableColumn.name],
+              id: tableColumn.id,
+              propertyName: (() => {
+                // Extracting column object property name from user config.
+                if (
+                  configColumnNameToObjectPropertyMapper[tableColumn.name]
+                    ?.propertyName
+                ) {
+                  return configColumnNameToObjectPropertyMapper[
+                    tableColumn.name
+                  ]!.propertyName!.split('.')[0];
+                }
+                return getCamelCaseFieldPropertyName(tableColumn); // Automatically converting table column name to camel case object property name
+              })(),
+              ...(() => {
+                // Extracting prefer single record link
+                const prefersSingleRecordLink = Boolean(
+                  tableColumn.options?.prefersSingleRecordLink ||
+                    configColumnNameToObjectPropertyMapper?.[tableColumn.name]
+                      ?.prefersSingleRecordLink
+                );
+                if (prefersSingleRecordLink) {
+                  return { prefersSingleRecordLink };
+                }
+              })(),
+              tableColumn,
+            };
+            return accumulator;
+          }, {});
+
+        //#region Sorting non lookup table columns
+        nonLookupTableColumns.sort(({ name: aName }, { name: bName }) => {
+          if (
+            nonLookupColumnNameToObjectPropertyMapper[aName]?.propertyName &&
+            nonLookupColumnNameToObjectPropertyMapper[bName]?.propertyName
+          ) {
+            return nonLookupColumnNameToObjectPropertyMapper[
+              aName
+            ].propertyName.localeCompare(
+              nonLookupColumnNameToObjectPropertyMapper[bName].propertyName
+            );
+          }
+          return 0;
+        });
+        //#endregion
+
+        //#region Dependent table column ids.
+        const editableFieldsDependentTables = Object.values(
+          nonLookupColumnNameToObjectPropertyMapper
+        )
+          .filter(({ tableColumn: { type, options } }) => {
+            return (
+              type === 'multipleRecordLinks' &&
+              options?.linkedTableId &&
+              filteredTables.find(({ id }) => {
+                return id === options.linkedTableId;
+              })
+            );
+          })
+          .reduce<(typeof nonLookupColumnNameToObjectPropertyMapper)[string][]>(
+            (accumulator, column) => {
+              if (
+                !accumulator.find(({ id }) => {
+                  return id === column.id;
+                })
+              ) {
+                accumulator.push(column);
+              }
+              return accumulator;
+            },
+            []
+          );
+        //#endregion
+
+        const lookupColumnNameToObjectPropertyMapper =
+          lookupTableColumns.reduce<
+            Record<string, DetailedColumnNameToObjectPropertyMapping>
+          >((accumulator, tableColumn) => {
+            const parentField = (() => {
+              const recordLinkFieldId = tableColumn.options?.recordLinkFieldId;
+              if (recordLinkFieldId) {
+                const recordLinkField = table.fields.find(
+                  ({ id }) => id === recordLinkFieldId
+                );
+                if (recordLinkField) {
+                  const linkedTableId = recordLinkField.options?.linkedTableId;
+                  const fieldIdInLinkedTable =
+                    tableColumn.options?.fieldIdInLinkedTable;
+                  if (linkedTableId && fieldIdInLinkedTable) {
+                    const linkedTable = tables.find(
+                      ({ id }) => id === linkedTableId
+                    );
+                    if (linkedTable) {
+                      const linkedField = linkedTable.fields.find(
+                        ({ id }) => id === fieldIdInLinkedTable
+                      );
+                      if (linkedField) {
+                        return linkedField;
+                      }
+                    }
+                  }
+                }
+              }
+              return tableColumn;
+            })();
+
+            const shouldFlattenLookupField = (
+              lookupTableColumn: typeof tableColumn,
+              lookupTable: Table
+            ): boolean => {
+              const referenceTableColumn = lookupTable.fields.find(
+                ({ id }) => id === lookupTableColumn.options?.recordLinkFieldId
+              );
+              const tablecolumnOneLevelUp = getExpandedAirtableLookupColumn(
+                lookupTableColumn,
+                tables,
+                lookupTable
+              );
+
+              if (
+                referenceTableColumn?.options?.prefersSingleRecordLink &&
+                tablecolumnOneLevelUp.type === 'multipleLookupValues'
+              ) {
+                return shouldFlattenLookupField(
+                  tablecolumnOneLevelUp,
+                  tables.find(
+                    ({ id }) =>
+                      id === referenceTableColumn.options?.linkedTableId
+                  )!
+                );
+              }
+
+              return Boolean(
+                referenceTableColumn?.options?.prefersSingleRecordLink &&
+                  !(
+                    [
+                      'multipleLookupValues',
+                      'multipleSelects',
+                    ] as (typeof tablecolumnOneLevelUp.type)[]
+                  ).includes(tablecolumnOneLevelUp.type)
+              );
+            };
+
+            const flattenLookupField = shouldFlattenLookupField(
+              tableColumn,
+              table
+            );
+
+            accumulator[tableColumn.name] = {
+              ...configColumnNameToObjectPropertyMapper[tableColumn.name],
+              id: tableColumn.id,
+              propertyName: (() => {
+                // Extracting column object property name from user config.
+                const propertyName = (() => {
+                  if (
+                    configColumnNameToObjectPropertyMapper[tableColumn.name]
+                      ?.propertyName
+                  ) {
+                    return configColumnNameToObjectPropertyMapper[
+                      tableColumn.name
+                    ]!.propertyName;
+                  }
+                })();
+
+                if (propertyName) {
+                  if (propertyName.match(/\./g)) {
+                    return propertyName.split('.').slice(-1)[0];
+                  }
+                  return propertyName;
+                }
+
+                return getCamelCaseFieldPropertyName(parentField); // Automatically converting parent table column name to camel case object property name
+              })(),
+              ...(() => {
+                if (flattenLookupField) {
+                  return {
+                    prefersSingleRecordLink: flattenLookupField,
+                  };
+                }
+              })(),
+            } as DetailedColumnNameToObjectPropertyMapping;
+            return accumulator;
+          }, {});
+
+        // Finding user defined queryable focus columns
+        const queryableNonLookupFields = (focusColumnNames || [])
+          .filter((columnName) => {
+            return nonLookupColumnNameToObjectPropertyMapper[columnName];
+          })
+          .map((columnName) => {
+            return `"${nonLookupColumnNameToObjectPropertyMapper[columnName].propertyName}"`;
+          });
+
+        // Finding user defined queryable focus columns
+        const queryableLookupFields = (focusColumnNames || [])
+          .filter((columnName) => {
+            return lookupColumnNameToObjectPropertyMapper[columnName];
+          })
+          .map((columnName) => {
+            return `"${
+              nonLookupColumnNameToObjectPropertyMapper[
+                lookupColumnNameToParentColumnNameMap[columnName]
+              ].propertyName
+            }.${
+              lookupColumnNameToObjectPropertyMapper[columnName].propertyName
+            }"`;
+          });
+
+        // TODO: Merge all schema generation calls
+        const columnNameToValidationSchemaTypeStringGroupMapper = [
+          ...nonLookupTableColumns,
+        ].reduce((accumulator, tableColumn) => {
+          const tableColumnValidationSchemaTypeStrings =
+            getTableColumnValidationSchemaTypeStrings(tableColumn, {
+              airtableAPIModelImportsCollector,
+              currentTable: table,
+              tableLabelSingular: labelSingular,
+              nonLookupColumnNameToObjectPropertyMapper,
+              lookupColumnNameToObjectPropertyMapper,
+              lookupTableColumns,
+              restAPIModelExtrasCollector,
+              restAPIModelImportsCollector,
+              tables,
+            });
+
+          if (
+            nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+              ?.required
+          ) {
+            tableColumnValidationSchemaTypeStrings.editModeDecorators ||
+              (tableColumnValidationSchemaTypeStrings.editModeDecorators = {});
+            tableColumnValidationSchemaTypeStrings.editModeDecorators[
+              'Required'
+            ] = [];
+          }
+
+          if (
+            nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+              ?.description &&
+            (tableColumn.type !== 'multipleRecordLinks' ||
+              !tableColumn.options?.prefersSingleRecordLink)
+          ) {
+            tableColumnValidationSchemaTypeStrings.decorators['Description'] = [
+              `${JSON.stringify(
+                nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+                  .description
+              )}`,
+            ];
+          }
+
+          if (tableColumn.type === 'multipleRecordLinks') {
+            const tableColumnModelExtras = restAPIModelExtrasCollector.find(
+              ({ modelName }) => {
+                return (
+                  modelName ===
+                  tableColumnValidationSchemaTypeStrings.propertyType.replace(
+                    /\[\]$/g,
+                    ''
+                  )
+                );
+              }
+            );
+            if (tableColumnModelExtras) {
+              const { modelProperties } = tableColumnModelExtras;
+              modelProperties.forEach((modelProperty) => {
+                if (
+                  lookupColumnNameToObjectPropertyMapper[
+                    modelProperty.tableColumName
+                  ]?.required
+                ) {
+                  modelProperty.editModeDecorators ||
+                    (modelProperty.editModeDecorators = {});
+                  modelProperty.editModeDecorators['Required'] = [];
+                }
+                accumulator[modelProperty.tableColumName] = modelProperty;
+              });
+            }
+          }
+
+          accumulator[tableColumn.name] =
+            tableColumnValidationSchemaTypeStrings;
+          return accumulator;
+        }, {} as Record<string, TableColumnValidationSchemaTypeStringGroup>);
+
+        return {
+          ...table,
+          nonLookupTableColumns,
+          lookupTableColumns,
+          editableTableColumns,
+          editableFieldsDependentTables,
+          queryableNonLookupFields,
+          queryableLookupFields,
+          columnNameToValidationSchemaTypeStringGroupMapper,
+          restAPIModelExtrasCollector,
+          nonLookupColumnNameToObjectPropertyMapper,
+          lookupColumnNameToObjectPropertyMapper,
+          airtableAPIModelImportsCollector,
+          restAPIModelImportsCollector,
+          lookupColumnNameToParentColumnNameMap,
+        };
+      });
+
       return {
         ...workingBase,
         tables,
