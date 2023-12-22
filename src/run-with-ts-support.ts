@@ -5,8 +5,7 @@ import { join, normalize } from 'path';
 
 import { existsSync } from 'fs-extra';
 
-import { generateAirtableAPI } from './api';
-import { Config } from './models';
+import { generateAirtableAPI, generateUserConfig } from './api';
 
 const currentWorkingDirectory = process.cwd();
 
@@ -24,23 +23,9 @@ const args = process.argv;
 
 if (args.includes('-G') || args.includes('--generate')) {
   const generateAllTables = args.includes('--all');
-  const userConfigFilePath = `${currentWorkingDirectory}/airtable-api.config`;
+  const userConfig = generateUserConfig();
 
-  if (
-    ['.json', '.js', '.ts'].some(
-      (fileExtension) =>
-        existsSync(userConfigFilePath + fileExtension) ||
-        existsSync(userConfigFilePath + '/index' + fileExtension)
-    )
-  ) {
-    const userConfig: Config<string> = (() => {
-      const config = require(userConfigFilePath);
-      if (config.default) {
-        return config.default;
-      }
-      return config;
-    })();
-
+  if (userConfig) {
     const outputRootPath = (() => {
       if (args.includes('-o')) {
         const argsPath = args[args.indexOf('-o') + 1];
