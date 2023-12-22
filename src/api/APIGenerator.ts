@@ -10,8 +10,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'fs-extra';
-import { isEmpty, pick } from 'lodash';
-import pluralize from 'pluralize';
+import { isEmpty } from 'lodash';
 import prettier from 'prettier';
 import { default as walk, default as walkSync } from 'walk-sync';
 
@@ -19,9 +18,8 @@ import { pkg } from '../config';
 import {
   AirtableFieldType,
   Config,
-  ConfigDetailedColumnNameToObjectPropertyMapper,
   DetailedColumnNameToObjectPropertyMapping,
-  UserEditableDetailedColumnNameToObjectPropertyMapping,
+  Table,
 } from '../models';
 import {
   getEntityTemplateFileInterpolationBlocks,
@@ -59,9 +57,6 @@ const LOOKUP_TABLE_COLUMN_TYPES: AirtableFieldType[] = [
   'lookup',
   'multipleLookupValues',
 ];
-
-const DEFAULT_VIEW_NAME = 'Grid view';
-const DEFAULT_VIEW_ALIAS = 'Default';
 //#endregion
 
 export interface GenerateAirtableAPIConfig {
@@ -114,11 +109,10 @@ export const generateAirtableAPI = async ({
   );
   //#endregion
 
-  const { bases: workingBases, configTables } =
-    await extractUserDefinedBasesAndTables({
-      userConfig,
-      generateAllTables,
-    });
+  const { bases: workingBases } = await extractUserDefinedBasesAndTables({
+    userConfig,
+    generateAllTables,
+  });
 
   if (workingBases.length > 0) {
     //#region Clean up output directory
@@ -144,12 +138,7 @@ export const generateAirtableAPI = async ({
 
     //#region Processing each focus airtable base
     workingBases.forEach(async (workingBase) => {
-      const {
-        id: workingBaseId,
-        name: workingBaseName,
-        userDefinedTables,
-        tables,
-      } = workingBase;
+      const { name: workingBaseName, userDefinedTables, tables } = workingBase;
 
       //#region Prcess base if focus tables are found
       if (userDefinedTables.length > 0) {
@@ -170,162 +159,17 @@ export const generateAirtableAPI = async ({
 
         //#region Processing each focus tables.
         const filteredTablesConfigurations = userDefinedTables.map((table) => {
-          const { name: tableName, fields: columns, views } = table;
-
-          //#region User defined table configuration
           const {
+            name: tableName,
+            fields: columns,
+            userDefinedViews: filteredViews,
+            userDefinedTableColumns: filteredTableColumns,
             labelPlural,
             labelSingular,
-            focusColumns: focusColumnNames = columns.map(({ name }) => name),
+            focusColumnNames,
             configColumnNameToObjectPropertyMapper,
-            configViews,
             alternativeRecordIdColumns,
-          } = (() => {
-            const outputConfig: {
-              labelPlural: string;
-              labelSingular: string;
-              focusColumns?: string[];
-              configColumnNameToObjectPropertyMapper: ConfigDetailedColumnNameToObjectPropertyMapper<string>;
-              configViews?: string[];
-              alternativeRecordIdColumns?: string[];
-            } = {
-              labelPlural: '',
-              labelSingular: '',
-              configColumnNameToObjectPropertyMapper: {},
-            };
-
-            // Finding table definition in user config
-            const configTable = configTables.find(({ name, base }) => {
-              return (
-                name.trim() === tableName.trim() &&
-                ((base.id && base.id === workingBaseId) ||
-                  (base.name && base.name.trim() === workingBaseName.trim()))
-              );
-            });
-
-            if (configTable) {
-              const {
-                alias: configTableAlias,
-                name: configTableName,
-                focusColumns,
-                columnNameToObjectPropertyMapper:
-                  configColumnNameToObjectPropertyMapper,
-                views,
-                alternativeRecordIdColumns,
-              } = configTable;
-              if (configTable.labelPlural) {
-                outputConfig.labelPlural = configTable.labelPlural;
-              } else {
-                const sanitisedTableName = (configTableAlias || configTableName)
-                  .trim()
-                  .replace(/[^\w\s]/g, '');
-                outputConfig.labelPlural = pluralize(sanitisedTableName);
-              }
-              if (configTable.labelSingular) {
-                outputConfig.labelSingular = configTable.labelSingular;
-              } else {
-                const labelPlural = outputConfig.labelPlural!;
-                outputConfig.labelSingular = pluralize.singular(labelPlural);
-              }
-              if (focusColumns) {
-                Object.assign(
-                  outputConfig.configColumnNameToObjectPropertyMapper,
-                  Object.fromEntries(
-                    focusColumns
-                      .map((focusColumn) => {
-                        if (Array.isArray(focusColumn)) {
-                          return focusColumn;
-                        }
-                      })
-                      .filter((focusColumn) => focusColumn) as [
-                      string,
-                      UserEditableDetailedColumnNameToObjectPropertyMapping
-                    ][]
-                  )
-                );
-                outputConfig.focusColumns = focusColumns.map((focusColumn) => {
-                  if (Array.isArray(focusColumn)) {
-                    return focusColumn[0];
-                  }
-                  return focusColumn;
-                });
-              }
-              if (configColumnNameToObjectPropertyMapper) {
-                Object.assign(
-                  outputConfig.configColumnNameToObjectPropertyMapper,
-                  Object.fromEntries(
-                    Object.entries(configColumnNameToObjectPropertyMapper).map(
-                      ([key, value]) => {
-                        return [
-                          key,
-                          typeof value === 'string'
-                            ? {
-                                propertyName: value,
-                              }
-                            : value,
-                        ];
-                      }
-                    )
-                  )
-                );
-              }
-              views && (outputConfig.configViews = views);
-              alternativeRecordIdColumns &&
-                (outputConfig.alternativeRecordIdColumns =
-                  alternativeRecordIdColumns);
-            } else {
-              const sanitisedTableName = tableName
-                .trim()
-                .replace(/[^\w\s]/g, '');
-              outputConfig.labelPlural = pluralize(sanitisedTableName);
-              outputConfig.labelSingular = pluralize.singular(
-                outputConfig.labelPlural
-              );
-            }
-
-            return outputConfig;
-          })();
-          //#endregion
-
-          //#region Filtering views
-          const filteredViews = views
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .filter(({ name }) => {
-              return !configViews || configViews.includes(name);
-            })
-            .reduce(
-              (accumulator, { name }) => {
-                if (!accumulator.includes(name) && name !== DEFAULT_VIEW_NAME) {
-                  accumulator.push(name);
-                }
-                return accumulator;
-              },
-              [DEFAULT_VIEW_ALIAS] as string[]
-            );
-          //#endregion
-
-          const filteredTableColumns = focusColumnNames
-            .map((focusColumnName) => {
-              return columns.find(({ name }) => name === focusColumnName)!;
-            })
-            .filter((column) => column)
-            .filter(({ name }) => {
-              return (
-                name.replace(/[^\w\s]/g, '').length > 0 && !name.match(/^id$/gi)
-              );
-            })
-            .map((column) => {
-              const fieldOverride =
-                configColumnNameToObjectPropertyMapper[column.name]
-                  ?.fieldOverride;
-              if (fieldOverride) {
-                return {
-                  ...pick(column, 'id', 'name', 'description'),
-                  ...fieldOverride,
-                };
-              }
-              return column;
-            });
+          } = table;
 
           const nonLookupTableColumns = filteredTableColumns
             .filter(({ type }) => {
@@ -541,7 +385,7 @@ export const generateAirtableAPI = async ({
 
               const shouldFlattenLookupField = (
                 lookupTableColumn: typeof tableColumn,
-                lookupTable: typeof table
+                lookupTable: Table
               ): boolean => {
                 const referenceTableColumn = lookupTable.fields.find(
                   ({ id }) =>

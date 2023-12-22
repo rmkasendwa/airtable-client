@@ -2,10 +2,20 @@ import '@infinite-debugger/rmk-js-extensions/RegExp';
 import '@infinite-debugger/rmk-js-extensions/String';
 
 import { existsSync } from 'fs-extra';
+import { pick } from 'lodash';
+import pluralize from 'pluralize';
 
-import { AirtableField, Config } from '../models';
+import {
+  AirtableField,
+  Config,
+  ConfigDetailedColumnNameToObjectPropertyMapper,
+  UserEditableDetailedColumnNameToObjectPropertyMapping,
+} from '../models';
 import { findAllAirtableBases } from './Bases';
 import { findAllTablesByBaseId } from './Tables';
+
+export const DEFAULT_VIEW_NAME = 'Grid view';
+export const DEFAULT_VIEW_ALIAS = 'Default';
 
 export interface ExtractUserDefinedBasesAndTablesInput {
   userConfig: Config<string>;
@@ -70,10 +80,8 @@ export const extractUserDefinedBasesAndTables = async ({
     workingBases.map(async (workingBase) => {
       const { id: workingBaseId, name: workingBaseName } = workingBase;
       const { tables } = await findAllTablesByBaseId(workingBaseId);
-      return {
-        ...workingBase,
-        tables,
-        userDefinedTables: tables.filter(({ name }) => {
+      const userDefinedTables = tables
+        .filter(({ name }) => {
           return (
             generateAllTables ||
             configTables.length <= 0 ||
@@ -86,7 +94,181 @@ export const extractUserDefinedBasesAndTables = async ({
               );
             })
           );
-        }),
+        })
+        .map((table) => {
+          const { name: tableName, fields: columns, views } = table;
+
+          //#region User defined table configuration
+          const {
+            labelPlural,
+            labelSingular,
+            focusColumns: focusColumnNames = columns.map(({ name }) => name),
+            configColumnNameToObjectPropertyMapper,
+            configViews,
+            alternativeRecordIdColumns,
+          } = (() => {
+            const outputConfig: {
+              labelPlural: string;
+              labelSingular: string;
+              focusColumns?: string[];
+              configColumnNameToObjectPropertyMapper: ConfigDetailedColumnNameToObjectPropertyMapper<string>;
+              configViews?: string[];
+              alternativeRecordIdColumns?: string[];
+            } = {
+              labelPlural: '',
+              labelSingular: '',
+              configColumnNameToObjectPropertyMapper: {},
+            };
+
+            // Finding table definition in user config
+            const configTable = configTables.find(({ name, base }) => {
+              return (
+                name.trim() === tableName.trim() &&
+                ((base.id && base.id === workingBaseId) ||
+                  (base.name && base.name.trim() === workingBaseName.trim()))
+              );
+            });
+
+            if (configTable) {
+              const {
+                alias: configTableAlias,
+                name: configTableName,
+                focusColumns,
+                columnNameToObjectPropertyMapper:
+                  configColumnNameToObjectPropertyMapper,
+                views,
+                alternativeRecordIdColumns,
+              } = configTable;
+              if (configTable.labelPlural) {
+                outputConfig.labelPlural = configTable.labelPlural;
+              } else {
+                const sanitisedTableName = (configTableAlias || configTableName)
+                  .trim()
+                  .replace(/[^\w\s]/g, '');
+                outputConfig.labelPlural = pluralize(sanitisedTableName);
+              }
+              if (configTable.labelSingular) {
+                outputConfig.labelSingular = configTable.labelSingular;
+              } else {
+                const labelPlural = outputConfig.labelPlural!;
+                outputConfig.labelSingular = pluralize.singular(labelPlural);
+              }
+              if (focusColumns) {
+                Object.assign(
+                  outputConfig.configColumnNameToObjectPropertyMapper,
+                  Object.fromEntries(
+                    focusColumns
+                      .map((focusColumn) => {
+                        if (Array.isArray(focusColumn)) {
+                          return focusColumn;
+                        }
+                      })
+                      .filter((focusColumn) => focusColumn) as [
+                      string,
+                      UserEditableDetailedColumnNameToObjectPropertyMapping
+                    ][]
+                  )
+                );
+                outputConfig.focusColumns = focusColumns.map((focusColumn) => {
+                  if (Array.isArray(focusColumn)) {
+                    return focusColumn[0];
+                  }
+                  return focusColumn;
+                });
+              }
+              if (configColumnNameToObjectPropertyMapper) {
+                Object.assign(
+                  outputConfig.configColumnNameToObjectPropertyMapper,
+                  Object.fromEntries(
+                    Object.entries(configColumnNameToObjectPropertyMapper).map(
+                      ([key, value]) => {
+                        return [
+                          key,
+                          typeof value === 'string'
+                            ? {
+                                propertyName: value,
+                              }
+                            : value,
+                        ];
+                      }
+                    )
+                  )
+                );
+              }
+              views && (outputConfig.configViews = views);
+              alternativeRecordIdColumns &&
+                (outputConfig.alternativeRecordIdColumns =
+                  alternativeRecordIdColumns);
+            } else {
+              const sanitisedTableName = tableName
+                .trim()
+                .replace(/[^\w\s]/g, '');
+              outputConfig.labelPlural = pluralize(sanitisedTableName);
+              outputConfig.labelSingular = pluralize.singular(
+                outputConfig.labelPlural
+              );
+            }
+
+            return outputConfig;
+          })();
+          //#endregion
+
+          //#region Filtering views
+          const userDefinedViews = views
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .filter(({ name }) => {
+              return !configViews || configViews.includes(name);
+            })
+            .reduce(
+              (accumulator, { name }) => {
+                if (!accumulator.includes(name) && name !== DEFAULT_VIEW_NAME) {
+                  accumulator.push(name);
+                }
+                return accumulator;
+              },
+              [DEFAULT_VIEW_ALIAS] as string[]
+            );
+          //#endregion
+
+          const userDefinedTableColumns = focusColumnNames
+            .map((focusColumnName) => {
+              return columns.find(({ name }) => name === focusColumnName)!;
+            })
+            .filter((column) => column)
+            .filter(({ name }) => {
+              return (
+                name.replace(/[^\w\s]/g, '').length > 0 && !name.match(/^id$/gi)
+              );
+            })
+            .map((column) => {
+              const fieldOverride =
+                configColumnNameToObjectPropertyMapper[column.name]
+                  ?.fieldOverride;
+              if (fieldOverride) {
+                return {
+                  ...pick(column, 'id', 'name', 'description'),
+                  ...fieldOverride,
+                };
+              }
+              return column;
+            });
+
+          return {
+            userDefinedViews,
+            userDefinedTableColumns,
+            labelPlural,
+            labelSingular,
+            focusColumnNames,
+            configColumnNameToObjectPropertyMapper,
+            configViews,
+            alternativeRecordIdColumns,
+            ...table,
+          };
+        });
+      return {
+        ...workingBase,
+        tables,
+        userDefinedTables,
       };
     })
   );
