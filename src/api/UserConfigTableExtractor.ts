@@ -283,7 +283,6 @@ export const extractUserDefinedBasesAndTables = async ({
 
       const userDefinedTables = filteredTables.map((table) => {
         const {
-          name: tableName,
           fields: columns,
           userDefinedTableColumns,
           labelSingular,
@@ -381,12 +380,6 @@ export const extractUserDefinedBasesAndTables = async ({
         const airtableAPIModelImportsCollector: string[] = [];
         const restAPIModelImportsCollector: string[] = [];
         const restAPIModelExtrasCollector: ModelClass[] = [];
-
-        console.log(
-          `  -> Processing \x1b[34m${workingBaseName.trim()}/${JSON.stringify(
-            tableName
-          )}\x1b[0m table...`
-        );
 
         const nonLookupColumnNameToObjectPropertyMapper =
           nonLookupTableColumns.reduce<

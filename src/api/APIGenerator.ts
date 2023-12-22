@@ -141,6 +141,7 @@ export const generateAirtableAPI = async ({
         //#region Processing each focus tables.
         const filteredTablesConfigurations = userDefinedTables.map((table) => {
           const {
+            name: tableName,
             userDefinedViews: filteredViews,
             labelPlural,
             labelSingular,
@@ -158,6 +159,12 @@ export const generateAirtableAPI = async ({
             columnNameToValidationSchemaTypeStringGroupMapper,
             lookupColumnNameToParentColumnNameMap,
           } = table;
+
+          console.log(
+            `  -> Processing \x1b[34m${workingBaseName.trim()}/${JSON.stringify(
+              tableName
+            )}\x1b[0m table...`
+          );
 
           //#region Getting interpolation block replacement map
           const interpolationBlocks = getEntityTemplateFileInterpolationBlocks({

@@ -12,4 +12,7 @@ sandbox
 __sandbox
 error.json
 output.json
+*.output.json
+*.dump.*
+*.dump
 dist
