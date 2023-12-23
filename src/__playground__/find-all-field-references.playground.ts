@@ -1,4 +1,5 @@
 import { ensureDirSync, writeFileSync } from 'fs-extra';
+import pluralize from 'pluralize';
 
 import { findAllTableFieldReferences } from '../api';
 import userConfig from './airtable-api.config';
@@ -33,8 +34,12 @@ ensureDirSync(DUMP_DIR);
     .reduce<string[]>((acc, [tableName, fieldNames]) => {
       acc.push(
         [
-          `${tableName}:`,
+          `${tableName} (${fieldNames.length} ${pluralize(
+            'fields',
+            fieldNames.length
+          )}):`,
           fieldNames
+            .sort()
             .map((fieldName) => {
               return ` -> ${fieldName}`;
             })
@@ -49,7 +54,9 @@ ensureDirSync(DUMP_DIR);
   //#region Dump fields likely to be affected if the `Current Role` field is changed
   writeFileSync(
     `${DUMP_DIR}/fields-likely-to-be-affected-if-current-role-field-is-changed.dump`,
-    fieldReferencesByTableText
+    `${fieldReferencesByTableText}\n\nSummary\nTable Affected: ${
+      Object.keys(fieldReferencesByTable).length
+    }\nTotal Fields Affected: ${fieldReferences.length}`
   );
   //#endregion
 })();
