@@ -6,309 +6,538 @@ export default defineConfig({
   },
   tables: [
     {
-      name: 'Lever Report',
-      alias: 'Candidates',
+      name: 'People List',
+      alias: 'Team Members',
       focusColumns: [
-        //#region Lever Fields
         [
-          'name',
+          'Last Modified',
           {
+            description:
+              'The date and time when the team member was last modified.',
+          },
+        ],
+
+        [
+          'Name',
+          {
+            description: 'The name of the team member.',
             required: true,
-            description: 'The name of the candidate',
           },
         ],
         [
-          'email',
+          'Legal Name',
           {
+            description: 'The legal name of the team member.',
             required: true,
-            description: 'The email address of the candidate',
           },
         ],
         [
-          'opportunity-id',
+          'Email',
           {
+            description: 'The company email address of the team member.',
             required: true,
-            propertyName: 'opportunityId',
-            description: 'The lever opportunity id of the candidate',
           },
         ],
         [
-          'lever-link',
+          'Picture',
           {
+            propertyName: 'photoUrl',
+            description: "The url of the team member's profile picture.",
+          },
+        ],
+        [
+          'Gender',
+          {
+            description: 'The gender of the team member.',
             required: true,
-            propertyName: 'leverLink',
-            description: "The link the candidate's profile in lever",
           },
         ],
+        'Github Username',
         [
-          'stage',
+          'Slack UID',
           {
+            propertyName: 'slackUID',
+            description: 'The slack UID of the team member.',
             required: true,
-            description: 'The stage of the candidate in lever',
           },
         ],
         [
-          'position',
+          'Slack Handle',
           {
-            propertyName: 'positionName',
-            description: 'The name of the position of the candidate in lever',
-          },
-        ],
-        [
-          'rating-overall',
-          {
-            propertyName: 'overallRating',
-            description: 'The overall rating of the candidate in lever',
-          },
-        ],
-        [
-          'is-snoozed',
-          {
-            propertyName: 'isSnoozed',
+            description: 'The slack handle of the team member.',
             required: true,
-            description: 'Whether the candidate is snoozed in lever',
           },
         ],
-        ['timezone', {}],
         [
-          'linkedin-url',
+          'Status',
           {
-            propertyName: 'linkedinUrl',
-            description: `The url to the candidate's linkedin profile`,
+            description: 'The current status of the team member',
+            fieldOverride: {
+              type: 'singleSelect',
+              options: {
+                choices: [
+                  'Automation',
+                  'Current Team Member',
+                  'Past Team Member',
+                  'Rejected Offer',
+                ].map((status) => {
+                  return {
+                    id: status,
+                    name: status,
+                  };
+                }),
+              },
+            },
+            editable: false,
+          },
+        ],
+        [
+          'Hiring Source',
+          {
+            description: 'The source from which the team member was hired.',
+            required: true,
+          },
+        ],
+        [
+          'Hiring Source Mech',
+          {
+            propertyName: 'hiringSourceMechanism',
+            description: 'The mechanism from which the team member was hired.',
+            required: true,
+          },
+        ],
+        [
+          'Apply Date',
+          {
+            description: 'The date when the team member applied.',
+          },
+        ],
+        [
+          'Offer Date',
+          {
+            description: 'The date when the team member was offered.',
+            required: true,
+          },
+        ],
+        [
+          'Join Date',
+          {
+            description: 'The date when the team member joined.',
+            required: true,
+          },
+        ],
+        [
+          'Exit Date',
+          {
+            description: 'The exit date of the team member.',
+            creatable: false,
+          },
+        ],
+
+        [
+          'Pipelines',
+          {
+            propertyName: 'pipeline.id',
+            prefersSingleRecordLink: true,
+            required: true,
+          },
+        ],
+
+        //#region Time Zone
+        [
+          'Timezone',
+          {
+            propertyName: 'timezone.id',
+            required: true,
+          },
+        ],
+        [
+          'Timezone Label',
+          {
+            propertyName: 'timezone.label',
+            description:
+              'The label of the timezone where the team member is located.',
+          },
+        ],
+        [
+          'Timezone Offset',
+          {
+            propertyName: 'timezone.offset',
+          },
+        ],
+        [
+          'Slack ID (from Timezone)',
+          {
+            propertyName: 'timezone.name',
           },
         ],
         //#endregion
 
         //#region Country
         [
-          'Link to Country',
+          'Country',
           {
             propertyName: 'country.id',
+            prefersSingleRecordLink: true,
+            required: true,
           },
         ],
         [
           'Country Name',
           {
             propertyName: 'country.name',
-            description:
-              'The name of the country where the candidate is located',
           },
         ],
         [
-          'Country Code',
+          'Abbreviation (from Country)',
           {
             propertyName: 'country.countryCode',
-            description:
-              'The country code of the country where the candidate is located',
+          },
+        ],
+        [
+          'Continent Name',
+          {
+            propertyName: 'country.continentName',
           },
         ],
         //#endregion
 
-        //#region Pipeline
+        //#region State
         [
-          'pipelines',
+          'State/province',
           {
-            prefersSingleRecordLink: true,
-            propertyName: 'pipeline',
+            propertyName: 'state.id',
             required: true,
           },
         ],
         [
-          'Pipeline Name',
+          'State/Province Name',
           {
-            propertyName: 'pipeline.name',
-            description:
-              'The name of the pipeline that the candidate is associated with',
+            propertyName: 'state.name',
+          },
+        ],
+        //#endregion
+
+        //#region Current Role
+        [
+          'Current Role',
+          {
+            propertyName: 'currentRole.id',
+            required: true,
           },
         ],
         [
-          'Pipeline Short Name',
+          'Current Role Name',
           {
-            propertyName: 'pipeline.shortName',
-            description:
-              'The short name of the pipeline that the candidate is associated with',
+            propertyName: 'currentRole.name',
           },
         ],
-        'Pipeline Id',
+        [
+          'HR Title',
+          {
+            propertyName: 'currentRole.hrTitleName',
+          },
+        ],
+        [
+          'Topology Permission Codes',
+          {
+            isLookupWithListOfValues: true,
+          },
+        ],
+        [
+          'Topology Permission Exclude Codes',
+          {
+            isLookupWithListOfValues: true,
+          },
+        ],
+        //#endregion
+
+        //#region Starting Role
+        [
+          'Starting Role',
+          {
+            propertyName: 'startingRole.id',
+            required: true,
+          },
+        ],
+        //#endregion
+
+        //#region Hiring Manager
+        [
+          'Hiring Manager',
+          {
+            propertyName: 'hiringManager.id',
+            required: true,
+          },
+        ],
+        //#endregion
+
+        //#region Hiring Recruiter
+        [
+          'Hiring Recruiter',
+          {
+            propertyName: 'hiringRecruiter.id',
+          },
+        ],
+        //#endregion
+
+        //#region Current Manager
+        [
+          'Current Manager',
+          {
+            propertyName: 'currentManager.id',
+          },
+        ],
+        [
+          'Name (from Current Manager)',
+          {
+            propertyName: 'currentManager.name',
+          },
+        ],
+        [
+          'Picture (from Current Manager)',
+          {
+            propertyName: 'currentManager.photoUrl',
+          },
+        ],
+        //#endregion
+
+        //#region Entity
+        [
+          'Entity',
+          {
+            propertyName: 'entity.id',
+            required: true,
+          },
+        ],
+        [
+          'Group Name (from Entity)',
+          {
+            propertyName: 'entity.name',
+          },
+        ],
+        'Entity Id',
+        //#endregion
+
+        //#region Entity Works With
+        [
+          'Entity Works With',
+          {
+            propertyName: 'entityWorksWith.id',
+            required: true,
+          },
+        ],
+        [
+          'Group Name (from Entity Works With)',
+          {
+            propertyName: 'entityWorksWith.name',
+          },
+        ],
+        'Entity Works With Id',
+        //#endregion
+
+        //#region Topology Permissions Override
+        [
+          'Topology Permission Override',
+          {
+            propertyName: 'topologyPermissionOverride.id',
+          },
+        ],
+        [
+          'Topology Permission Override Codes',
+          {
+            propertyName: 'topologyPermissionOverride.code',
+          },
+        ],
+        [
+          'Topology Permission Exclude Override',
+          {
+            propertyName: 'topologyPermissionExcludeOverride.id',
+          },
+        ],
+        [
+          'Topology Permission Exclude Override Codes',
+          {
+            propertyName: 'topologyPermissionExcludeOverride.code',
+          },
+        ],
         //#endregion
 
         //#region Team Member Type
         [
-          'team-member-type',
+          'Team Member Type',
           {
             propertyName: 'teamMemberType.id',
-            prefersSingleRecordLink: true,
+            required: true,
           },
         ],
         [
-          'Supported Country (from team-member-type)',
+          'Employee/Contractor',
           {
-            propertyName: 'teamMemberType.supportedCountryIds',
-            isLookupWithListOfValues: true,
-            description: 'The supported countries of the team member type',
+            propertyName: 'teamMemberType.companyEngagementType',
           },
         ],
         [
-          'Benefits Overview',
+          'Name (from Employee/Contractor) (from Team Member Type)',
           {
-            propertyName: 'teamMemberType.benefitsOverviewLink',
-            description:
-              'The link to the benefits overview document of the team member type',
+            propertyName: 'teamMemberType.companyEngagementTypeName',
           },
         ],
         //#endregion
 
-        //#region Practical Assignments
+        //#region Practice Area
         [
-          'Practical Assignment',
+          'Practice Area',
           {
-            propertyName: 'practicalAssignments.id',
-            editable: false,
+            propertyName: 'practiceArea.id',
+            required: true,
           },
         ],
         [
-          'Practical Name',
+          'Practice Area Name',
           {
-            propertyName: 'practicalAssignments.practicalName',
-            description: 'The name of the practical',
-          },
-        ],
-        //#endregion
-
-        //#region REQ
-        [
-          'REQs',
-          {
-            prefersSingleRecordLink: true,
-            propertyName: 'req.id',
-            creatable: false,
-          },
-        ],
-        [
-          'REQ (from REQs)',
-          {
-            propertyName: 'req.name',
-            description: 'The name of the REQ',
+            propertyName: 'practiceArea.name',
           },
         ],
         //#endregion
 
-        //#region Signup
+        //#region Department
         [
-          'Signup',
+          'Departments',
           {
-            propertyName: 'signup.id',
-            creatable: false,
+            propertyName: 'department.id',
+            required: true,
           },
         ],
         [
-          'Preferred Name (from Signup)',
+          'Department Name',
           {
-            propertyName: 'signup.preferredName',
-            description: 'The preferred name of the candidate',
-          },
-        ],
-        [
-          'Can Request Company Laptop',
-          {
-            description:
-              'Whether the candidate can request a company laptop during signup',
-          },
-        ],
-        //#endregion
-
-        //#region Resume
-        [
-          'resume-file-name',
-          {
-            propertyName: 'resumeFileName',
-            description: 'The name of the resume file',
-          },
-        ],
-        [
-          'resume-id',
-          {
-            propertyName: 'resumeLeverId',
-            description: 'The lever id of the resume',
+            propertyName: 'department.name',
           },
         ],
         //#endregion
 
         [
-          'feedback-count',
+          'Billable',
           {
-            propertyName: 'feedbackCount',
-            description: 'The amount of feedback submitted for the candidate',
-          },
-        ],
-        [
-          'Practical Assignments Count',
-          {
-            description:
-              'The number of practical assignments for the candidate',
-          },
-        ],
-        [
-          'Interviews Count',
-          {
-            description: 'The number of interviews for the candidate',
+            type: 'boolean',
+            description: 'Whether the team member is billable.',
           },
         ],
 
         [
-          'seniority-rating-average',
+          'Active Billing Allocations',
           {
-            propertyName: 'seniorityRatingAverage',
-            description: 'The average seniority rating of the candidate',
-          },
-        ],
-
-        [
-          'days-spent-in-invited-to-offline-assessment',
-          {
-            propertyName: 'daysSpentInInvitedToOfflineAssessmentStage',
-            description:
-              'The number of days spent in the invited to offline stage',
-          },
-        ],
-
-        [
-          'days-spent-in-offline-assessment',
-          {
-            propertyName: 'daysSpentInOfflineAssessmentStage',
-            description:
-              'The number of days spent in the offline assessment stage',
-          },
-        ],
-
-        [
-          'days-spent-in-internal-introduction',
-          {
-            propertyName: 'daysSpentInInternalIntroductionStage',
-            description:
-              'The number of days spent in the internal introduction stage',
+            description: 'The active billing allocations of the team member.',
           },
         ],
         [
-          'days-spent-in-introduction-screen',
+          'Active Team Member Utilization',
           {
-            propertyName: 'daysSpentInIntroductionScreenStage',
-            description:
-              'The number of days spent in the introduction screen stage',
+            description: 'The active utilization of the team member.',
           },
         ],
-
         [
-          'tags',
+          'Active Project Ids',
           {
             type: 'string[]',
-            arrayItemSeparator: ', ',
+            description: 'The active project ids that the team member is on',
           },
         ],
+
+        //#region Starting Project
+        [
+          'Starting Project',
+          {
+            propertyName: 'startingProject.id',
+            required: true,
+          },
+        ],
+        //#endregion
+
+        [
+          'Active Project Count',
+          {
+            description:
+              'The number of active projects that the team member is on.',
+          },
+        ],
+        [
+          'Project Count',
+          {
+            description: 'The number of projects that the team member is on.',
+          },
+        ],
+        [
+          'SOW Ids',
+          {
+            type: 'string[]',
+          },
+        ],
+        [
+          'Namely Profile ID',
+          {
+            propertyName: 'namelyProfileId',
+            description: 'The Namely profile id of the team member.',
+            required: true,
+          },
+        ],
+
+        //#region Team Member Candidate Profile
+        [
+          'Lever Report',
+          {
+            propertyName: 'candidateProfile.id',
+            required: true,
+          },
+        ],
+        //#endregion
+
+        'PX Tag',
+        'Feedback Submitted Count',
+        'Interviews Count',
+
+        [
+          'City',
+          {
+            description: 'The city where the team member is located.',
+          },
+        ],
+
+        'Assignments Count',
+        'Active Assignments Count',
+        [
+          'Active Assignments Project Names',
+          {
+            propertyName: 'activeAssignmentsProjectNames',
+            type: 'string[]',
+          },
+        ],
+
+        //#region Josh Robichaud fields
+        [
+          'Team Member Type Entity',
+          {
+            propertyName: 'teamMemberType.entityId',
+          },
+        ],
+        'Namely employee_type',
+        'Personal Email',
+        'OfficeVibe Teams',
+        'Division',
+        'is People Manager',
+        'Is Leader',
+        'Manager Of',
+        'Current Manager Email',
+        //#endregion
       ],
       views: [
-        'Late Stage - Ready For Practical',
-        'Topology - Reviewable Applicants',
+        'Alumni',
+        'Current Team - All',
+        'Current Team - Managers',
+        'Current Team - TheoremOne',
+        'Current Team - Zemoga',
+        'Topology Users',
       ],
     },
   ],

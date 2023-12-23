@@ -20,6 +20,8 @@ ensureDirSync(DUMP_DIR);
     }
   );
 
+  console.log({ fieldReferences });
+
   //#region Group field references by table and output list of fields as text
   const fieldReferencesByTable = fieldReferences.reduce<
     Record<string, string[]>

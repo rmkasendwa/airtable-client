@@ -539,6 +539,10 @@ export const extractUserDefinedBasesAndTables = async ({
               table
             );
 
+            const parentColumn = nonLookupTableColumns.find(
+              ({ id }) => id === tableColumn.options?.recordLinkFieldId
+            );
+
             accumulator[tableColumn.name] = {
               ...configColumnNameToObjectPropertyMapper[tableColumn.name],
               id: tableColumn.id,
@@ -571,9 +575,39 @@ export const extractUserDefinedBasesAndTables = async ({
                   };
                 }
               })(),
+              ...(() => {
+                if (parentColumn) {
+                  return {
+                    parentColumnPropertyName:
+                      nonLookupColumnNameToObjectPropertyMapper[
+                        parentColumn.name
+                      ].propertyName,
+                  };
+                }
+              })(),
             } as DetailedColumnNameToObjectPropertyMapping;
             return accumulator;
           }, {});
+
+        const columnNameToObjectPropertyMapper = {
+          ...nonLookupColumnNameToObjectPropertyMapper,
+          ...Object.fromEntries(
+            Object.entries(lookupColumnNameToObjectPropertyMapper).map(
+              ([key, mapper]) => {
+                const { parentColumnPropertyName, propertyName } = mapper;
+                return [
+                  key,
+                  {
+                    ...mapper,
+                    propertyName: parentColumnPropertyName
+                      ? `${parentColumnPropertyName}.${propertyName}`
+                      : propertyName,
+                  },
+                ];
+              }
+            )
+          ),
+        };
 
         // Finding user defined queryable focus columns
         const queryableNonLookupFields = (focusColumnNames || [])
@@ -685,11 +719,12 @@ export const extractUserDefinedBasesAndTables = async ({
           queryableLookupFields,
           columnNameToValidationSchemaTypeStringGroupMapper,
           restAPIModelExtrasCollector,
-          nonLookupColumnNameToObjectPropertyMapper,
-          lookupColumnNameToObjectPropertyMapper,
           airtableAPIModelImportsCollector,
           restAPIModelImportsCollector,
           lookupColumnNameToParentColumnNameMap,
+          nonLookupColumnNameToObjectPropertyMapper,
+          lookupColumnNameToObjectPropertyMapper,
+          columnNameToObjectPropertyMapper,
         };
       });
 
@@ -757,6 +792,8 @@ export const findAllTableFieldReferences = async ({
     tableName: string;
     fieldName: string;
     type?: string;
+    entityGroupName?: string;
+    entityPropertyName?: string;
   }[] = [];
   if (userConfig) {
     const { bases } = await extractUserDefinedBasesAndTables({
@@ -799,7 +836,7 @@ export const findAllTableFieldReferences = async ({
     })();
 
     if (base && targetField) {
-      //#region Build fields map
+      //#region Base Table Fields By Id
       const baseTableFieldsById = base.tables.reduce<{
         [fieldId: string]: AirtableField;
       }>((fieldIdToTypeMap, table) => {
@@ -808,6 +845,36 @@ export const findAllTableFieldReferences = async ({
         });
         return fieldIdToTypeMap;
       }, {});
+      //#endregion
+
+      //#region Table Field Names To Property Name mapper by table id
+      const tableFieldNamesToPropertyNameMapperByTableId =
+        base.userDefinedTables.reduce<{
+          [tableId: string]: {
+            entityGroupName: string;
+            entityPropertyNameMapper: {
+              [columnName: string]: string;
+            };
+          };
+        }>(
+          (
+            accumulator,
+            { id, columnNameToObjectPropertyMapper, labelPlural }
+          ) => {
+            accumulator[id] = {
+              entityGroupName: labelPlural.toPascalCase(),
+              entityPropertyNameMapper: Object.fromEntries(
+                Object.entries(columnNameToObjectPropertyMapper).map(
+                  ([columnName, { propertyName }]) => {
+                    return [columnName, propertyName];
+                  }
+                )
+              ),
+            };
+            return accumulator;
+          },
+          {}
+        );
       //#endregion
 
       const fieldReferencesTargetField = (
@@ -851,6 +918,12 @@ export const findAllTableFieldReferences = async ({
               tableName: table.name,
               fieldName: name,
               type,
+              entityGroupName:
+                tableFieldNamesToPropertyNameMapperByTableId[table.id]
+                  ?.entityGroupName,
+              entityPropertyName:
+                tableFieldNamesToPropertyNameMapperByTableId[table.id]
+                  ?.entityPropertyNameMapper[name],
             });
           }
         });

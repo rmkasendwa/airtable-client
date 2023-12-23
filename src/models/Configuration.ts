@@ -117,6 +117,7 @@ export type DetailedColumnNameToObjectPropertyMapping = Required<
     'propertyName'
   > & {
     id: string;
+    parentColumnPropertyName?: string;
   };
 
 export type ConfigColumnNameToObjectPropertyMapper<FocusColumn extends string> =
