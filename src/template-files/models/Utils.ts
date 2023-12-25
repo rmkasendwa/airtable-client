@@ -844,16 +844,15 @@ export class DeleteAirtableRecordsResponse {
 //#endregion
 
 //#region Airtable Table Id to Entity Map
-export const AIRTABLE_TABLE_ID_TO_ENTITY_MAP: Record<
-  string,
-  {
+export const AIRTABLE_TABLE_ID_TO_ENTITY_MAP: {
+  [tableId: string]: {
     id: string;
     tableName: string;
     entitiesPluralName: string;
     entitySingularName: string;
     primaryFieldId: string;
-  }
-> = /* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */ {
+  };
+} = /* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */ {
   tbl1: {
     id: 'tbl1',
     tableName: 'Table 1',
@@ -865,16 +864,15 @@ export const AIRTABLE_TABLE_ID_TO_ENTITY_MAP: Record<
 //#endregion
 
 //#region Airtable Table Column Id to Field Map
-export const AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP: Record<
-  string,
-  {
+export const AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP: {
+  [columnId: string]: {
     id: string;
     columnName: string;
     entityPropertyPath: string;
     tableId: string;
     tableName: string;
-  }
-> = /* AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP */ {
+  };
+} = /* AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP */ {
   fld1: {
     id: 'fld1',
     columnName: 'Column 1',
@@ -886,8 +884,9 @@ export const AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP: Record<
 //#endregion
 
 //#region Property paths By Entity Name
-export const PROPERTY_PATHS_BY_ENTITY_NAME: Record<string, string[]> =
-  /* PROPERTY_PATHS_BY_ENTITY_NAME */ {
-    Entity: ['prop1', 'prop2.subProp1', 'prop2.subProp2'],
-  }; /* PROPERTY_PATHS_BY_ENTITY_NAME */
+export const PROPERTY_PATHS_BY_ENTITY_NAME: {
+  [entityGroupName: string]: string[];
+} = /* PROPERTY_PATHS_BY_ENTITY_NAME */ {
+  Entity: ['prop1', 'prop2.subProp1', 'prop2.subProp2'],
+}; /* PROPERTY_PATHS_BY_ENTITY_NAME */
 //#endregion

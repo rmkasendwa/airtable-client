@@ -51,14 +51,14 @@ export const getEntityTemplateFileInterpolationBlocks = ({
   columnNameToValidationSchemaTypeStringGroupMapper,
   restAPIModelExtrasCollector,
 }: GetEntityTemplateFileInterpolationOptions) => {
-  const { id: baseId } = base;
   const editableFieldsTypes = editableTableColumns.filter((tableColumn) => {
     return columnNameToValidationSchemaTypeStringGroupMapper[tableColumn.name]
       .requestObjectPropertyTypeValidationString;
   });
 
   return {
-    ['/* AIRTABLE_BASE_ID */']: `"${baseId}"`,
+    ['/* AIRTABLE_BASE_ID */']: `"${base.id}"`,
+    ['/* AIRTABLE_BASE_NAME */']: `"${base.name}"`,
 
     ['/* AIRTABLE_ENTITY_COLUMNS */']: nonLookupTableColumns
       .map(({ name }) => `"${name}"`)

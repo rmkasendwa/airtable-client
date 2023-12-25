@@ -800,35 +800,21 @@ export const findAllTableFieldReferences = async ({
       userConfig,
     });
 
-    const base = (() => {
-      for (const base of bases) {
-        if (
-          base.id.trim() === baseIdOrName.trim() ||
-          base.name.trim() === baseIdOrName.trim()
-        ) {
-          return base;
-        }
-      }
-    })();
+    const base = bases.find((base) => {
+      return (
+        base.id.trim() === baseIdOrName.trim() ||
+        base.name.trim() === baseIdOrName.trim()
+      );
+    });
     const targetField = (() => {
-      for (const base of bases) {
+      for (const table of base?.tables || []) {
         if (
-          base.id.trim() === baseIdOrName.trim() ||
-          base.name.trim() === baseIdOrName.trim()
+          table.id.trim() === tableIdOrName.trim() ||
+          table.name.trim() === tableIdOrName.trim()
         ) {
-          for (const table of base.tables) {
-            if (
-              table.id.trim() === tableIdOrName.trim() ||
-              table.name.trim() === tableIdOrName.trim()
-            ) {
-              for (const field of table.fields) {
-                if (
-                  field.id === fieldIdOrName ||
-                  field.name === fieldIdOrName
-                ) {
-                  return field;
-                }
-              }
+          for (const field of table.fields) {
+            if (field.id === fieldIdOrName || field.name === fieldIdOrName) {
+              return field;
             }
           }
         }
