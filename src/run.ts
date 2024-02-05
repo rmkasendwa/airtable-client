@@ -5,7 +5,7 @@ import { exec } from 'node:child_process';
 const currentProcessArgs = process.argv.slice(2);
 
 const { stdout, stderr } = exec(
-  `ts-node ${__dirname}/run-with-ts-support ${currentProcessArgs.join(' ')}`,
+  `ts-node "${__dirname}"/run-with-ts-support ${currentProcessArgs.join(' ')}`,
   (err) => {
     if (err) {
       throw err;

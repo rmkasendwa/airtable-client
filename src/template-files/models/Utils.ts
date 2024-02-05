@@ -812,7 +812,7 @@ export const DeleteAirtableRecordResponseValidationSchema = z
     records: z.array(
       z.object({
         id: z.string(),
-        deleted: z.boolean(),
+        deleted: z.boolean().optional(),
       })
     ),
   })
@@ -828,10 +828,9 @@ export class DeleteAirtableRecordResponse {
   public id!: string;
 
   @Property()
-  @Required()
   @Description('Whether the item was deleted or not.')
   @Example(true)
-  public delete!: boolean;
+  public delete?: boolean;
 }
 
 export class DeleteAirtableRecordsResponse {

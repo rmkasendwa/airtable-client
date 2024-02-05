@@ -363,7 +363,7 @@ export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
 export const deleteManyPascalCaseEntities = async (recordIds: string[]) => {
   $log.info(`Deleting entities label`, { recordIds });
 
-  const deletedRecordsResponse: { id: string; deleted: boolean }[] = [];
+  const deletedRecordsResponse: { id: string; deleted?: boolean }[] = [];
 
   const deletePascalCaseEntitiesPage = async (recordIds: string[]) => {
     recordIds = [...recordIds];
