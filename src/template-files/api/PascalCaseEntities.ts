@@ -351,7 +351,7 @@ export const patchManyPascalCaseEntities = async (
  * @returns Deleted record response.
  */
 export const deletePascalCaseEntity = async (camelCaseEntityId: string) => {
-  return (await deleteManyPascalCaseEntities([camelCaseEntityId]))[0];
+  return (await deleteManyPascalCaseEntities([camelCaseEntityId])).records[0];
 };
 
 /**
@@ -396,5 +396,7 @@ export const deleteManyPascalCaseEntities = async (recordIds: string[]) => {
     await deletePascalCaseEntitiesPage(recordIds);
   }
 
-  return deletedRecordsResponse;
+  return {
+    records: deletedRecordsResponse,
+  };
 };
