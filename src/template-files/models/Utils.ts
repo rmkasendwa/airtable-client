@@ -604,6 +604,7 @@ export const getAirtableRecordRequestValidationSchema = (
                 return fields[key].join(arrayItemSeparator || ', ');
               }
               if (isMultipleRecordLinksField) {
+                if (value == null) return value;
                 if (Array.isArray(value)) {
                   if (prefersSingleRecordLink) {
                     return [value?.[0]?.id];
