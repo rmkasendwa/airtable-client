@@ -20,6 +20,10 @@
   "bin": {
     "airtable-client": "./run.js"
   },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "eslint",
+    "*.{js,jsx,ts,tsx,html,htm,json,css,scss,md}": "prettier --ignore-unknown --write"
+  },
   "scripts": {
     "prebuild": "rm -rf ./dist",
     "build": "npm run tsc",
@@ -86,6 +90,7 @@
     "hash-it": "^6.0.0",
     "husky": "^8.0.3",
     "import-sort-style-module": "^6.0.0",
+    "lint-staged": "^15.2.2",
     "lodash": "^4.17.21",
     "method-override": "^3.0.0",
     "prettier": "^2.8.1",
