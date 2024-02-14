@@ -542,4 +542,32 @@ export default defineConfig({
     },
   ],
   includeAirtableSpecificQueryParameters: true,
+  bases: [
+    {
+      name: 'Topology Guest Access',
+      tables: [
+        {
+          name: 'Guests',
+          focusColumns: [
+            'Name',
+            'Email',
+            [
+              'Topology Permission Codes',
+              {
+                type: 'string[]',
+              },
+            ],
+            [
+              'Topology Permission Excludes Codes',
+              {
+                type: 'string[]',
+              },
+            ],
+            'Environments',
+          ],
+          views: [],
+        },
+      ],
+    },
+  ],
 });

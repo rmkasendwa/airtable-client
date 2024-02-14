@@ -1,6 +1,6 @@
 {
   "name": "@theoremone-talent/airtable-client",
-  "version": "1.0.0-alpha.182",
+  "version": "1.0.0-alpha.183",
   "description": "Airtable client",
   "keywords": [
     "airtable",
@@ -20,10 +20,6 @@
   "bin": {
     "airtable-client": "./run.js"
   },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "eslint",
-    "*.{js,jsx,ts,tsx,html,htm,json,css,scss,md}": "prettier --ignore-unknown --write"
-  },
   "scripts": {
     "prebuild": "rm -rf ./dist",
     "build": "npm run tsc",
@@ -41,6 +37,10 @@
     "swagger-to-ts:generate-client": "npm i -D @infinite-debugger/swagger-to-ts@latest && swagger-to-ts -o ./src -niTFVS",
     "tsc": "tsc --project tsconfig.compile.json",
     "version": "standard-version"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "eslint",
+    "*.{js,jsx,ts,tsx,html,htm,json,css,scss,md}": "prettier --ignore-unknown --write"
   },
   "dependencies": {
     "dotenv": "^16.0.3",
@@ -69,8 +69,8 @@
     "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.17",
     "@types/pluralize": "^0.0.29",
-    "@typescript-eslint/eslint-plugin": "^5.48.0",
-    "@typescript-eslint/parser": "^5.48.0",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
     "ajv": "^8.11.2",
     "axios": "^1.2.2",
     "body-parser": "^1.20.1",
@@ -79,12 +79,14 @@
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "date-fns": "^2.29.3",
-    "eslint": "^8.31.0",
-    "eslint-config-prettier": "^8.6.0",
+    "eslint": "^8.56.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.1.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-functional": "^4.4.1",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-prettier": "^5.1.2",
     "eslint-plugin-sort-keys-fix": "^1.1.2",
     "express": "^4.18.2",
     "hash-it": "^6.0.0",
@@ -93,9 +95,9 @@
     "lint-staged": "^15.2.2",
     "lodash": "^4.17.21",
     "method-override": "^3.0.0",
-    "prettier": "^2.8.1",
+    "prettier": "^3.1.1",
     "prettier-plugin-import-sort": "^0.0.7",
-    "prettier-plugin-sort-json": "^0.0.3",
+    "prettier-plugin-sort-json": "^3.1.0",
     "standard-version": "^9.5.0",
     "ts-node-dev": "^2.0.0",
     "typedoc": "^0.25.1",
