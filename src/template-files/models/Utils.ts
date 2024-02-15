@@ -65,7 +65,7 @@ export class AirtableSortOption<Field extends string = string> {
 //#region QueryParams
 export class FindAllRecordsQueryParams<
   Field extends string = string,
-  View extends string = string
+  View extends string = string,
 > {
   @Property()
   @Description(
@@ -179,7 +179,7 @@ export const DEFAULT_VIEW_ALIAS = 'Default';
  * @returns The airtable query parameters.
  */
 export const convertToAirtableFindAllRecordsQueryParams = <
-  T extends FindAllRecordsQueryParams
+  T extends FindAllRecordsQueryParams,
 >({
   queryParams,
   objectPropertyToColumnNameMapper,
@@ -246,7 +246,7 @@ export const convertToAirtableFindAllRecordsQueryParams = <
       if (queryParams.filterByFormula) {
         return {
           filterByFormula: queryParams.filterByFormula.replace(
-            /\{([\w\.]+?)\}/g,
+            /\{([\w.]+?)\}/g,
             (_, field) => {
               const airtableColumnName = (() => {
                 if (field.includes('.')) {
@@ -310,7 +310,7 @@ export type GetAirtableRecordResponseValidationSchemaOptions = {
 
 //#region AirtableRecordResponseValidationSchema
 export const getAirtableRecordResponseValidationSchema = <
-  T extends Record<string, any>
+  T extends Record<string, any>,
 >({
   responseFieldsValidationSchema,
   nonLookupColumnNameToObjectPropertyMapper,
@@ -342,29 +342,31 @@ export const getAirtableRecordResponseValidationSchema = <
             return value != null;
           })
           .sort()
-          .reduce((accumulator, [key, value]) => {
-            if (value != null) {
-              const nonLookupColumMapping =
-                nonLookupColumnNameToObjectPropertyMapper[key];
+          .reduce(
+            (accumulator, [key, value]) => {
+              if (value != null) {
+                const nonLookupColumMapping =
+                  nonLookupColumnNameToObjectPropertyMapper[key];
 
-              // Check if the field is a lookup column.
-              if (lookupColumnNameToObjectPropertyMapper[key]) {
-                const [refPropertyName, lookupPropertyName] =
-                  lookupColumnNameToObjectPropertyMapper[
-                    key
-                  ].propertyName.split('.');
+                // Check if the field is a lookup column.
+                if (lookupColumnNameToObjectPropertyMapper[key]) {
+                  const [refPropertyName, lookupPropertyName] =
+                    lookupColumnNameToObjectPropertyMapper[
+                      key
+                    ].propertyName.split('.');
 
-                // Find parent field
-                const nonLookupFieldMap =
-                  nonLookupColumnNameToObjectPropertyMapper[
-                    objectPropertyToAirtableColumnNameMapper[refPropertyName]
-                  ] as any;
-                if (nonLookupFieldMap) {
-                  if (nonLookupFieldMap.prefersSingleRecordLink) {
-                    accumulator[refPropertyName] ||
-                      ((accumulator as any)[refPropertyName] = {});
-                    (accumulator as any)[refPropertyName][lookupPropertyName] =
-                      (() => {
+                  // Find parent field
+                  const nonLookupFieldMap =
+                    nonLookupColumnNameToObjectPropertyMapper[
+                      objectPropertyToAirtableColumnNameMapper[refPropertyName]
+                    ] as any;
+                  if (nonLookupFieldMap) {
+                    if (nonLookupFieldMap.prefersSingleRecordLink) {
+                      accumulator[refPropertyName] ||
+                        ((accumulator as any)[refPropertyName] = {});
+                      (accumulator as any)[refPropertyName][
+                        lookupPropertyName
+                      ] = (() => {
                         if (
                           (
                             lookupColumnNameToObjectPropertyMapper[
@@ -379,159 +381,162 @@ export const getAirtableRecordResponseValidationSchema = <
                         }
                         return value[0];
                       })();
-                  } else {
-                    accumulator[refPropertyName] ||
-                      ((accumulator as any)[refPropertyName] = []);
-                    if (Array.isArray(value)) {
-                      (value as any[]).forEach((lookupFieldValue, index) => {
-                        (accumulator as any)[refPropertyName][index] ||
-                          ((accumulator as any)[refPropertyName][index] = {});
-                        (accumulator as any)[refPropertyName][index][
-                          lookupPropertyName
-                        ] = lookupFieldValue;
+                    } else {
+                      accumulator[refPropertyName] ||
+                        ((accumulator as any)[refPropertyName] = []);
+                      if (Array.isArray(value)) {
+                        (value as any[]).forEach((lookupFieldValue, index) => {
+                          (accumulator as any)[refPropertyName][index] ||
+                            ((accumulator as any)[refPropertyName][index] = {});
+                          (accumulator as any)[refPropertyName][index][
+                            lookupPropertyName
+                          ] = lookupFieldValue;
+                        });
+                      }
+                      (accumulator as any)[refPropertyName][
+                        lookupPropertyName
+                      ] = (() => {
+                        if (
+                          (
+                            lookupColumnNameToObjectPropertyMapper[
+                              key
+                            ] as AirtableColumnConfigMapping<string>
+                          ).isLookupWithListOfValues
+                        ) {
+                          if (!Array.isArray(value)) {
+                            return [value];
+                          }
+                          return value;
+                        }
+                        return value[0];
+                      })();
+                    }
+                  }
+                } else if (typeof nonLookupColumMapping === 'string') {
+                  // Check if the field is not an airtable error
+                  if (value != null && !value.specialValue && !value.error) {
+                    (accumulator as any)[nonLookupColumMapping] = value;
+                  }
+                } else if (nonLookupColumMapping.isMultipleRecordLinksField) {
+                  // Check if reference field
+                  if (value != null && Array.isArray(value)) {
+                    const linkFieldValue = value as string[];
+                    const { propertyName, prefersSingleRecordLink } =
+                      nonLookupColumMapping;
+                    if (prefersSingleRecordLink) {
+                      accumulator[propertyName] ||
+                        ((accumulator as any)[propertyName] = {});
+                      (accumulator as any)[propertyName].id = value[0];
+                    } else {
+                      accumulator[propertyName] ||
+                        ((accumulator as any)[propertyName] = []);
+                      linkFieldValue.forEach((fieldValue, index) => {
+                        if (!(accumulator as any)[propertyName][index]) {
+                          (accumulator as any)[propertyName][index] = {};
+                        }
+                        if (!(accumulator as any)[propertyName][index].id) {
+                          (accumulator as any)[propertyName][index].id =
+                            fieldValue;
+                        }
                       });
                     }
-                    (accumulator as any)[refPropertyName][lookupPropertyName] =
-                      (() => {
-                        if (
-                          (
-                            lookupColumnNameToObjectPropertyMapper[
-                              key
-                            ] as AirtableColumnConfigMapping<string>
-                          ).isLookupWithListOfValues
-                        ) {
-                          if (!Array.isArray(value)) {
-                            return [value];
-                          }
-                          return value;
-                        }
-                        return value[0];
-                      })();
                   }
-                }
-              } else if (typeof nonLookupColumMapping === 'string') {
-                // Check if the field is not an airtable error
-                if (value != null && !value.specialValue && !value.error) {
-                  (accumulator as any)[nonLookupColumMapping] = value;
-                }
-              } else if (nonLookupColumMapping.isMultipleRecordLinksField) {
-                // Check if reference field
-                if (value != null && Array.isArray(value)) {
-                  const linkFieldValue = value as string[];
-                  const { propertyName, prefersSingleRecordLink } =
-                    nonLookupColumMapping;
-                  if (prefersSingleRecordLink) {
-                    accumulator[propertyName] ||
-                      ((accumulator as any)[propertyName] = {});
-                    (accumulator as any)[propertyName].id = value[0];
-                  } else {
-                    accumulator[propertyName] ||
-                      ((accumulator as any)[propertyName] = []);
-                    linkFieldValue.forEach((fieldValue, index) => {
-                      if (!(accumulator as any)[propertyName][index]) {
-                        (accumulator as any)[propertyName][index] = {};
-                      }
-                      if (!(accumulator as any)[propertyName][index].id) {
-                        (accumulator as any)[propertyName][index].id =
-                          fieldValue;
-                      }
-                    });
-                  }
-                }
-              } else {
-                const { type } = nonLookupColumMapping;
-                (accumulator as any)[nonLookupColumMapping.propertyName] =
-                  value;
+                } else {
+                  const { type } = nonLookupColumMapping;
+                  (accumulator as any)[nonLookupColumMapping.propertyName] =
+                    value;
 
-                if (type) {
-                  switch (type) {
-                    case 'boolean':
-                      {
-                        (accumulator as any)[
-                          nonLookupColumMapping.propertyName
-                        ] = Boolean(value);
-                      }
-                      break;
-                    case 'number':
-                      {
-                        const num = parseFloat(value);
-                        if (!isNaN(num)) {
+                  if (type) {
+                    switch (type) {
+                      case 'boolean':
+                        {
                           (accumulator as any)[
                             nonLookupColumMapping.propertyName
-                          ] = num;
-                        } else {
-                          delete (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ];
+                          ] = Boolean(value);
                         }
-                      }
-                      break;
-                    case 'number[]':
-                      {
-                        if (typeof value === 'string') {
+                        break;
+                      case 'number':
+                        {
+                          const num = parseFloat(value);
+                          if (!isNaN(num)) {
+                            (accumulator as any)[
+                              nonLookupColumMapping.propertyName
+                            ] = num;
+                          } else {
+                            delete (accumulator as any)[
+                              nonLookupColumMapping.propertyName
+                            ];
+                          }
+                        }
+                        break;
+                      case 'number[]':
+                        {
+                          if (typeof value === 'string') {
+                            (accumulator as any)[
+                              nonLookupColumMapping.propertyName
+                            ] = (value as string)
+                              .split(
+                                nonLookupColumMapping.arrayItemSeparator || ', '
+                              )
+                              .map((value) => {
+                                return parseFloat(value);
+                              })
+                              .filter((value) => {
+                                return !isNaN(value);
+                              });
+                          } else if (Array.isArray(value)) {
+                            (accumulator as any)[
+                              nonLookupColumMapping.propertyName
+                            ] = value
+                              .filter((value) => {
+                                return !isNaN(parseFloat(value));
+                              })
+                              .map((value) => {
+                                return parseFloat(value);
+                              });
+                          } else {
+                            delete (accumulator as any)[
+                              nonLookupColumMapping.propertyName
+                            ];
+                          }
+                        }
+                        break;
+                      case 'string':
+                        {
                           (accumulator as any)[
                             nonLookupColumMapping.propertyName
-                          ] = (value as string)
-                            .split(
+                          ] = String(value);
+                        }
+                        break;
+                      case 'string[]':
+                        {
+                          if (typeof value === 'string') {
+                            (accumulator as any)[
+                              nonLookupColumMapping.propertyName
+                            ] = value.split(
                               nonLookupColumMapping.arrayItemSeparator || ', '
-                            )
-                            .map((value) => {
-                              return parseFloat(value);
-                            })
-                            .filter((value) => {
-                              return !isNaN(value);
+                            );
+                          } else if (Array.isArray(value)) {
+                            (accumulator as any)[
+                              nonLookupColumMapping.propertyName
+                            ] = value.map((value) => {
+                              return String(value);
                             });
-                        } else if (Array.isArray(value)) {
-                          (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ] = value
-                            .filter((value) => {
-                              return !isNaN(parseFloat(value));
-                            })
-                            .map((value) => {
-                              return parseFloat(value);
-                            });
-                        } else {
-                          delete (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ];
+                          } else {
+                            delete (accumulator as any)[
+                              nonLookupColumMapping.propertyName
+                            ];
+                          }
                         }
-                      }
-                      break;
-                    case 'string':
-                      {
-                        (accumulator as any)[
-                          nonLookupColumMapping.propertyName
-                        ] = String(value);
-                      }
-                      break;
-                    case 'string[]':
-                      {
-                        if (typeof value === 'string') {
-                          (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ] = value.split(
-                            nonLookupColumMapping.arrayItemSeparator || ', '
-                          );
-                        } else if (Array.isArray(value)) {
-                          (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ] = value.map((value) => {
-                            return String(value);
-                          });
-                        } else {
-                          delete (accumulator as any)[
-                            nonLookupColumMapping.propertyName
-                          ];
-                        }
-                      }
-                      break;
+                        break;
+                    }
                   }
                 }
               }
-            }
-            return accumulator;
-          }, {} as Omit<T, 'id'>),
+              return accumulator;
+            },
+            {} as Omit<T, 'id'>
+          ),
       };
 
       //#region Remove deformed array items
@@ -581,44 +586,47 @@ export const getAirtableRecordRequestValidationSchema = (
         .filter(([, value]) => {
           return value !== undefined;
         })
-        .reduce((accumulator, [key, value]) => {
-          const mapping = objectPropertyToColumnNameMapper[
-            key
-          ] as AirtableColumnMapping<string>;
+        .reduce(
+          (accumulator, [key, value]) => {
+            const mapping = objectPropertyToColumnNameMapper[
+              key
+            ] as AirtableColumnMapping<string>;
 
-          if (typeof mapping === 'string') {
-            (accumulator as any)[mapping] = value;
-          } else {
-            const {
-              propertyName,
-              prefersSingleRecordLink,
-              isMultipleRecordLinksField,
-              type,
-              arrayItemSeparator,
-            } = mapping;
-            (accumulator as any)[propertyName] = (() => {
-              if (
-                (type === 'string[]' || type === 'number[]') &&
-                Array.isArray(fields[key])
-              ) {
-                return fields[key].join(arrayItemSeparator || ', ');
-              }
-              if (isMultipleRecordLinksField) {
-                if (value == null) return value;
-                if (Array.isArray(value)) {
-                  if (prefersSingleRecordLink) {
-                    return [value?.[0]?.id];
-                  }
-                  return value.map(({ id }: any) => id);
-                } else {
-                  return [value?.id];
+            if (typeof mapping === 'string') {
+              (accumulator as any)[mapping] = value;
+            } else {
+              const {
+                propertyName,
+                prefersSingleRecordLink,
+                isMultipleRecordLinksField,
+                type,
+                arrayItemSeparator,
+              } = mapping;
+              (accumulator as any)[propertyName] = (() => {
+                if (
+                  (type === 'string[]' || type === 'number[]') &&
+                  Array.isArray(fields[key])
+                ) {
+                  return fields[key].join(arrayItemSeparator || ', ');
                 }
-              }
-              return value;
-            })();
-          }
-          return accumulator;
-        }, {} as Record<string, any>),
+                if (isMultipleRecordLinksField) {
+                  if (value == null) return value;
+                  if (Array.isArray(value)) {
+                    if (prefersSingleRecordLink) {
+                      return [value?.[0]?.id];
+                    }
+                    return value.map(({ id }: any) => id);
+                  } else {
+                    return [value?.id];
+                  }
+                }
+                return value;
+              })();
+            }
+            return accumulator;
+          },
+          {} as Record<string, any>
+        ),
     };
   });
 };
