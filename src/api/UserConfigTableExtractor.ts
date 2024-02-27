@@ -180,7 +180,7 @@ export const extractUserDefinedBasesAndTables = async ({
                       })
                       .filter((focusColumn) => focusColumn) as [
                       string,
-                      UserEditableDetailedColumnNameToObjectPropertyMapping
+                      UserEditableDetailedColumnNameToObjectPropertyMapping,
                     ][]
                   )
                 );
@@ -313,26 +313,29 @@ export const extractUserDefinedBasesAndTables = async ({
               ) != null
             );
           })
-          .reduce((accumulator, field) => {
-            // Filtering lookup columns with similar references.
-            if (
-              !accumulator.find(({ options }) => {
-                return (
-                  options?.recordLinkFieldId &&
-                  options?.fieldIdInLinkedTable &&
-                  field.options?.recordLinkFieldId &&
-                  field.options?.fieldIdInLinkedTable &&
-                  options.recordLinkFieldId ===
-                    field.options.recordLinkFieldId &&
-                  options.fieldIdInLinkedTable ===
-                    field.options.fieldIdInLinkedTable
-                );
-              })
-            ) {
-              accumulator.push(field);
-            }
-            return accumulator;
-          }, [] as typeof columns);
+          .reduce(
+            (accumulator, field) => {
+              // Filtering lookup columns with similar references.
+              if (
+                !accumulator.find(({ options }) => {
+                  return (
+                    options?.recordLinkFieldId &&
+                    options?.fieldIdInLinkedTable &&
+                    field.options?.recordLinkFieldId &&
+                    field.options?.fieldIdInLinkedTable &&
+                    options.recordLinkFieldId ===
+                      field.options.recordLinkFieldId &&
+                    options.fieldIdInLinkedTable ===
+                      field.options.fieldIdInLinkedTable
+                  );
+                })
+              ) {
+                accumulator.push(field);
+              }
+              return accumulator;
+            },
+            [] as typeof columns
+          );
 
         // Lookup column name to parent column name map
         const lookupColumnNameToParentColumnNameMap = lookupTableColumns.reduce(
@@ -404,6 +407,17 @@ export const extractUserDefinedBasesAndTables = async ({
                   ]!.propertyName!.split('.')[0];
                 }
                 return getCamelCaseFieldPropertyName(tableColumn); // Automatically converting table column name to camel case object property name
+              })(),
+              propertyNameAlias: (() => {
+                // Extracting column object property name from user config.
+                if (
+                  configColumnNameToObjectPropertyMapper[tableColumn.name]
+                    ?.propertyNameAlias
+                ) {
+                  return configColumnNameToObjectPropertyMapper[
+                    tableColumn.name
+                  ]!.propertyNameAlias!.split('.')[0];
+                }
               })(),
               ...(() => {
                 // Extracting prefer single record link
@@ -568,6 +582,26 @@ export const extractUserDefinedBasesAndTables = async ({
 
                 return getCamelCaseFieldPropertyName(parentField); // Automatically converting parent table column name to camel case object property name
               })(),
+              propertyNameAlias: (() => {
+                // Extracting column object property name from user config.
+                const propertyNameAlias = (() => {
+                  if (
+                    configColumnNameToObjectPropertyMapper[tableColumn.name]
+                      ?.propertyNameAlias
+                  ) {
+                    return configColumnNameToObjectPropertyMapper[
+                      tableColumn.name
+                    ]!.propertyNameAlias;
+                  }
+                })();
+
+                if (propertyNameAlias) {
+                  if (propertyNameAlias.match(/\./g)) {
+                    return propertyNameAlias.split('.').slice(-1)[0];
+                  }
+                  return propertyNameAlias;
+                }
+              })(),
               ...(() => {
                 if (flattenLookupField) {
                   return {
@@ -614,8 +648,21 @@ export const extractUserDefinedBasesAndTables = async ({
           .filter((columnName) => {
             return nonLookupColumnNameToObjectPropertyMapper[columnName];
           })
-          .map((columnName) => {
-            return `"${nonLookupColumnNameToObjectPropertyMapper[columnName].propertyName}"`;
+          .flatMap((columnName) => {
+            const propertyPaths = [
+              `"${nonLookupColumnNameToObjectPropertyMapper[columnName].propertyName}"`,
+            ];
+
+            if (
+              nonLookupColumnNameToObjectPropertyMapper[columnName]
+                .propertyNameAlias
+            ) {
+              propertyPaths.push(
+                `"${nonLookupColumnNameToObjectPropertyMapper[columnName].propertyNameAlias}"`
+              );
+            }
+
+            return propertyPaths;
           });
 
         // Finding user defined queryable focus columns
@@ -623,91 +670,106 @@ export const extractUserDefinedBasesAndTables = async ({
           .filter((columnName) => {
             return lookupColumnNameToObjectPropertyMapper[columnName];
           })
-          .map((columnName) => {
-            return `"${
+          .flatMap((columnName) => {
+            const propertyPathRootNode =
               nonLookupColumnNameToObjectPropertyMapper[
                 lookupColumnNameToParentColumnNameMap[columnName]
-              ].propertyName
-            }.${
-              lookupColumnNameToObjectPropertyMapper[columnName].propertyName
-            }"`;
+              ].propertyName;
+            const propertyPaths = [
+              `"${propertyPathRootNode}.${lookupColumnNameToObjectPropertyMapper[columnName].propertyName}"`,
+            ];
+
+            if (
+              lookupColumnNameToObjectPropertyMapper[columnName]
+                .propertyNameAlias
+            ) {
+              propertyPaths.push(
+                `"${propertyPathRootNode}.${lookupColumnNameToObjectPropertyMapper[columnName].propertyNameAlias}"`
+              );
+            }
+            return propertyPaths;
           });
 
         // TODO: Merge all schema generation calls
         const columnNameToValidationSchemaTypeStringGroupMapper = [
           ...nonLookupTableColumns,
-        ].reduce((accumulator, tableColumn) => {
-          const tableColumnValidationSchemaTypeStrings =
-            getTableColumnValidationSchemaTypeStrings(tableColumn, {
-              airtableAPIModelImportsCollector,
-              currentTable: table,
-              tableLabelSingular: labelSingular,
-              nonLookupColumnNameToObjectPropertyMapper,
-              lookupColumnNameToObjectPropertyMapper,
-              lookupTableColumns,
-              restAPIModelExtrasCollector,
-              restAPIModelImportsCollector,
-              tables,
-            });
-
-          if (
-            nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
-              ?.required
-          ) {
-            tableColumnValidationSchemaTypeStrings.editModeDecorators ||
-              (tableColumnValidationSchemaTypeStrings.editModeDecorators = {});
-            tableColumnValidationSchemaTypeStrings.editModeDecorators[
-              'Required'
-            ] = [];
-          }
-
-          if (
-            nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
-              ?.description &&
-            (tableColumn.type !== 'multipleRecordLinks' ||
-              !tableColumn.options?.prefersSingleRecordLink)
-          ) {
-            tableColumnValidationSchemaTypeStrings.decorators['Description'] = [
-              `${JSON.stringify(
-                nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
-                  .description
-              )}`,
-            ];
-          }
-
-          if (tableColumn.type === 'multipleRecordLinks') {
-            const tableColumnModelExtras = restAPIModelExtrasCollector.find(
-              ({ modelName }) => {
-                return (
-                  modelName ===
-                  tableColumnValidationSchemaTypeStrings.propertyType.replace(
-                    /\[\]$/g,
-                    ''
-                  )
-                );
-              }
-            );
-            if (tableColumnModelExtras) {
-              const { modelProperties } = tableColumnModelExtras;
-              modelProperties.forEach((modelProperty) => {
-                if (
-                  lookupColumnNameToObjectPropertyMapper[
-                    modelProperty.tableColumName
-                  ]?.required
-                ) {
-                  modelProperty.editModeDecorators ||
-                    (modelProperty.editModeDecorators = {});
-                  modelProperty.editModeDecorators['Required'] = [];
-                }
-                accumulator[modelProperty.tableColumName] = modelProperty;
+        ].reduce(
+          (accumulator, tableColumn) => {
+            const tableColumnValidationSchemaTypeStrings =
+              getTableColumnValidationSchemaTypeStrings(tableColumn, {
+                airtableAPIModelImportsCollector,
+                currentTable: table,
+                tableLabelSingular: labelSingular,
+                nonLookupColumnNameToObjectPropertyMapper,
+                lookupColumnNameToObjectPropertyMapper,
+                lookupTableColumns,
+                restAPIModelExtrasCollector,
+                restAPIModelImportsCollector,
+                tables,
               });
-            }
-          }
 
-          accumulator[tableColumn.name] =
-            tableColumnValidationSchemaTypeStrings;
-          return accumulator;
-        }, {} as Record<string, TableColumnValidationSchemaTypeStringGroup>);
+            if (
+              nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+                ?.required
+            ) {
+              tableColumnValidationSchemaTypeStrings.editModeDecorators ||
+                (tableColumnValidationSchemaTypeStrings.editModeDecorators =
+                  {});
+              tableColumnValidationSchemaTypeStrings.editModeDecorators[
+                'Required'
+              ] = [];
+            }
+
+            if (
+              nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+                ?.description &&
+              (tableColumn.type !== 'multipleRecordLinks' ||
+                !tableColumn.options?.prefersSingleRecordLink)
+            ) {
+              tableColumnValidationSchemaTypeStrings.decorators['Description'] =
+                [
+                  `${JSON.stringify(
+                    nonLookupColumnNameToObjectPropertyMapper[tableColumn.name]
+                      .description
+                  )}`,
+                ];
+            }
+
+            if (tableColumn.type === 'multipleRecordLinks') {
+              const tableColumnModelExtras = restAPIModelExtrasCollector.find(
+                ({ modelName }) => {
+                  return (
+                    modelName ===
+                    tableColumnValidationSchemaTypeStrings.propertyType.replace(
+                      /\[\]$/g,
+                      ''
+                    )
+                  );
+                }
+              );
+              if (tableColumnModelExtras) {
+                const { modelProperties } = tableColumnModelExtras;
+                modelProperties.forEach((modelProperty) => {
+                  if (
+                    lookupColumnNameToObjectPropertyMapper[
+                      modelProperty.tableColumName
+                    ]?.required
+                  ) {
+                    modelProperty.editModeDecorators ||
+                      (modelProperty.editModeDecorators = {});
+                    modelProperty.editModeDecorators['Required'] = [];
+                  }
+                  accumulator[modelProperty.tableColumName] = modelProperty;
+                });
+              }
+            }
+
+            accumulator[tableColumn.name] =
+              tableColumnValidationSchemaTypeStrings;
+            return accumulator;
+          },
+          {} as Record<string, TableColumnValidationSchemaTypeStringGroup>
+        );
 
         return {
           ...table,
@@ -760,6 +822,7 @@ export const getUserConfig = () => {
     )
   ) {
     const userConfig: Config<string> = (() => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const config = require(userConfigFilePath);
       if (config.default) {
         return config.default;

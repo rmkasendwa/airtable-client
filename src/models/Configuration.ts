@@ -13,6 +13,13 @@ export type UserEditableDetailedColumnNameToObjectPropertyMapping = Pick<
   propertyName?: string;
 
   /**
+   * The alias of the property on the object that will be mapped to the column. This is useful when the
+   * object property name might be deprecated or changed in the future. For example, if the object property
+   * name is "firstName", you can set the alias to "first_name" to make the generated TypeScript API
+   */
+  propertyNameAlias?: string;
+
+  /**
    * The name of the property on the object that will be mapped to the column in pascal case.
    */
   pascalCasePropertyName?: string;
@@ -128,7 +135,7 @@ export type ConfigColumnNameToObjectPropertyMapper<FocusColumn extends string> =
   }>;
 
 export type ConfigDetailedColumnNameToObjectPropertyMapper<
-  FocusColumn extends string
+  FocusColumn extends string,
 > = Partial<{
   [P in FocusColumn]: UserEditableDetailedColumnNameToObjectPropertyMapping;
 }>;

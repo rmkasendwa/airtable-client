@@ -120,11 +120,16 @@ export const PascalCaseEntityPropertyToAirtableLookupColumnNameMapper: Record<
 > = Object.fromEntries(
   Object.entries(
     PascalCaseEntityAirtableLookupColumnNameToObjectPropertyMapper
-  ).map(([key, value]) => {
+  ).flatMap(([key, value]) => {
     if (value != null && typeof value === 'object' && 'propertyName' in value) {
-      return [value.propertyName, key];
+      const { propertyName, propertyNameAlias } = value;
+      const propertyMappings: [string, string][] = [[propertyName, key]];
+      if (propertyNameAlias) {
+        propertyMappings.push([propertyNameAlias, key]);
+      }
+      return propertyMappings;
     }
-    return [value, key];
+    return [[value, key]];
   })
 );
 //#endregion
@@ -228,19 +233,23 @@ export const PascalCaseEntityPropertyToAirtableColumnConfigMapper =
 //#region Maps entity label properties to Entities Table column names
 export const PascalCaseEntityPropertyToAirtableColumnNameMapper =
   Object.fromEntries(
-    Object.entries(PascalCaseEntityAirtableColumnToObjectPropertyMapper).map(
-      ([key, value]) => {
-        return [
-          (() => {
-            if (typeof value === 'string') {
-              return value;
-            }
-            return value.propertyName;
-          })(),
-          key,
-        ];
+    Object.entries(
+      PascalCaseEntityAirtableColumnToObjectPropertyMapper
+    ).flatMap(([key, value]) => {
+      if (
+        value != null &&
+        typeof value === 'object' &&
+        'propertyName' in value
+      ) {
+        const { propertyName, propertyNameAlias } = value;
+        const propertyMappings: [string, string][] = [[propertyName, key]];
+        if (propertyNameAlias) {
+          propertyMappings.push([propertyNameAlias, key]);
+        }
+        return propertyMappings;
       }
-    )
+      return [[value, key]];
+    })
   );
 //#endregion
 

@@ -41,8 +41,9 @@ export default defineConfig({
         [
           'Picture',
           {
-            propertyName: 'photoUrl',
+            propertyName: 'namelyProfilePictureUrl',
             description: "The url of the team member's profile picture.",
+            propertyNameAlias: 'photoUrl',
           },
         ],
         [
@@ -80,6 +81,7 @@ export default defineConfig({
                   'Current Team Member',
                   'Past Team Member',
                   'Rejected Offer',
+                  'Duplicate',
                 ].map((status) => {
                   return {
                     id: status,
@@ -142,7 +144,11 @@ export default defineConfig({
             required: true,
           },
         ],
-
+        'Skills Deck',
+        'Linkedin URL',
+        'Github URL',
+        'Twitter URL',
+        'Personal URL',
         //#region Time Zone
         [
           'Timezone',
@@ -200,6 +206,13 @@ export default defineConfig({
             propertyName: 'country.continentName',
           },
         ],
+        [
+          'Holiday Dates (from Country)',
+          {
+            propertyName: 'country.holidayDates',
+            isLookupWithListOfValues: true,
+          },
+        ],
         //#endregion
 
         //#region State
@@ -214,6 +227,13 @@ export default defineConfig({
           'State/Province Name',
           {
             propertyName: 'state.name',
+          },
+        ],
+        [
+          'Date (from Holidays) (from State/province)',
+          {
+            propertyName: 'state.holidayDates',
+            isLookupWithListOfValues: true,
           },
         ],
         //#endregion
@@ -232,10 +252,22 @@ export default defineConfig({
             propertyName: 'currentRole.name',
           },
         ],
+        'Foundry (from Current Role)',
+        'Name (from Foundry) (from Current Role)',
+        'Discipline (from Current Role)',
+        'Name (from Discipline) (from Current Role)',
+        'Level (from Current Role)',
+        'Name (from Level) (from Current Role)',
         [
           'HR Title',
           {
             propertyName: 'currentRole.hrTitleName',
+          },
+        ],
+        [
+          'Billable Role',
+          {
+            propertyName: 'currentRole.billable',
           },
         ],
         [
@@ -248,6 +280,39 @@ export default defineConfig({
           'Topology Permission Exclude Codes',
           {
             isLookupWithListOfValues: true,
+          },
+        ],
+        //#endregion
+
+        //#region Foundry Role
+        [
+          'Foundry Role',
+          {
+            propertyName: 'foundryRole.id',
+          },
+        ],
+        [
+          'Role Name (from Foundry Role)',
+          {
+            propertyName: 'foundryRole.name',
+          },
+        ],
+        [
+          'Discipline Name (from Foundry Role)',
+          {
+            propertyName: 'foundryRole.discipline',
+          },
+        ],
+        [
+          'Name (from Foundry) (from Foundry Role)',
+          {
+            propertyName: 'foundryRole.foundry',
+          },
+        ],
+        [
+          'Name (from Level) (from Foundry Role)',
+          {
+            propertyName: 'foundryRole.level',
           },
         ],
         //#endregion
@@ -297,9 +362,47 @@ export default defineConfig({
         [
           'Picture (from Current Manager)',
           {
-            propertyName: 'currentManager.photoUrl',
+            propertyName: 'currentManager.namelyProfilePictureUrl',
+            propertyNameAlias: 'currentManager.photoUrl',
           },
         ],
+        [
+          'Slack Photo Url (from Current Manager)',
+          {
+            propertyName: 'currentManager.slackProfilePictureUrl',
+          },
+        ],
+        'Current Manager Email',
+        'Current Manager Id',
+        //#endregion
+
+        //#region Foundry Manager
+        [
+          'Foundry Manager',
+          {
+            propertyName: 'foundryManager.id',
+          },
+        ],
+        [
+          'Name (from Foundry Manager)',
+          {
+            propertyName: 'foundryManager.name',
+          },
+        ],
+        [
+          'Picture (from Foundry Manager)',
+          {
+            propertyName: 'foundryManager.namelyProfilePictureUrl',
+            propertyNameAlias: 'foundryManager.photoUrl',
+          },
+        ],
+        [
+          'Slack Photo Url (from Foundry Manager)',
+          {
+            propertyName: 'foundryManager.slackProfilePictureUrl',
+          },
+        ],
+        'Foundry Manager Email',
         //#endregion
 
         //#region Entity
@@ -307,6 +410,7 @@ export default defineConfig({
           'Entity',
           {
             propertyName: 'entity.id',
+            prefersSingleRecordLink: true,
             required: true,
           },
         ],
@@ -369,6 +473,12 @@ export default defineConfig({
           {
             propertyName: 'teamMemberType.id',
             required: true,
+          },
+        ],
+        [
+          'Type (from Team Member Type)',
+          {
+            propertyName: 'teamMemberType.type',
           },
         ],
         [
@@ -456,19 +566,6 @@ export default defineConfig({
         //#endregion
 
         [
-          'Active Project Count',
-          {
-            description:
-              'The number of active projects that the team member is on.',
-          },
-        ],
-        [
-          'Project Count',
-          {
-            description: 'The number of projects that the team member is on.',
-          },
-        ],
-        [
           'SOW Ids',
           {
             type: 'string[]',
@@ -489,11 +586,28 @@ export default defineConfig({
           {
             propertyName: 'candidateProfile.id',
             required: true,
+            prefersSingleRecordLink: true,
+          },
+        ],
+        [
+          'linkedin-url (from Lever Report)',
+          {
+            propertyName: 'candidateProfile.linkedinUrl',
           },
         ],
         //#endregion
 
-        'PX Tag',
+        [
+          'PX Tags',
+          {
+            propertyName: 'pxTags',
+            type: 'string[]',
+            arrayItemSeparator: ', ',
+            description:
+              'The parallax tags associated with the team member. These tags are used to enhance searching and filtering in the Parallax application.',
+          },
+        ],
+
         'Feedback Submitted Count',
         'Interviews Count',
 
@@ -514,6 +628,49 @@ export default defineConfig({
           },
         ],
 
+        //#region Active Projects
+        [
+          'Active Project Count',
+          {
+            description:
+              'The number of active projects that the team member is on.',
+          },
+        ],
+        [
+          'Active Project Names',
+          {
+            type: 'string[]',
+            description:
+              'The names of the active projects that the team member is or has been on.',
+          },
+        ],
+        //#endregion
+
+        //#region All Projects
+        [
+          'Project Count',
+          {
+            description: 'The number of projects that the team member is on.',
+          },
+        ],
+        [
+          'Project Names',
+          {
+            type: 'string[]',
+            description:
+              'The names of the projects that the team member is or has been on.',
+          },
+        ],
+        [
+          'Project Names With Client Names',
+          {
+            type: 'string[]',
+            description:
+              'The names of the projects that the team member is or has been on including the client name.',
+          },
+        ],
+        //#endregion
+
         //#region Josh Robichaud fields
         [
           'Team Member Type Entity',
@@ -523,12 +680,88 @@ export default defineConfig({
         ],
         'Namely employee_type',
         'Personal Email',
-        'OfficeVibe Teams',
+
+        //#region OfficeVibe Teams
+        [
+          'OfficeVibe Teams',
+          {
+            propertyName: 'officeVibeTeams.id',
+          },
+        ],
+        [
+          'Name (from OfficeVibe Teams)',
+          {
+            propertyName: 'officeVibeTeams.name',
+          },
+        ],
+        //#endregion
         'Division',
         'is People Manager',
         'Is Leader',
         'Manager Of',
-        'Current Manager Email',
+        [
+          'Skills',
+          {
+            propertyName: 'skills.id',
+          },
+        ],
+        [
+          'Name (from Skills)',
+          {
+            propertyName: 'skills.name',
+          },
+        ],
+        [
+          'Biography',
+          {
+            type: 'string',
+            editable: true,
+          },
+        ],
+        [
+          'Languages',
+          {
+            propertyName: 'languages.id',
+          },
+        ],
+        [
+          'Name (from Languages)',
+          {
+            propertyName: 'languages.name',
+          },
+        ],
+
+        'Project Interest Areas',
+        'Past Industry Experience',
+
+        'it_okta_entity',
+        'it_okta_state',
+        'it_okta_type',
+        'it_okta_temporary_manager',
+        'it_okta_override_start_date',
+        'it_okta_rate_limit',
+        'it_google_alias',
+        [
+          'it_hubspot_roles',
+          {
+            type: 'string[]',
+          },
+        ],
+        'it_welcome_email_send_on_next_run',
+        'it_welcome_email_is_allowed',
+        'it_welcome_email_sent',
+        'it_is_namely_active',
+        //#endregion
+
+        //#region Slack Photos
+        [
+          'Slack Photo Url',
+          {
+            propertyName: 'slackProfilePictureUrl',
+            description:
+              "The url of the team member's current profile picture in Slack.",
+          },
+        ],
         //#endregion
       ],
       views: [

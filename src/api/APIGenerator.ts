@@ -139,351 +139,361 @@ export const generateAirtableAPI = async ({
         //#endregion
 
         //#region Processing each focus tables.
-        const filteredTablesConfigurations = await Promise.all(userDefinedTables.map(async (table) => {
-          const {
-            name: tableName,
-            userDefinedViews: filteredViews,
-            labelPlural,
-            labelSingular,
-            alternativeRecordIdColumns,
-            nonLookupTableColumns,
-            lookupTableColumns,
-            editableTableColumns,
-            nonLookupColumnNameToObjectPropertyMapper,
-            lookupColumnNameToObjectPropertyMapper,
-            airtableAPIModelImportsCollector,
-            restAPIModelImportsCollector,
-            queryableLookupFields,
-            queryableNonLookupFields,
-            restAPIModelExtrasCollector,
-            columnNameToValidationSchemaTypeStringGroupMapper,
-            lookupColumnNameToParentColumnNameMap,
-          } = table;
+        const filteredTablesConfigurations = await Promise.all(
+          userDefinedTables.map(async (table) => {
+            const {
+              name: tableName,
+              userDefinedViews: filteredViews,
+              labelPlural,
+              labelSingular,
+              alternativeRecordIdColumns,
+              nonLookupTableColumns,
+              lookupTableColumns,
+              editableTableColumns,
+              nonLookupColumnNameToObjectPropertyMapper,
+              lookupColumnNameToObjectPropertyMapper,
+              airtableAPIModelImportsCollector,
+              restAPIModelImportsCollector,
+              queryableLookupFields,
+              queryableNonLookupFields,
+              restAPIModelExtrasCollector,
+              columnNameToValidationSchemaTypeStringGroupMapper,
+              lookupColumnNameToParentColumnNameMap,
+            } = table;
 
-          console.log(
-            `  -> Processing \x1b[34m${workingBaseName.trim()}/${JSON.stringify(
-              tableName
-            )}\x1b[0m table...`
-          );
-
-          //#region Getting interpolation block replacement map
-          const interpolationBlocks = getEntityTemplateFileInterpolationBlocks({
-            base: workingBase,
-            currentTable: table,
-            nonLookupTableColumns,
-            lookupTableColumns,
-            editableTableColumns,
-            tables,
-            nonLookupColumnNameToObjectPropertyMapper,
-            lookupColumnNameToObjectPropertyMapper,
-            airtableAPIModelImportsCollector,
-            restAPIModelImportsCollector,
-            queryableLookupFields,
-            queryableNonLookupFields,
-            restAPIModelExtrasCollector,
-            columnNameToValidationSchemaTypeStringGroupMapper,
-            includeAirtableSpecificQueryParameters,
-            alternativeRecordIdColumns,
-          });
-          //#endregion
-
-          //#region Getting interpolation string replacement map
-          const interpolationLabels = getEntityTemplateFileInterpolationLabels({
-            currentTable: table,
-            nonLookupTableColumns,
-            lookupTableColumns,
-            tables,
-            nonLookupColumnNameToObjectPropertyMapper,
-            lookupColumnNameToObjectPropertyMapper,
-            airtableAPIModelImportsCollector,
-            restAPIModelImportsCollector,
-            views: filteredViews,
-            labelPlural,
-            labelSingular,
-            queryableLookupFields,
-            queryableNonLookupFields,
-            restAPIModelExtrasCollector,
-            columnNameToValidationSchemaTypeStringGroupMapper,
-            includeAirtableSpecificQueryParameters,
-            alternativeRecordIdColumns,
-          });
-          //#endregion
-
-          // Replacing interpolation templates in template file contents
-          const getInterpolatedString = (templateFileContents: string) => {
-            return Object.keys(interpolationLabels).reduce(
-              (fileContents, key) => {
-                return fileContents.replaceAll(key, interpolationLabels[key]);
-              },
-              Object.keys(interpolationBlocks).reduce((fileContents, key) => {
-                const escapedKey = RegExp.escape(key);
-                return fileContents.replace(
-                  new RegExp(`${escapedKey}([\\s\\S]*?)${escapedKey}`, 'g'),
-                  interpolationBlocks[key]
-                );
-              }, templateFileContents)
+            console.log(
+              `  -> Processing \x1b[34m${workingBaseName.trim()}/${JSON.stringify(
+                tableName
+              )}\x1b[0m table...`
             );
-          };
 
-          //#region Write generated API files based on templates
-          await Promise.all(airtableTableScopedTemplateFilePaths.map(async (templateFilePath) => {
-            const filePath = getInterpolatedString(
-              `${baseAPIOutputFolderPath}${templateFilePath.replace(
-                templatesFolderPath,
-                ''
-              )}`
+            //#region Getting interpolation block replacement map
+            const interpolationBlocks =
+              getEntityTemplateFileInterpolationBlocks({
+                base: workingBase,
+                currentTable: table,
+                nonLookupTableColumns,
+                lookupTableColumns,
+                editableTableColumns,
+                tables,
+                nonLookupColumnNameToObjectPropertyMapper,
+                lookupColumnNameToObjectPropertyMapper,
+                airtableAPIModelImportsCollector,
+                restAPIModelImportsCollector,
+                queryableLookupFields,
+                queryableNonLookupFields,
+                restAPIModelExtrasCollector,
+                columnNameToValidationSchemaTypeStringGroupMapper,
+                includeAirtableSpecificQueryParameters,
+                alternativeRecordIdColumns,
+              });
+            //#endregion
+
+            //#region Getting interpolation string replacement map
+            const interpolationLabels =
+              getEntityTemplateFileInterpolationLabels({
+                currentTable: table,
+                nonLookupTableColumns,
+                lookupTableColumns,
+                tables,
+                nonLookupColumnNameToObjectPropertyMapper,
+                lookupColumnNameToObjectPropertyMapper,
+                airtableAPIModelImportsCollector,
+                restAPIModelImportsCollector,
+                views: filteredViews,
+                labelPlural,
+                labelSingular,
+                queryableLookupFields,
+                queryableNonLookupFields,
+                restAPIModelExtrasCollector,
+                columnNameToValidationSchemaTypeStringGroupMapper,
+                includeAirtableSpecificQueryParameters,
+                alternativeRecordIdColumns,
+              });
+            //#endregion
+
+            // Replacing interpolation templates in template file contents
+            const getInterpolatedString = (templateFileContents: string) => {
+              return Object.keys(interpolationLabels).reduce(
+                (fileContents, key) => {
+                  return fileContents.replaceAll(key, interpolationLabels[key]);
+                },
+                Object.keys(interpolationBlocks).reduce((fileContents, key) => {
+                  const escapedKey = RegExp.escape(key);
+                  return fileContents.replace(
+                    new RegExp(`${escapedKey}([\\s\\S]*?)${escapedKey}`, 'g'),
+                    interpolationBlocks[key]
+                  );
+                }, templateFileContents)
+              );
+            };
+
+            //#region Write generated API files based on templates
+            await Promise.all(
+              airtableTableScopedTemplateFilePaths.map(
+                async (templateFilePath) => {
+                  const filePath = getInterpolatedString(
+                    `${baseAPIOutputFolderPath}${templateFilePath.replace(
+                      templatesFolderPath,
+                      ''
+                    )}`
+                  );
+                  if (!existsSync(filePath)) {
+                    const templateFileContents = readFileSync(
+                      templateFilePath,
+                      'utf-8'
+                    );
+                    let fileContents = `
+                ${autogeneratedFileWarningComment}\n
+                ${getInterpolatedString(templateFileContents)}
+              `.trimIndent();
+
+                    //#region Replace tsed controller template variables
+                    if (templateFilePath.match(/Controller\.(ts|js)$/g)) {
+                      const controllerTemplateVariables = {
+                        TSED_CONTROLLER_FIND_FIRST_PAGE_DESCRIPTION_SUFFIX: '',
+                        TSED_CONTROLLER_FIND_ALL_DESCRIPTION_SUFFIX: '',
+                        TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX: '',
+                      };
+                      const findByIdDescriptionSuffixParts: string[] = [];
+                      if (
+                        alternativeRecordIdColumns &&
+                        alternativeRecordIdColumns.length > 0
+                      ) {
+                        const alternativeRecordIdColumnsPhrase =
+                          alternativeRecordIdColumns
+                            .map((columnName) => {
+                              return (
+                                nonLookupColumnNameToObjectPropertyMapper[
+                                  columnName
+                                ]?.propertyName || columnName
+                              );
+                            })
+                            .map((propertyName) => `\`${propertyName}\``)
+                            .join(', ');
+                        findByIdDescriptionSuffixParts.push(
+                          `Besides the primary \`id\` field, the following fields can also be used on this path: ${alternativeRecordIdColumnsPhrase}.`
+                        );
+                      }
+                      if (findByIdDescriptionSuffixParts.length > 0) {
+                        controllerTemplateVariables.TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX = ` ${findByIdDescriptionSuffixParts.join(
+                          ' '
+                        )}`;
+                      }
+
+                      if (alternativeRecordIdColumns) {
+                        controllerTemplateVariables.TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX;
+                      }
+
+                      Object.entries(controllerTemplateVariables).forEach(
+                        ([variable, value]) => {
+                          fileContents = fileContents.replaceAll(
+                            `%${variable}%`,
+                            value
+                          );
+                        }
+                      );
+                    }
+                    //#endregion
+
+                    //#region Add all entity permissions export
+                    if (
+                      templateFilePath.match(
+                        new RegExp(
+                          `${RegExp.escape(sep)}permissions${RegExp.escape(
+                            sep
+                          )}\\w+.(ts|js)$`,
+                          'g'
+                        )
+                      )
+                    ) {
+                      fileContents += getInterpolatedString(
+                        `\n\nexport const allPascalCaseEntitiesPermissions = [\n${modulePermissionsTemplate}\n]`
+                      );
+                    }
+                    //#endregion
+
+                    ensureDirSync(dirname(filePath));
+                    writeFileSync(
+                      filePath,
+                      await prettier.format(fileContents, {
+                        filepath: filePath,
+                        ...prettierConfig,
+                      })
+                    );
+                  }
+                }
+              )
             );
+            //#endregion
+
+            // Permissions
+            //#region Accumulating all focus table permissions
+            addModuleImport({
+              imports: permissionsImports,
+              importFilePath: getInterpolatedString(`./PascalCaseEntities`),
+              importName: getInterpolatedString(
+                `allPascalCaseEntitiesPermissions`
+              ),
+            });
+            permissionsExports.push(
+              getInterpolatedString(`export * from './PascalCaseEntities';`)
+            );
+            permissionsObjectStrings.push(
+              getInterpolatedString(`...allPascalCaseEntitiesPermissions`)
+            );
+            //#endregion
+
+            return {
+              ...table,
+              nonLookupColumnNameToObjectPropertyMapper,
+              lookupColumnNameToObjectPropertyMapper,
+              lookupColumnNameToParentColumnNameMap,
+              labelPlural,
+              labelSingular,
+            };
+          })
+        );
+
+        await Promise.all(
+          airtableBaseScopedTemplateFiles.map(async (templateFilePath) => {
+            const filePath = `${baseAPIOutputFolderPath}${templateFilePath.replace(
+              templatesFolderPath,
+              ''
+            )}`;
             if (!existsSync(filePath)) {
               const templateFileContents = readFileSync(
                 templateFilePath,
                 'utf-8'
               );
-              let fileContents = `
-                ${autogeneratedFileWarningComment}\n
-                ${getInterpolatedString(templateFileContents)}
-              `.trimIndent();
-
-              //#region Replace tsed controller template variables
-              if (templateFilePath.match(/\Controller\.(ts|js)$/g)) {
-                const controllerTemplateVariables = {
-                  TSED_CONTROLLER_FIND_FIRST_PAGE_DESCRIPTION_SUFFIX: '',
-                  TSED_CONTROLLER_FIND_ALL_DESCRIPTION_SUFFIX: '',
-                  TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX: '',
-                };
-                const findByIdDescriptionSuffixParts: string[] = [];
-                if (
-                  alternativeRecordIdColumns &&
-                  alternativeRecordIdColumns.length > 0
-                ) {
-                  const alternativeRecordIdColumnsPhrase =
-                    alternativeRecordIdColumns
-                      .map((columnName) => {
-                        return (
-                          nonLookupColumnNameToObjectPropertyMapper[columnName]
-                            ?.propertyName || columnName
-                        );
-                      })
-                      .map((propertyName) => `\`${propertyName}\``)
-                      .join(', ');
-                  findByIdDescriptionSuffixParts.push(
-                    `Besides the primary \`id\` field, the following fields can also be used on this path: ${alternativeRecordIdColumnsPhrase}.`
-                  );
-                }
-                if (findByIdDescriptionSuffixParts.length > 0) {
-                  controllerTemplateVariables.TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX = ` ${findByIdDescriptionSuffixParts.join(
-                    ' '
-                  )}`;
-                }
-
-                if (alternativeRecordIdColumns) {
-                  controllerTemplateVariables.TSED_CONTROLLER_FIND_BY_ID_DESCRIPTION_SUFFIX;
-                }
-
-                Object.entries(controllerTemplateVariables).forEach(
-                  ([variable, value]) => {
-                    fileContents = fileContents.replaceAll(
-                      `%${variable}%`,
-                      value
-                    );
+              const interpolationBlocks = {
+                ['/* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */']: (() => {
+                  if (!includeAirtableSpecificQueryParameters) {
+                    return '';
                   }
-                );
-              }
-              //#endregion
-
-              //#region Add all entity permissions export
-              if (
-                templateFilePath.match(
-                  new RegExp(
-                    `${RegExp.escape(sep)}permissions${RegExp.escape(
-                      sep
-                    )}\\w+.(ts|js)$`,
-                    'g'
-                  )
-                )
-              ) {
-                fileContents += getInterpolatedString(
-                  `\n\nexport const allPascalCaseEntitiesPermissions = [\n${modulePermissionsTemplate}\n]`
-                );
-              }
-              //#endregion
-
-              ensureDirSync(dirname(filePath));
-              writeFileSync(
-                filePath,
-                (await prettier.format(fileContents, {
-                  filepath: filePath,
-                  ...prettierConfig,
-                }))
-              );
-            }
-          }));
-          //#endregion
-
-          // Permissions
-          //#region Accumulating all focus table permissions
-          addModuleImport({
-            imports: permissionsImports,
-            importFilePath: getInterpolatedString(`./PascalCaseEntities`),
-            importName: getInterpolatedString(
-              `allPascalCaseEntitiesPermissions`
-            ),
-          });
-          permissionsExports.push(
-            getInterpolatedString(`export * from './PascalCaseEntities';`)
-          );
-          permissionsObjectStrings.push(
-            getInterpolatedString(`...allPascalCaseEntitiesPermissions`)
-          );
-          //#endregion
-
-          return {
-            ...table,
-            nonLookupColumnNameToObjectPropertyMapper,
-            lookupColumnNameToObjectPropertyMapper,
-            lookupColumnNameToParentColumnNameMap,
-            labelPlural,
-            labelSingular,
-          };
-        }));
-
-        await Promise.all(airtableBaseScopedTemplateFiles.map(async(templateFilePath) => {
-          const filePath = `${baseAPIOutputFolderPath}${templateFilePath.replace(
-            templatesFolderPath,
-            ''
-          )}`;
-          if (!existsSync(filePath)) {
-            const templateFileContents = readFileSync(
-              templateFilePath,
-              'utf-8'
-            );
-            const interpolationBlocks = {
-              ['/* AIRTABLE_SPECIFIC_QUERY_PARAMETERS */']: (() => {
-                if (!includeAirtableSpecificQueryParameters) {
-                  return '';
-                }
-                return '$1';
-              })(),
-              ['/* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */']: JSON.stringify(
-                Object.fromEntries(
-                  filteredTablesConfigurations.map(
-                    ({
-                      id,
-                      name,
-                      labelPlural,
-                      labelSingular,
-                      primaryFieldId,
-                    }) => {
-                      return [
-                        id,
-                        {
-                          id,
-                          tableName: name,
-                          entitiesPluralName: labelPlural.toPascalCase(),
-                          entitySingularName: labelSingular.toPascalCase(),
-                          primaryFieldId,
-                        },
-                      ];
-                    }
-                  )
-                ),
-                null,
-                2
-              ),
-              ['/* AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP */']: JSON.stringify(
-                Object.fromEntries(
-                  filteredTablesConfigurations.flatMap(
-                    ({
-                      nonLookupColumnNameToObjectPropertyMapper,
-                      lookupColumnNameToObjectPropertyMapper,
-                      lookupColumnNameToParentColumnNameMap,
-                      id: tableId,
-                      name: tableName,
-                    }) => {
-                      return [
-                        ...Object.entries(
-                          nonLookupColumnNameToObjectPropertyMapper
-                        ).map(([columnName, { id, propertyName }]) => {
-                          return [
-                            id,
-                            {
-                              id,
-                              columnName,
-                              entityPropertyPath: propertyName,
-                              tableId,
-                              tableName,
-                            },
-                          ];
-                        }),
-                        ...Object.entries(
-                          lookupColumnNameToObjectPropertyMapper
-                        ).map(([columnName, { id, propertyName }]) => {
-                          return [
-                            id,
-                            {
-                              id,
-                              columnName,
-                              entityPropertyPath: `"${
-                                nonLookupColumnNameToObjectPropertyMapper[
-                                  lookupColumnNameToParentColumnNameMap[
-                                    columnName
-                                  ]
-                                ].propertyName
-                              }.${propertyName}"`,
-                              tableId,
-                              tableName,
-                            },
-                          ];
-                        }),
-                      ];
-                    }
-                  )
-                ),
-                null,
-                2
-              ),
-              ['/* PROPERTY_PATHS_BY_ENTITY_NAME */']: JSON.stringify(
-                Object.fromEntries(
-                  filteredTablesConfigurations
-                    .map(
+                  return '$1';
+                })(),
+                ['/* AIRTABLE_TABLE_ID_TO_ENTITY_MAP */']: JSON.stringify(
+                  Object.fromEntries(
+                    filteredTablesConfigurations.map(
                       ({
+                        id,
+                        name,
                         labelPlural,
+                        labelSingular,
+                        primaryFieldId,
+                      }) => {
+                        return [
+                          id,
+                          {
+                            id,
+                            tableName: name,
+                            entitiesPluralName: labelPlural.toPascalCase(),
+                            entitySingularName: labelSingular.toPascalCase(),
+                            primaryFieldId,
+                          },
+                        ];
+                      }
+                    )
+                  ),
+                  null,
+                  2
+                ),
+                ['/* AIRTABLE_TABLE_COLUMN_ID_TO_FIELD_MAP */']: JSON.stringify(
+                  Object.fromEntries(
+                    filteredTablesConfigurations.flatMap(
+                      ({
                         nonLookupColumnNameToObjectPropertyMapper,
                         lookupColumnNameToObjectPropertyMapper,
                         lookupColumnNameToParentColumnNameMap,
+                        id: tableId,
+                        name: tableName,
                       }) => {
                         return [
-                          labelPlural.toPascalCase(),
-                          [
-                            ...Object.entries(
-                              nonLookupColumnNameToObjectPropertyMapper
-                            ).map(([, { propertyName }]) => {
-                              return propertyName;
-                            }),
-                            ...Object.entries(
-                              lookupColumnNameToObjectPropertyMapper
-                            ).map(([columnName, { propertyName }]) => {
-                              return `${
-                                nonLookupColumnNameToObjectPropertyMapper[
-                                  lookupColumnNameToParentColumnNameMap[
-                                    columnName
-                                  ]
-                                ].propertyName
-                              }.${propertyName}`;
-                            }),
-                          ].sort(),
-                        ] as [string, string[]];
+                          ...Object.entries(
+                            nonLookupColumnNameToObjectPropertyMapper
+                          ).map(([columnName, { id, propertyName }]) => {
+                            return [
+                              id,
+                              {
+                                id,
+                                columnName,
+                                entityPropertyPath: propertyName,
+                                tableId,
+                                tableName,
+                              },
+                            ];
+                          }),
+                          ...Object.entries(
+                            lookupColumnNameToObjectPropertyMapper
+                          ).map(([columnName, { id, propertyName }]) => {
+                            return [
+                              id,
+                              {
+                                id,
+                                columnName,
+                                entityPropertyPath: `"${
+                                  nonLookupColumnNameToObjectPropertyMapper[
+                                    lookupColumnNameToParentColumnNameMap[
+                                      columnName
+                                    ]
+                                  ].propertyName
+                                }.${propertyName}"`,
+                                tableId,
+                                tableName,
+                              },
+                            ];
+                          }),
+                        ];
                       }
                     )
-                    .sort(([aEntityName], [bEntityName]) => {
-                      return aEntityName.localeCompare(bEntityName);
-                    })
+                  ),
+                  null,
+                  2
                 ),
-                null,
-                2
-              ),
-            };
+                ['/* PROPERTY_PATHS_BY_ENTITY_NAME */']: JSON.stringify(
+                  Object.fromEntries(
+                    filteredTablesConfigurations
+                      .map(
+                        ({
+                          labelPlural,
+                          nonLookupColumnNameToObjectPropertyMapper,
+                          lookupColumnNameToObjectPropertyMapper,
+                          lookupColumnNameToParentColumnNameMap,
+                        }) => {
+                          return [
+                            labelPlural.toPascalCase(),
+                            [
+                              ...Object.entries(
+                                nonLookupColumnNameToObjectPropertyMapper
+                              ).map(([, { propertyName }]) => {
+                                return propertyName;
+                              }),
+                              ...Object.entries(
+                                lookupColumnNameToObjectPropertyMapper
+                              ).map(([columnName, { propertyName }]) => {
+                                return `${
+                                  nonLookupColumnNameToObjectPropertyMapper[
+                                    lookupColumnNameToParentColumnNameMap[
+                                      columnName
+                                    ]
+                                  ].propertyName
+                                }.${propertyName}`;
+                              }),
+                            ].sort(),
+                          ] as [string, string[]];
+                        }
+                      )
+                      .sort(([aEntityName], [bEntityName]) => {
+                        return aEntityName.localeCompare(bEntityName);
+                      })
+                  ),
+                  null,
+                  2
+                ),
+              };
 
-            let fileContents = `
+              const fileContents = `
               ${autogeneratedFileWarningComment}\n
               ${Object.entries(interpolationBlocks).reduce(
                 (fileContents, [key, interpolationValue]) => {
@@ -497,16 +507,17 @@ export const generateAirtableAPI = async ({
               )}
             `.trimIndent();
 
-            ensureDirSync(dirname(filePath));
-            writeFileSync(
-              filePath,
-              (await prettier.format(fileContents, {
-                filepath: filePath,
-                ...prettierConfig,
-              }))
-            );
-          }
-        }));
+              ensureDirSync(dirname(filePath));
+              writeFileSync(
+                filePath,
+                await prettier.format(fileContents, {
+                  filepath: filePath,
+                  ...prettierConfig,
+                })
+              );
+            }
+          })
+        );
         //#endregion
 
         //#region Write api index file
@@ -519,7 +530,7 @@ export const generateAirtableAPI = async ({
             .join('\n');
           writeFileSync(
             apiModulesIndexFilePath,
-            (await prettier.format(
+            await prettier.format(
               `
               ${autogeneratedFileWarningComment}\n
               ${fileContents}
@@ -528,7 +539,7 @@ export const generateAirtableAPI = async ({
                 filepath: apiModulesIndexFilePath,
                 ...prettierConfig,
               }
-            ))
+            )
           );
         }
         //#endregion
@@ -548,7 +559,7 @@ export const generateAirtableAPI = async ({
             .join('\n');
           writeFileSync(
             modelsIndexFilePath,
-            (await prettier.format(
+            await prettier.format(
               `
               ${autogeneratedFileWarningComment}\n
               ${fileContents}
@@ -557,7 +568,7 @@ export const generateAirtableAPI = async ({
                 filepath: modelsIndexFilePath,
                 ...prettierConfig,
               }
-            ))
+            )
           );
         }
         //#endregion
@@ -589,7 +600,14 @@ export const generateAirtableAPI = async ({
                       filteredTablesConfigurations.find(
                         ({ id: filteredTableId }) =>
                           tableColumn.options?.linkedTableId === filteredTableId
-                      )!;
+                      );
+
+                    if (!dependentTableConfiguration) {
+                      throw new Error(
+                        `Dependent table configuration not found for column: ${tableColumn.name}`
+                      );
+                    }
+
                     const permissons = [
                       `VIEW_${dependentTableConfiguration.labelPlural
                         .toUpperCase()
@@ -664,7 +682,7 @@ export const generateAirtableAPI = async ({
 
         writeFileSync(
           permissionsFilePath,
-          (await prettier.format(
+          await prettier.format(
             `
             ${autogeneratedFileWarningComment}\n
             ${getImportsCode({ imports: permissionsImports }).join('\n')}\n
@@ -684,7 +702,7 @@ export const generateAirtableAPI = async ({
               filepath: permissionsFilePath,
               ...prettierConfig,
             }
-          ))
+          )
         );
         //#endregion
 
@@ -698,7 +716,7 @@ export const generateAirtableAPI = async ({
             .join('\n');
           writeFileSync(
             indexFilePath,
-            (await prettier.format(
+            await prettier.format(
               `
               ${autogeneratedFileWarningComment}\n
               ${indexFileContents}
@@ -707,7 +725,7 @@ export const generateAirtableAPI = async ({
                 filepath: indexFilePath,
                 ...prettierConfig,
               }
-            ))
+            )
           );
         }
         //#endregion

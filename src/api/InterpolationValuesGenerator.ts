@@ -195,8 +195,8 @@ export const getEntityTemplateFileInterpolationBlocks = ({
         return `
           ${decoratorsCode}
           ${accessModifier} ${propertyName}${
-          required ? '!' : '?'
-        }: ${propertyType}
+            required ? '!' : '?'
+          }: ${propertyType}
         `.trimIndent();
       })
       .join(';\n\n'),
@@ -218,8 +218,8 @@ export const getEntityTemplateFileInterpolationBlocks = ({
         return `
           ${decoratorsCode}
           ${accessModifier} ${propertyName}${
-          required ? '!' : '?'
-        }: ${propertyType}
+            required ? '!' : '?'
+          }: ${propertyType}
         `.trimIndent();
       })
       .join(';\n\n'),
@@ -241,8 +241,8 @@ export const getEntityTemplateFileInterpolationBlocks = ({
             .join(';\n');
           return `
               ${propertyName}${
-            required ? '' : '?'
-          }: {\n${modelPropertiesString}\n}
+                required ? '' : '?'
+              }: {\n${modelPropertiesString}\n}
             `.trimIndent();
         }
 
@@ -292,8 +292,8 @@ export const getEntityTemplateFileInterpolationBlocks = ({
         return `
             ${decoratorsCode}
             ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
-          editablePropertyType || propertyType
-        }
+              editablePropertyType || propertyType
+            }
           `.trimIndent();
       })
       .join(';\n\n'),
@@ -332,8 +332,8 @@ export const getEntityTemplateFileInterpolationBlocks = ({
         return `
           ${decoratorsCode}
           ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
-          editablePropertyType || propertyType
-        }
+            editablePropertyType || propertyType
+          }
         `.trimIndent();
       })
       .join(';\n\n'),
@@ -370,8 +370,8 @@ export const getEntityTemplateFileInterpolationBlocks = ({
         return `
           ${decoratorsCode}
           ${accessModifier} ${propertyName}${required ? '!' : '?'}: ${
-          editablePropertyType || propertyType
-        }
+            editablePropertyType || propertyType
+          }
         `.trimIndent();
       })
       .join(';\n\n'),
@@ -484,18 +484,21 @@ export const getEntityTemplateFileInterpolationLabels = ({
               columnNameToValidationSchemaTypeStringGroupMapper[
                 tableColumn.name
               ];
-            return typeDefinitionSnippet!.trimIndent();
+            return typeDefinitionSnippet?.trimIndent();
           }),
         ...restAPIModelExtrasCollector
-          .reduce((accumulator, modelDefinition) => {
-            accumulator.push(...modelDefinition.modelProperties);
-            return accumulator;
-          }, [] as (typeof restAPIModelExtrasCollector)[number]['modelProperties'])
+          .reduce(
+            (accumulator, modelDefinition) => {
+              accumulator.push(...modelDefinition.modelProperties);
+              return accumulator;
+            },
+            [] as (typeof restAPIModelExtrasCollector)[number]['modelProperties']
+          )
           .filter(({ typeDefinitionSnippet }) => {
             return typeDefinitionSnippet;
           })
           .map(({ typeDefinitionSnippet }) => {
-            return typeDefinitionSnippet!.trimIndent();
+            return typeDefinitionSnippet?.trimIndent();
           }),
         ...restAPIModelExtrasCollector.map(
           ({ modelName, modelProperties, tableColumName }) => {
@@ -516,8 +519,8 @@ export const getEntityTemplateFileInterpolationLabels = ({
                   return `
                     ${decoratorsCode}
                     ${accessModifier} ${propertyName}${
-                    required ? '!' : '?'
-                  }: ${propertyType}
+                      required ? '!' : '?'
+                    }: ${propertyType}
                   `.trimIndent();
                 }
               )

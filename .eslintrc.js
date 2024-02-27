@@ -22,5 +22,6 @@ module.exports = {
     'import/no-extraneous-dependencies': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-dynamic-delete': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
   },
 };

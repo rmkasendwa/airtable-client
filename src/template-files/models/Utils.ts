@@ -278,6 +278,7 @@ export const convertToAirtableFindAllRecordsQueryParams = <
 
 export type AirtableColumnConfigMapping<ObjectPropertyName extends string> = {
   propertyName: ObjectPropertyName;
+  propertyNameAlias?: ObjectPropertyName;
   tableColumnType: AirtableFieldType;
   isMultipleRecordLinksField?: boolean;
   prefersSingleRecordLink?: boolean;
