@@ -81,14 +81,23 @@ export const extractUserDefinedBasesAndTables = async ({
 
   const { bases: allBases } = await findAllAirtableBases(); // Loading all airtable bases accessible by the API key
 
-  const workingBases = allBases.filter(({ name, id }) => {
-    return configBases.some(({ id: configBaseId, name: configBaseName }) => {
-      return (
-        (configBaseId && configBaseId === id) ||
-        (configBaseName && configBaseName.trim() === name.trim())
-      );
+  const workingBases = allBases
+    .filter(({ name, id }) => {
+      return configBases.some(({ id: configBaseId, name: configBaseName }) => {
+        return (
+          (configBaseId && configBaseId === id) ||
+          (configBaseName && configBaseName.trim() === name.trim())
+        );
+      });
+    })
+    .map((base) => {
+      const configBaseName = configBases.find(({ id }) => id === base.id)?.name;
+
+      return {
+        ...base,
+        name: configBaseName ?? base.name,
+      };
     });
-  });
 
   const bases = await Promise.all(
     workingBases.map(async (workingBase) => {

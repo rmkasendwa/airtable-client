@@ -29,6 +29,7 @@ To use the Airtable Client package, you need to define a configuration file call
 ```typescript
 export default defineConfig({
   defaultBase: {
+    id: 'xxx',
     name: 'Sample Base',
   },
   tables: [
@@ -44,6 +45,8 @@ export default defineConfig({
   includeAirtableSpecificQueryParameters: true,
 });
 ```
+
+The base schema will be looked up in Airtable based on the `id` or `name`. In case the `name` is provided, it will overwrite the actual Airtable base name in the generated code.
 
 Feel free to modify the provided example to suit your needs and make any necessary adjustments to fit your project structure.
 
