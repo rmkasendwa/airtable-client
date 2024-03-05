@@ -60,7 +60,6 @@ export const findFirstPagePascalCaseEntities = async (
 
   if (
     !queryParams.fields &&
-    camelCaseEntityQueryableFields.length > 0 &&
     APIAdapterConfiguration.AIRTABLE_REQUEST_ONLY_FOCUS_FIELDS
   ) {
     queryParams = {
