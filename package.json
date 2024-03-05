@@ -21,9 +21,9 @@
     "airtable-client": "./run.js"
   },
   "scripts": {
-    "prebuild": "rm -rf ./dist",
+    "prebuild": "shx rm -rf ./dist",
     "build": "npm run tsc",
-    "postbuild": "cp -r package.json ./src/template-files ./dist && node ./scripts/postbuild",
+    "postbuild": "shx cp -r package.json ./src/template-files ./dist && node ./scripts/postbuild",
     "doc": "run-s doc:html && open-cli build/docs/index.html",
     "doc:html": "typedoc src/ --exclude \"**/*.spec.ts,**/__tests__/*\" --out build/docs",
     "doc:json": "typedoc src/ --exclude **/*.spec.ts --json build/docs/typedoc.json",
@@ -98,6 +98,7 @@
     "prettier": "^3.1.1",
     "prettier-plugin-import-sort": "^0.0.7",
     "prettier-plugin-sort-json": "^3.1.0",
+    "shx": "^0.3.4",
     "standard-version": "^9.5.0",
     "ts-node-dev": "^2.0.0",
     "typedoc": "^0.25.1",
