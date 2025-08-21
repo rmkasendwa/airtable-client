@@ -13,13 +13,13 @@ Airtable Client is a package that provides a TypeScript API for Airtable, a popu
 You can install the package using npm:
 
 ```bash
-npm i @theoremone-talent/airtable-client
+npm i @infinite-debugger/airtable-client
 ```
 
 or yarn:
 
 ```bash
-yarn add @theoremone-talent/airtable-client
+yarn add @infinite-debugger/airtable-client
 ```
 
 ## Usage
@@ -65,7 +65,7 @@ TBD
 
 ## Contributing
 
-Contributions are welcome! If you encounter any issues or have suggestions for improvements, please open an issue on the [GitHub repository](https://github.com/TheoremOne-Talent/airtable-client).
+Contributions are welcome! If you encounter any issues or have suggestions for improvements, please open an issue on the [GitHub repository](https://github.com/infinite-debugger/airtable-client).
 
 ## License
 

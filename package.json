@@ -1,5 +1,5 @@
 {
-  "name": "@theoremone-talent/airtable-client",
+  "name": "@infinite-debugger/airtable-client",
   "version": "1.0.0-alpha.189",
   "description": "Airtable client",
   "keywords": [
@@ -10,7 +10,7 @@
     "api-generator",
     "generator"
   ],
-  "repository": "https://github.com/TheoremOne-Talent/airtable-client.git",
+  "repository": "https://github.com/infinite-debugger/airtable-client.git",
   "author": {
     "name": "Ronald M. Kasendwa",
     "email": "ronald.kasendwa@theoremone.co",
